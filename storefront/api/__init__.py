@@ -1,0 +1,1 @@
+"""Storefront FastAPI host."""

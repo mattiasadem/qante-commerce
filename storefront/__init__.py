@@ -1,0 +1,1 @@
+"""Storefront host package."""

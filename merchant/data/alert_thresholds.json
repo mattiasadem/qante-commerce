@@ -1,0 +1,7 @@
+{
+  "low_stock_days_cover": 7,
+  "low_stock_absolute": 5,
+  "slow_mover_no_sale_days": 45,
+  "unshipped_hours": 48,
+  "pending_payment_hours": 24
+}
