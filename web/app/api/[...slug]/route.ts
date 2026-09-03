@@ -1,0 +1,135 @@
+import { NextResponse } from "next/server";
+import { BRAND, demoTurn, getProduct, getProducts, mergeStaged, logoSvg, merchantTurn, computeAlerts, computeIssues, computeSnapshot, weeklyBars, type LedgerEntry } from "@/lib/core";
+
+export const dynamic = "force-dynamic";
+const CART = "qante_cart";
+const ORDER = "qante_order";
+const LEDGER = "qante_ledger";
+type Line = { product_id: string; qty: number };
+
+function cookie(req: Request, name: string) {
+  const m = (req.headers.get("cookie") ?? "").split(";").map((p) => p.trim()).find((p) => p.startsWith(`${name}=`));
+  return m ? decodeURIComponent(m.slice(name.length + 1)) : "";
+}
+function parseCart(raw?: string): Line[] {
+  if (!raw) return [];
+  try { const d = JSON.parse(raw) as Line[]; return Array.isArray(d) ? d.filter((l) => l.product_id && l.qty > 0) : []; } catch { return []; }
+}
+function parseLedger(raw?: string): Record<string, LedgerEntry> {
+  if (!raw) return {};
+  try { const d = JSON.parse(raw) as Record<string, LedgerEntry>; return d && typeof d === "object" ? d : {}; } catch { return {}; }
+}
+function enrich(items: Line[]) {
+  const lines = items.map((item) => {
+    const product = getProduct(item.product_id) ?? null;
+    return { ...item, product, line_total: product ? Math.round(product.price * item.qty * 100) / 100 : 0 };
+  });
+  return { items: lines, subtotal: Math.round(lines.reduce((s, l) => s + l.line_total, 0) * 100) / 100, currency: "TRY" };
+}
+function setCookies(res: NextResponse, pairs: { name: string; value: string }[]) {
+  for (const p of pairs) res.cookies.set(p.name, p.value, { path: "/", sameSite: "lax", maxAge: 60 * 60 * 24 * 30 });
+  return res;
+}
+
+export async function GET(req: Request, { params }: { params: Promise<{ slug: string[] }> }) {
+  const slug = (await params).slug.join("/");
+  const url = new URL(req.url);
+  if (slug === "brand") return NextResponse.json({ ...BRAND, logo_svg: logoSvg(32) });
+  if (slug === "products") return NextResponse.json({ products: getProducts() });
+  if (slug === "cart") return NextResponse.json(enrich(parseCart(cookie(req, CART))));
+  if (slug === "order" || slug === "orders/last") {
+    const raw = cookie(req, ORDER);
+    if (!raw) return NextResponse.json({ error: "not found" }, { status: 404 });
+    try {
+      const order = JSON.parse(raw) as { order_id: string };
+      const want = url.searchParams.get("id");
+      if (want && want !== order.order_id) return NextResponse.json({ error: "not found" }, { status: 404 });
+      return NextResponse.json(order);
+    } catch { return NextResponse.json({ error: "not found" }, { status: 404 }); }
+  }
+  if (slug === "merchant/reads/snapshot" || slug === "merchant/snapshot") return NextResponse.json(computeSnapshot());
+  if (slug === "merchant/reads/alerts" || slug === "merchant/alerts") return NextResponse.json({ alerts: computeAlerts() });
+  if (slug === "merchant/reads/issues" || slug === "merchant/issues") return NextResponse.json({ issues: computeIssues() });
+  if (slug === "merchant/reads/weekly" || slug === "merchant/weekly") return NextResponse.json({ bars: weeklyBars() });
+  if (slug === "merchant/reads/staged" || slug === "merchant/staged") {
+    return NextResponse.json({ changes: mergeStaged(parseLedger(cookie(req, LEDGER))), writes_enabled: false, demo: true });
+  }
+  return NextResponse.json({ error: "not found" }, { status: 404 });
+}
+
+export async function POST(req: Request, { params }: { params: Promise<{ slug: string[] }> }) {
+  const slug = (await params).slug.join("/");
+  if (slug === "chat" || slug === "merchant/chat") {
+    const body = (await req.json()) as { message?: string; productId?: string; product_id?: string };
+    const msg = (body.message ?? "").trim() || "öne çıkanlar";
+    const turn = slug === "merchant/chat" ? merchantTurn(msg) : demoTurn(msg, body.productId ?? body.product_id ?? null);
+    if ((req.headers.get("accept") ?? "").includes("text/event-stream")) {
+      const chunks = [
+        `data: ${JSON.stringify({ type: "activity", content: turn.activity })}\n\n`,
+        `data: ${JSON.stringify({ type: "text", content: turn.text })}\n\n`,
+        `data: ${JSON.stringify({ type: "ui", ui: turn.ui })}\n\n`,
+        `data: ${JSON.stringify({ type: "suggestions", suggestions: turn.suggestions })}\n\n`,
+        `data: ${JSON.stringify({ type: "done" })}\n\n`,
+      ];
+      return new Response(chunks.join(""), { headers: { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache" } });
+    }
+    return NextResponse.json(turn);
+  }
+  if (slug === "cart") {
+    let items = parseCart(cookie(req, CART));
+    const body = (await req.json()) as { action?: string; productId?: string; product_id?: string; qty?: number };
+    const productId = body.productId ?? body.product_id;
+    const qty = body.qty ?? 1;
+    const action = body.action ?? "add";
+    if (action === "checkout") {
+      const cart = enrich(items);
+      if (cart.items.length === 0) return NextResponse.json({ error: "empty" }, { status: 400 });
+      const order_id = `ord_demo_${Date.now().toString(36)}`;
+      const order = {
+        order_id,
+        items: cart.items.map((l) => ({ product_id: l.product_id, name: l.product?.name ?? l.product_id, qty: l.qty, price: l.product?.price ?? 0, line_total: l.line_total })),
+        subtotal: cart.subtotal,
+        currency: "TRY",
+        created_at: new Date().toISOString(),
+        note: "ikas checkout simüle · yerel defter",
+      };
+      const res = NextResponse.json(order);
+      return setCookies(res, [
+        { name: CART, value: JSON.stringify([]) },
+        { name: ORDER, value: JSON.stringify(order) },
+      ]);
+    }
+    if (action === "clear") items = [];
+    else if (productId && action === "remove") items = items.filter((i) => i.product_id !== productId);
+    else if (productId && action === "update") {
+      if (qty <= 0) items = items.filter((i) => i.product_id !== productId);
+      else {
+        const f = items.find((i) => i.product_id === productId);
+        if (f) f.qty = qty; else items.push({ product_id: productId, qty });
+      }
+    } else if (productId) {
+      const f = items.find((i) => i.product_id === productId);
+      if (f) f.qty += qty; else items.push({ product_id: productId, qty });
+    }
+    const res = NextResponse.json(enrich(items));
+    return setCookies(res, [{ name: CART, value: JSON.stringify(items) }]);
+  }
+  if (slug === "merchant/changes") {
+    const body = (await req.json()) as { id?: string; action?: string; reason?: string };
+    const id = body.id ?? "";
+    const ledger = parseLedger(cookie(req, LEDGER));
+    const current = mergeStaged(ledger).find((c) => c.id === id);
+    if (!current) return NextResponse.json({ error: "not found" }, { status: 404 });
+    if (body.action === "discard") {
+      const note = (body.reason ?? "").trim();
+      if (!note) return NextResponse.json({ error: "reason required" }, { status: 400 });
+      ledger[id] = { status: "discarded", decision_note: note, decided_at: new Date().toISOString() };
+    } else if (body.action === "approve") {
+      ledger[id] = { status: "applied", decided_at: new Date().toISOString() };
+    } else return NextResponse.json({ error: "bad action" }, { status: 400 });
+    const change = mergeStaged(ledger).find((c) => c.id === id);
+    const res = NextResponse.json({ change, demo: true, ikas_written: false });
+    return setCookies(res, [{ name: LEDGER, value: JSON.stringify(ledger) }]);
+  }
+  return NextResponse.json({ error: "not found" }, { status: 404 });
+}
