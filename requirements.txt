@@ -1,0 +1,16 @@
+# Runtime for Qante host code (F0 local store + FastAPI skeletons).
+httpx>=0.27
+pydantic>=2.8
+fastapi>=0.115
+uvicorn[standard]>=0.32
+
+# Blueprint packages from github.com/anthropics/commerce-agents (Apache-2.0).
+# Do NOT install, vendor, or modify shopping_agent / merchant_agent / commerce_common
+# until a commit pin is confirmed. Intended git pins for F1+:
+#   commerce-common @ git+https://github.com/anthropics/commerce-agents.git@<COMMIT>#subdirectory=packages/commerce-common
+#   shopping-agent-core @ git+https://github.com/anthropics/commerce-agents.git@<COMMIT>#subdirectory=packages/shopping-agent-core
+#   shopping-agent-runtime @ git+https://github.com/anthropics/commerce-agents.git@<COMMIT>#subdirectory=packages/shopping-agent-runtime
+#   merchant-agent-core @ git+https://github.com/anthropics/commerce-agents.git@<COMMIT>#subdirectory=packages/merchant-agent-core
+#   merchant-agent-runtime @ git+https://github.com/anthropics/commerce-agents.git@<COMMIT>#subdirectory=packages/merchant-agent-runtime
+# Subdirectory paths are unconfirmed. Check the blueprint repo layout before pinning.
+# Never edit those packages; extend via config, executor subclass, or PresentationExtension.
