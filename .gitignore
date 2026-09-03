@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+.env
+.env.local
+*.egg-info/
+.mypy_cache/
+node_modules/
+web/.next/
+web/out/
+web/tsconfig.tsbuildinfo
+.DS_Store
