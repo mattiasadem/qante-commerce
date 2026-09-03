@@ -1,0 +1,13 @@
+You are implementing Qante Commerce Agents. Read docs/PLAN.md first; it is the source of truth.
+
+Hard rules:
+- Never modify code under vendor/ or the installed packages shopping_agent, merchant_agent, commerce_common. Extend via config, executor subclasses, or PresentationExtension.
+- Every GraphQL document lives in shared/ikas/queries.py. No inline query strings elsewhere.
+- No ikas credential may appear in a route response, a log line, a tool argument, or anything returned to the model.
+- Merchant writes: stage_* never calls ikas. Only apply_change sends a mutation, and only for status == approved.
+- Tool results are context: strip image URLs, raw GraphQL envelopes, and empty fields before returning from a backend method.
+- Every backend method gets a test against recorded/canned ikas responses (tests/fake_ikas.py, storefront/data/recorded_responses.json). No test needs the network or an Anthropic key.
+- Python 3.11, async everywhere, pydantic v2, httpx, ruff-clean. TypeScript strict in web/.
+- User-facing strings are Turkish; identifiers, comments, and commit messages are English.
+- When ikas schema is uncertain, stop and write the open question to docs/IKAS_API_NOTES.md instead of guessing a field name.
+- Follow the phase order in docs/PLAN.md §9. Do not start a later phase's task unless asked.
