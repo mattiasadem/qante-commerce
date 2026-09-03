@@ -1,0 +1,14 @@
+target-version = "py311"
+line-length = 100
+src = [".", "shared", "merchant", "storefront", "tests"]
+exclude = [".venv", "_*.py"]
+
+[lint]
+select = ["E", "F", "I", "UP", "W"]
+ignore = ["E501"]
+
+[lint.isort]
+known-first-party = ["shared", "merchant", "storefront"]
+
+[format]
+quote-style = "double"
