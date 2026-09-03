@@ -16,6 +16,8 @@ Routes: `/` storefront, `/urun/[id]` product, `/sepet` cart,
 The demo does not call a model API and does not call ikas.
 Numbers come from `merchant/data/seed.json` (mirrored at `web/data/seed.json`).
 
+Demo CTAs: `POST /api/cart` with `action=checkout`; `POST /api/merchant/changes` with `approve` or `discard`. Vercel file deploys of this tree return 403 on update, so GitHub is the source of truth.
+
 ## Python host
 
 Use a virtualenv. Install both requirements files.
