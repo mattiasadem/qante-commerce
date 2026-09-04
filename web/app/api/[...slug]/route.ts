@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { BRAND, buildListingStage, buildPriceStage, buildStockStage, demoTurn, getProduct, getProducts, mergeStaged, logoSvg, merchantTurn, computeAlerts, computeIssues, computeSnapshot, weeklyBars, type LedgerEntry, type StagedChange } from "@/lib/core";
+import { BRAND, applyOrderAction, buildListingStage, buildPriceStage, buildStockStage, demoTurn, getProduct, getProducts, mergeOrders, mergeStaged, logoSvg, merchantTurn, computeAlerts, computeIssues, computeSnapshot, weeklyBars, type LedgerEntry, type OrderLedgerEntry, type StagedChange } from "@/lib/core";
 
 export const dynamic = "force-dynamic";
 const CART = "qante_cart";
 const ORDER = "qante_order";
 const LEDGER = "qante_ledger";
 const EXTRA = "qante_extra_staged";
+const ORDER_LEDGER = "qante_order_ledger";
 type Line = { product_id: string; qty: number };
 
 function cookie(req: Request, name: string) {
@@ -26,6 +27,14 @@ function parseExtras(raw?: string): StagedChange[] {
     const d = JSON.parse(raw) as StagedChange[];
     return Array.isArray(d) ? d.filter((c) => c && c.id && c.kind && c.product_id) : [];
   } catch { return []; }
+}
+
+function parseOrderLedger(raw?: string): Record<string, OrderLedgerEntry> {
+  if (!raw) return {};
+  try {
+    const d = JSON.parse(raw) as Record<string, OrderLedgerEntry>;
+    return d && typeof d === "object" ? d : {};
+  } catch { return {}; }
 }
 function enrich(items: Line[]) {
   const lines = items.map((item) => {
@@ -62,6 +71,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
   if (slug === "merchant/reads/staged" || slug === "merchant/staged") {
     return NextResponse.json({
       changes: mergeStaged(parseLedger(cookie(req, LEDGER)), parseExtras(cookie(req, EXTRA))),
+      writes_enabled: false,
+      demo: true,
+    });
+  }
+  if (slug === "merchant/reads/orders" || slug === "merchant/orders") {
+    const orders = mergeOrders(parseOrderLedger(cookie(req, ORDER_LEDGER)));
+    return NextResponse.json({
+      orders,
+      issues: computeIssues(new Date(), orders),
       writes_enabled: false,
       demo: true,
     });
@@ -159,6 +177,22 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     const extras = [change, ...parseExtras(cookie(req, EXTRA))].slice(0, 40);
     const res = NextResponse.json({ change, demo: true, ikas_written: false });
     return setCookies(res, [{ name: EXTRA, value: JSON.stringify(extras) }]);
+  }
+  if (slug === "merchant/orders") {
+    const body = (await req.json()) as { id?: string; action?: string };
+    const id = body.id ?? "";
+    const action = body.action ?? "";
+    const ledger = parseOrderLedger(cookie(req, ORDER_LEDGER));
+    const current = mergeOrders(ledger).find((o) => o.id === id);
+    if (!current) return NextResponse.json({ error: "not found" }, { status: 404 });
+    const next = applyOrderAction(current.status, action);
+    if (!next) return NextResponse.json({ error: "bad action" }, { status: 400 });
+    ledger[id] = { status: next, decided_at: new Date().toISOString() };
+    const orders = mergeOrders(ledger);
+    const order = orders.find((o) => o.id === id);
+    const issues = computeIssues(new Date(), orders);
+    const res = NextResponse.json({ order, orders, issues, demo: true, ikas_written: false });
+    return setCookies(res, [{ name: ORDER_LEDGER, value: JSON.stringify(ledger) }]);
   }
   return NextResponse.json({ error: "not found" }, { status: 404 });
 }
