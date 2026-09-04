@@ -1,25 +1,13 @@
-# Evening progress — 2026-09-04 ~18:47 PT
+# Evening progress
 
-HEAD main: 2354d4e — restore Toplu teslim UI after accidental truncate (17515e03 had PLACEHOLDER_WILL_REPLACE). fulfill_all API already at e9abcbbc; UI now has fulfillAll / Toplu teslim again. No qante.vercel.app. No Vercel (quota 0).
+HEAD main: 2354d4e — merchant Siparişler Toplu teslim (fulfill_all). Filter chips pick shipped set; bulk marks fulfilled on local order ledger (ikas_written false). Brief truncate on 17515e0 restored same SHA family. No qante.vercel.app. Parent e9abcbb (API) + 2354d4e (UI).
 
-## Commits
-- 2354d4e fix(merchant): restore Toplu teslim UI after accidental truncate
+## Today
+- 2354d4e / e9abcbb Toplu teslim fulfill_all
 - 79a15c6 Stok Toplu yenile restock_all
-- d671ef1 stream-protocol describeToolTr
-- 1d1b404/a3b560d/f9fbf7a/908f679 remove (shop) duplicates
-- fb52922 useAgentStream TR defaults
-- d5fc889 merchant sohbet TR ActivityLine
-- 185b80b OrderConfirm iptal/iade re-export
-- c0b5edb comparison + products drip
-- e02cafd siparis GenAssistant split
-- edf2ece/9429e41 GenAssistant + AssistantRail alias
+- af08563 Toplu kargola ship_all
 
-## Click
-1. /merchant/siparisler — shipped rows → Toplu teslim (N)
-2. /merchant/stok — chips Tükendi or Düşük
-3. Toplu yenile (N) — flash + Bekleyen'e git
-4. /merchant/bekleyen — new Stok yenileme rows, Onayla local only
-5. Home: Keten bakiyorum -> drip
-6. /siparis: Siparisi iptal et / Iade talep et (local ledger)
-
-https://github.com/mattiasadem/qante-commerce
+## Smoke
+1. /merchant/siparisler → chip Kargoda
+2. Toplu teslim (N) — flash + status Teslim
+3. /siparis live chips advance to Teslim
