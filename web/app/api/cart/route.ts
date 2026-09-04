@@ -58,6 +58,7 @@ export async function POST(req: Request) {
       subtotal: cart.subtotal,
       currency: "TRY",
       created_at,
+      status: "paid",
       note: "ikas checkout simüle · yerel defter · Siparişler'e düşer",
     };
     const deskOrder: Order = {
