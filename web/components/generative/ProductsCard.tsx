@@ -16,6 +16,7 @@ export function ProductsCard({
   const items = payload.items ?? [];
   const layout = payload.layout ?? "carousel";
   const wrap = layout === "grid" ? "gen-grid" : layout === "list" ? "gen-list" : "gen-carousel";
+  const empty = items.length === 0;
   return (
     <section className="gen-card ac-reveal" data-component="products">
       {payload.title ? <h3 className="gen-title">{payload.title}</h3> : null}
@@ -36,12 +37,18 @@ export function ProductsCard({
                 onClick={() => void add(product.id)}
                 style={{ marginTop: 8 }}
               >
-                Ekle
+                {product.stock <= 0 ? "Tükendi" : "Ekle"}
               </button>
             </div>
           </div>
         ))}
-        {partial ? <div className="ac-skeleton gen-skel" aria-hidden /> : null}
+        {partial || empty ? (
+          <>
+            <div className="ac-skeleton gen-skel" aria-hidden />
+            {empty ? <div className="ac-skeleton gen-skel" aria-hidden /> : null}
+            {empty ? <div className="ac-skeleton gen-skel" aria-hidden /> : null}
+          </>
+        ) : null}
       </div>
     </section>
   );

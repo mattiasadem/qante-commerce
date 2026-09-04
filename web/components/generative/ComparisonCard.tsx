@@ -14,16 +14,24 @@ export function ComparisonCard({
 }) {
   const { add } = useCart();
   const entries = payload.entries ?? [];
+  const empty = entries.length === 0;
   return (
     <section className="gen-card ac-reveal" data-component="comparison">
-      {payload.title ? <h3 className="gen-title">{payload.title}</h3> : null}
+      <div className="gen-card-head">
+        <h3 className="gen-title">{payload.title ?? "Yan yana"}</h3>
+        {payload.recommended_product_id ? <span className="faint">Önerilen işaretli</span> : null}
+      </div>
       <div className="gen-compare">
-        {entries.map((entry) => {
+        {entries.map((entry, i) => {
           const recommended = entry.product_id === payload.recommended_product_id;
           const p = entry.product;
           return (
-            <div key={entry.product_id} className={`gen-compare-col ac-reveal ${recommended ? "on" : ""}`}>
-              {recommended ? <span className="tag accent">Önerilen</span> : null}
+            <div
+              key={entry.product_id}
+              className={`gen-compare-col ac-reveal ${recommended ? "on" : ""}`}
+              style={{ animationDelay: `${i * 90}ms` }}
+            >
+              {recommended ? <span className="tag accent">Önerilen</span> : <span className="tag">Alternatif</span>}
               <Link href={`/urun/${p.id}`}>
                 <img src={p.image} alt={p.name} />
               </Link>
@@ -36,13 +44,24 @@ export function ComparisonCard({
               {entry.cons?.length ? (
                 <ul className="gen-cons">{entry.cons.map((x) => <li key={x}>− {x}</li>)}</ul>
               ) : null}
-              <button className="chip" type="button" disabled={p.stock <= 0} onClick={() => void add(p.id)}>
-                Ekle
+              <button
+                className={recommended ? "btn btn-primary" : "chip"}
+                type="button"
+                disabled={p.stock <= 0}
+                onClick={() => void add(p.id)}
+                style={{ marginTop: 8 }}
+              >
+                {p.stock <= 0 ? "Tükendi" : recommended ? "Önerileni ekle" : "Ekle"}
               </button>
             </div>
           );
         })}
-        {partial ? <div className="ac-skeleton gen-skel" style={{ minHeight: 220 }} aria-hidden /> : null}
+        {(partial || empty) ? (
+          <>
+            <div className="ac-skeleton gen-skel" style={{ minHeight: 220 }} aria-hidden />
+            {empty ? <div className="ac-skeleton gen-skel" style={{ minHeight: 220 }} aria-hidden /> : null}
+          </>
+        ) : null}
       </div>
     </section>
   );
