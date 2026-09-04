@@ -58,6 +58,40 @@ export function buildStockStage(product: Product, targetQty?: number): StagedCha
   };
 }
 
+export function suggestListingCopy(product: Product) {
+  const title = product.name.includes("·") ? product.name : `${product.name} · ${product.category}`;
+  const base = product.description.replace(/\s+/g, " ").trim();
+  const description = base.length < 52
+    ? `${base}${base.endsWith(".") ? "" : "."} Doğal malzeme, hızlı kargo.`
+    : (base.endsWith(".") ? base : `${base}.`) + " Stok ve beden mağazada.";
+  return { title, description };
+}
+
+export function buildListingStage(product: Product): StagedChange {
+  const next = suggestListingCopy(product);
+  const q = Math.max(12, Math.min(98, 48
+    + (product.description.length > 36 ? 12 : 0)
+    + (product.stock > 0 ? 14 : -8)
+    + (product.compare_at ? 8 : 0)
+    + (product.colors?.length ? 8 : 0)
+    + (product.sizes?.length ? 6 : 0)
+    + (product.gallery.length >= 2 ? 4 : 0)));
+  return {
+    id: `chg_listing_${product.id}_${Date.now().toString(36)}`,
+    kind: "listing",
+    product_id: product.id,
+    product_name: product.name,
+    staged_by: "operatör",
+    created_at: new Date().toISOString(),
+    variant_count: 1,
+    before: { başlık: product.name, açıklama: product.description.slice(0, 96) },
+    after: { başlık: next.title, açıklama: next.description.slice(0, 96) },
+    reason: `Liste kalite ${q}. Başlık ve açıklama netleştirme önerisi; yazma F2 ve ikas kapalı.`,
+    guardrails: [ok("listing", "liste alanı"), ok("protected", "korunan alan")],
+    status: "staged",
+  };
+}
+
 export function mergeStaged(ledger: Record<string, LedgerEntry> = {}, extras: StagedChange[] = []) {
   const byId = new Map<string, StagedChange>();
   for (const c of [...STAGED, ...extras]) byId.set(c.id, c);
