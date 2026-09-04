@@ -20,6 +20,7 @@ export interface AgentEvent {
   data: Record<string, unknown>;
 }
 
+/** `tool_call` data. `label` is the model's few words for the person waiting; presentation calls carry none. */
 export interface ToolCallData {
   tool: string;
   id: string;
@@ -27,6 +28,7 @@ export interface ToolCallData {
   label?: string;
 }
 
+/** Mirrors shopping_agent/types.py `Order`. */
 export interface Order {
   order_id: string;
   status: string;
@@ -45,6 +47,7 @@ export interface MemoryFact {
   updated_at?: string | null;
 }
 
+/** Each app narrows `payload` in its registry. */
 export interface UIBlock {
   component: string;
   payload: unknown;
@@ -56,13 +59,18 @@ export interface TraceEntry {
   label: string;
   detail?: string;
   isError?: boolean;
+  /** "blocked" when a gate held the call; `reason` names the gate. */
   status?: string;
   reason?: string;
+  /** tool_result only: the head of a long result, sent when `detail` is the "ok" summary. */
   excerpt?: string;
+  /** performance.now() at arrival. */
   at: number;
+  /** turn_complete only. */
   elapsedMs?: number;
 }
 
+/** `retrying`: the attempt failed validation; its last frame stays until a retry adopts it. */
 export type UISlotStatus = "pending" | "partial" | "retrying" | "final";
 
 export type AssistantSegment =
@@ -87,10 +95,15 @@ export interface AssistantChatItem {
   turn: number;
   segments: AssistantSegment[];
   suggestions: string[];
+  /** Merchant portals: changes previewed in this reply. */
   changeIds?: string[];
   suggestionsStale?: boolean;
   pending: boolean;
   tools: string[];
+  /**
+   * Status line for the call in flight; cleared when prose or a card lands, or when the
+   * tool a progress line names returns.
+   */
   activity?: string;
 }
 
