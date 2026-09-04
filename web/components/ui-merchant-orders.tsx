@@ -83,6 +83,29 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
     }
   }
 
+  async function shipAll(ids: string[]) {
+    if (!ids.length) return;
+    setBusy("bulk");
+    setFlash(null);
+    try {
+      const res = await fetch("/api/merchant/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "ship_all", ids }),
+      });
+      const data = await res.json() as { orders?: Order[]; issues?: Issue[]; count?: number; error?: string };
+      if (!res.ok || !data.orders) {
+        setFlash(data.error ?? "Toplu kargo yazılamadı");
+        return;
+      }
+      setOrders(data.orders);
+      if (data.issues) setIssues(data.issues);
+      setFlash(`${data.count ?? ids.length} sipariş kargoda · yerel defter · ikas'a gitmedi`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   const openIds = useMemo(() => new Set(issues.map((i) => i.order_id)), [issues]);
   const issueById = useMemo(() => {
     const m = new Map<string, Issue>();
@@ -107,6 +130,7 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
   }, [orders, match, openIds, highlight]);
+  const shippable = useMemo(() => rows.filter((o) => o.status === "paid"), [rows]);
 
   return (
     <>
@@ -123,9 +147,22 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
         </p>
       ) : (
         <p className="muted" style={{ marginTop: -4, marginBottom: 16 }}>
-          Mağaza checkout Siparişler&apos;e düşer · Kargola / İptal yerel deftere yazar · ikas&apos;a gitmez
+          Mağaza checkout Siparişler&apos;e düşer · Kargola / Toplu kargola / İptal yerel deftere yazar · ikas&apos;a gitmez
         </p>
       )}
+      {shippable.length > 0 ? (
+        <div className="actions" style={{ marginBottom: 16, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <button
+            className="btn btn-primary"
+            type="button"
+            disabled={busy === "bulk"}
+            onClick={() => void shipAll(shippable.map((o) => o.id))}
+          >
+            {busy === "bulk" ? "…" : `Toplu kargola (${shippable.length})`}
+          </button>
+          <span className="faint">görünen ödeme alındı · tek cookie yazımı</span>
+        </div>
+      ) : null}
       {rows.length === 0 ? (
         <div className="empty"><Logo size={32} /><h3>Kayıt yok</h3><p>Bu filtrede seed sipariş yok.</p></div>
       ) : (
@@ -149,7 +186,7 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
                   <button
                     className="btn btn-primary"
                     type="button"
-                    disabled={busy === o.id}
+                    disabled={busy === o.id || busy === "bulk"}
                     onClick={() => void act(o.id, cta.action)}
                   >
                     {busy === o.id ? "…" : cta.label}
@@ -159,7 +196,7 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
                   <button
                     className="btn"
                     type="button"
-                    disabled={busy === o.id}
+                    disabled={busy === o.id || busy === "bulk"}
                     onClick={() => void act(o.id, "cancel")}
                   >
                     {busy === o.id ? "…" : "İptal"}
