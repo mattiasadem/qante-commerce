@@ -23,7 +23,7 @@ Merchant API on port 8005 with local store enabled.
 Storefront API on port 8004.
 Run the linter, then the test suite. Details: docs/PLAN.md section 11.
 
-Blueprint example scaffolding lives in `vendor/` (web-shared, demo_common, skills) from anthropics/commerce-agents@fd4d592. Core agent packages stay git-pinned in `requirements.txt` comments until F1+ install. The demo `web/` imports Suggestions from web-shared; full StoreShell/Chat/useAgentTurn wait on shopping_agent SSE.
+Blueprint example scaffolding lives in `vendor/` (web-shared, demo_common, skills) from anthropics/commerce-agents@fd4d592. Core agent packages stay git-pinned in `requirements.txt` comments until F1+ install. The demo `web/` imports Suggestions plus `BlueprintBridge` (`StoreShell` / `useAgentTurn` from vendor). Full Blueprint StoreShell/Chat mount waits on shopping_agent SSE + Tailwind — see docs/VENDOR-WIRING.md (pin fd4d592).
 
 ## Layout
 
@@ -32,7 +32,7 @@ Blueprint example scaffolding lives in `vendor/` (web-shared, demo_common, skill
 - `merchant/api/` merchant host
 - `shared/ikas/` GraphQL transport
 - `merchant/data/seed.json` catalog
-- `docs/` PLAN, ADR-001, SAFETY, ikas questions
+- `docs/` PLAN, ADR-001, SAFETY, ikas questions, VENDOR-WIRING
 - `vendor/` Anthropic examples scaffolding (do not edit)
 
 ## Rules
