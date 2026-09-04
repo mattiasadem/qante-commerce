@@ -20,7 +20,14 @@ export type StagedChange = {
 export type LedgerEntry = { status: "applied" | "discarded"; decision_note?: string; decided_at?: string };
 export type OrderLedgerEntry = { status: string; decided_at?: string; note?: string };
 export type UiBlock = { type: string; products?: Product[]; rows?: { label: string; value: string }[]; columns?: string[]; table?: string[][] };
-export type ChatResponse = { text: string; ui: UiBlock[]; suggestions: string[]; activity: string };
+export type ChatAction = {
+  label: string;
+  kind: "stock" | "price" | "listing";
+  product_id: string;
+  target_qty?: number;
+  target_price?: number;
+};
+export type ChatResponse = { text: string; ui: UiBlock[]; suggestions: string[]; activity: string; actions?: ChatAction[] };
 
 export const money = (n: number) => `${new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)} ₺`;
 export const number = (n: number, d = 0) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: d, maximumFractionDigits: d }).format(n);
