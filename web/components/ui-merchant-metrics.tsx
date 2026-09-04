@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { Alert, Issue, Snapshot, StagedChange, WeeklyBar } from "@/lib/core";
-import { money, number, percent, suggestRestockQty } from "@/lib/core";
+import { getProduct, money, number, percent, suggestPriceCut, suggestRestockQty } from "@/lib/core";
 
 function Delta({ v }: { v: number }) {
   return <div className={v > 0 ? "delta up" : v < 0 ? "delta down" : "delta"}>{percent(v)} önceki 30 gün</div>;
@@ -90,6 +90,33 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
     }
   }
 
+  async function stagePrice(a: Alert) {
+    const key = `price:${a.product_id}`;
+    setBusy(key);
+    setFlash(null);
+    setFlashHref("/merchant/bekleyen");
+    try {
+      const product = getProduct(a.product_id);
+      if (!product) {
+        setFlash("Ürün bulunamadı");
+        return;
+      }
+      const res = await fetch("/api/merchant/stage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "price", product_id: a.product_id, target_price: suggestPriceCut(product) }),
+      });
+      const data = await res.json() as { change?: StagedChange; error?: string };
+      if (!res.ok || !data.change) {
+        setFlash(data.error ?? "Kuyruğa yazılamadı");
+        return;
+      }
+      setFlash(`${data.change.product_name} · ${data.change.before.fiyat} → ${data.change.after.fiyat} Bekleyen'e eklendi`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   const visibleIssues = issues.filter((i) => !gone.has(i.order_id));
 
   return (
@@ -101,20 +128,44 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
         </p>
       ) : (
         <p className="muted" style={{ marginBottom: 12 }}>
-          Stok uyarısında Yenile yerel kuyruğa yazar · Onayla ikas'a gitmez
+          Stok uyarısında Yenile · yavaşta İndirim yerel kuyruğa yazar · Onayla ikas&apos;a gitmez
         </p>
       )}
       <div className="list">
-        {alerts.map((a) => (
-          <div className="list-row" key={`${a.kind}-${a.product_id}`}>
-            <div><div>{a.message}</div><div className="faint">{a.product_name}{a.days_cover != null ? ` · ${a.days_cover} gün cover` : ""} · öneri {suggestRestockQty(a.stock)}</div></div>
-            <span className={`tag ${a.kind === "out_of_stock" ? "danger" : "warn"}`}>{a.kind === "out_of_stock" ? "tükendi" : a.kind === "low_stock" ? "düşük stok" : "yavaş"}</span>
-            <button className="btn btn-primary" type="button" disabled={busy === `stock:${a.product_id}`} onClick={() => void stageRestock(a)}>
-              {busy === `stock:${a.product_id}` ? "…" : "Yenile"}
-            </button>
-            <Link className="btn" href={`/merchant/sohbet?q=${encodeURIComponent(a.product_name + " stok yenile")}`}>Sor</Link>
-          </div>
-        ))}
+        {alerts.map((a) => {
+          const isSlow = a.kind === "slow_mover";
+          const busyKey = isSlow ? `price:${a.product_id}` : `stock:${a.product_id}`;
+          const product = isSlow ? getProduct(a.product_id) : null;
+          const faintHint = isSlow
+            ? (product ? `öneri ${money(suggestPriceCut(product))}` : "indirim önerisi")
+            : `öneri ${suggestRestockQty(a.stock)}`;
+          return (
+            <div className="list-row" key={`${a.kind}-${a.product_id}`}>
+              <div>
+                <div>{a.message}</div>
+                <div className="faint">
+                  {a.product_name}
+                  {a.days_cover != null ? ` · ${a.days_cover} gün cover` : ""}
+                  {a.days_without_sale != null ? ` · ${a.days_without_sale} gündür satış yok` : ""}
+                  {" · "}{faintHint}
+                </div>
+              </div>
+              <span className={`tag ${a.kind === "out_of_stock" ? "danger" : "warn"}`}>
+                {a.kind === "out_of_stock" ? "tükendi" : a.kind === "low_stock" ? "düşük stok" : "yavaş"}
+              </span>
+              {isSlow ? (
+                <button className="btn btn-primary" type="button" disabled={busy === busyKey} onClick={() => void stagePrice(a)}>
+                  {busy === busyKey ? "…" : "İndirim"}
+                </button>
+              ) : (
+                <button className="btn btn-primary" type="button" disabled={busy === busyKey} onClick={() => void stageRestock(a)}>
+                  {busy === busyKey ? "…" : "Yenile"}
+                </button>
+              )}
+              <Link className="btn" href={`/merchant/sohbet?q=${encodeURIComponent(a.product_name + (isSlow ? " indirim" : " stok yenile"))}`}>Sor</Link>
+            </div>
+          );
+        })}
         {visibleIssues.map((i) => {
           const cta = issueAction(i.kind);
           return (
