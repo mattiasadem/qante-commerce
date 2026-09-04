@@ -13,18 +13,22 @@ export interface Prefill {
 }
 
 const VARIANTS = {
+  /** The storefront's composer under the page: one roomy field with the send arrow inside it. */
   dock: {
     form: "items-center gap-2 rounded-[16px] border border-(--line-strong) bg-(--card) py-1.5 pl-4 pr-1.5 shadow-(--shadow) transition-colors focus-within:border-(--accent)",
     input: "bg-transparent py-1.5 text-[16px]",
     button: "h-9 w-9 rounded-[11px]",
   },
+  /** The portal rail: the same field, compact. */
   field: {
     form: "items-center gap-1.5 rounded-[14px] border border-(--line-strong) bg-(--card) py-[5px] pl-3.5 pr-[5px] shadow-(--shadow-sm) transition-colors focus-within:border-(--accent)",
+    // 16px below lg so touch browsers do not zoom on focus.
     input: "bg-transparent py-1.5 text-[16px] lg:text-[14.5px]",
     button: "h-8 w-8 rounded-[10px]",
   },
 };
 
+/** A prefill only fills the draft. screenshot_tour.py waits on the "Working…" placeholder. */
 export function Composer({
   send,
   ready,
