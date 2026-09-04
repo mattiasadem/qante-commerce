@@ -24,7 +24,7 @@ export default async function MerchantPage({
   if (tab === "sohbet") {
     body = <><h1>Sohbet</h1><p className="muted" style={{ marginTop: -8, marginBottom: 16 }}>Starter chipleri · Yenile/Düzelt/İndirim yerel Bekleyen kuyruğuna yazar · Onayla ikas'a gitmez</p><MerchantChat prefill={q} /></>;
   } else if (tab === "bekleyen") {
-    body = <><h1>Bekleyen</h1><StagedQueue initial={getStaged()} /></>;
+    body = <><h1>Bekleyen</h1><p className="muted" style={{ marginTop: -8, marginBottom: 16 }}>Tür chipleri · Toplu onayla yerel deftere yazar · ikas'a gitmez</p><StagedQueue initial={getStaged()} /></>;
   } else if (tab === "katalog") {
     body = <><h1>Katalog</h1><p className="muted" style={{ marginTop: -8, marginBottom: 16 }}>12 ürün · filtre chipleri · Düzelt yerel Bekleyen kuyruğuna yazar · Sor sohbete gider</p><CatalogTable products={getProducts()} /></>;
   } else if (tab === "stok") {
