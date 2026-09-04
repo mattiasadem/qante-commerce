@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { BRAND, buildStockStage, demoTurn, getProduct, getProducts, mergeStaged, logoSvg, merchantTurn, computeAlerts, computeIssues, computeSnapshot, weeklyBars, type LedgerEntry, type StagedChange } from "@/lib/core";
+import { BRAND, buildListingStage, buildStockStage, demoTurn, getProduct, getProducts, mergeStaged, logoSvg, merchantTurn, computeAlerts, computeIssues, computeSnapshot, weeklyBars, type LedgerEntry, type StagedChange } from "@/lib/core";
 
 export const dynamic = "force-dynamic";
 const CART = "qante_cart";
@@ -150,8 +150,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     const productId = body.product_id ?? body.productId ?? "";
     const product = getProduct(productId);
     if (!product) return NextResponse.json({ error: "product not found" }, { status: 404 });
-    if ((body.kind ?? "stock") !== "stock") return NextResponse.json({ error: "kind unsupported" }, { status: 400 });
-    const change = buildStockStage(product, body.target_qty);
+    const kind = body.kind ?? "stock";
+    let change: StagedChange;
+    if (kind === "stock") change = buildStockStage(product, body.target_qty);
+    else if (kind === "listing") change = buildListingStage(product);
+    else return NextResponse.json({ error: "kind unsupported" }, { status: 400 });
     const extras = [change, ...parseExtras(cookie(req, EXTRA))].slice(0, 40);
     const res = NextResponse.json({ change, demo: true, ikas_written: false });
     return setCookies(res, [{ name: EXTRA, value: JSON.stringify(extras) }]);
