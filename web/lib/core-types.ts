@@ -19,7 +19,32 @@ export type StagedChange = {
 };
 export type LedgerEntry = { status: "applied" | "discarded"; decision_note?: string; decided_at?: string };
 export type OrderLedgerEntry = { status: string; decided_at?: string; note?: string };
-export type UiBlock = { type: string; products?: Product[]; rows?: { label: string; value: string }[]; columns?: string[]; table?: string[][] };
+export type DigestItem = {
+  kind: "low_stock" | "out_of_stock" | "slow_mover" | "order_issue" | "metric" | "pending_change" | "note";
+  headline: string;
+  why?: string;
+  ref_id?: string;
+  product_name?: string;
+};
+export type ProductPick = { product: Product; reason?: string };
+export type CompareEntry = { product_id: string; product: Product; pros?: string[]; cons?: string[]; best_for?: string };
+export type UiBlock = {
+  type: string;
+  layout?: "carousel" | "grid" | "list";
+  title?: string;
+  products?: Product[];
+  items?: ProductPick[];
+  entries?: CompareEntry[];
+  recommended_product_id?: string;
+  dimensions?: string[];
+  headline?: string;
+  note?: string;
+  rows?: { label: string; value: string }[];
+  columns?: string[];
+  table?: string[][];
+  digest?: { title?: string; items: DigestItem[] };
+  change?: StagedChange;
+};
 export type ChatAction = {
   label: string;
   kind: "stock" | "price" | "listing";
@@ -27,7 +52,7 @@ export type ChatAction = {
   target_qty?: number;
   target_price?: number;
 };
-export type ChatResponse = { text: string; ui: UiBlock[]; suggestions: string[]; activity: string; actions?: ChatAction[] };
+export type ChatResponse = { text: string; ui: UiBlock[]; suggestions: string[]; activity: string; activity_steps?: string[]; add_product_id?: string | null; actions?: ChatAction[] };
 
 export const money = (n: number) => `${new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)} ₺`;
 export const number = (n: number, d = 0) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: d, maximumFractionDigits: d }).format(n);
