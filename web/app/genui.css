@@ -1,3 +1,22 @@
+/* web-shared blueprint token aliases (dark Qante) */
+:root{
+  --ground:var(--bg);
+  --ink:var(--text);
+  --ink-2:var(--muted);
+  --ink-soft:var(--faint);
+  --line:var(--hairline);
+  --line-strong:rgba(255,255,255,.14);
+  --card:var(--surface);
+  --well:var(--surface-2);
+  --accent-ink:var(--accent);
+  --brand:var(--accent);
+  --brand-contrast:#0b0b0b;
+}
+.mt-2{margin-top:.5rem}
+.flex{display:flex}
+.flex-wrap{flex-wrap:wrap}
+.gap-2{gap:.5rem}
+
 .ac-reveal{animation:ac-reveal .38s ease both}
 @keyframes ac-reveal{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .ac-pop{animation:ac-pop .55s cubic-bezier(.2,1.4,.4,1)}
