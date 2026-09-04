@@ -1,1 +1,1 @@
-@file:///tmp/contract-ready.py
+# placeholder will be replaced
