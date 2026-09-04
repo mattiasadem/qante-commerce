@@ -1,1 +1,2 @@
-USE_FILE:/workspace/qante-studio-deploy/components/ui-merchant-catalog.tsx
+export { CatalogTable } from "./ui-merchant-catalog-table";
+export { StockView } from "./ui-merchant-catalog-stock";
