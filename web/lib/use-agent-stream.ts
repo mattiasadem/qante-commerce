@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import type { Cart, StagedChange } from "@/lib/core";
 import type { GenSlot } from "@/components/generative";
 import type { StreamEvent } from "@/lib/stream-protocol";
+import { describeToolTr, MERCHANT_ACTIVITY_DEFAULT, SHOP_ACTIVITY_DEFAULT } from "@/lib/tool-copy-tr";
 
 export type StreamMsg = {
   role: "user" | "assistant";
@@ -20,6 +21,12 @@ type Opts = {
   onChangeUpdate?: (change: StagedChange) => void;
 };
 
+function defaultActivity(endpoint: string): string {
+  return endpoint.includes("merchant")
+    ? MERCHANT_ACTIVITY_DEFAULT[0]
+    : SHOP_ACTIVITY_DEFAULT[0];
+}
+
 export function useAgentStream({ endpoint, onCartUpdate, onChangeUpdate }: Opts) {
   const [messages, setMessages] = useState<StreamMsg[]>([]);
   const [busy, setBusy] = useState(false);
@@ -34,7 +41,7 @@ export function useAgentStream({ endpoint, onCartUpdate, onChangeUpdate }: Opts)
       const ac = new AbortController();
       abortRef.current = ac;
       setBusy(true);
-      setActivity("Ürünleri arıyorum…");
+      setActivity(defaultActivity(endpoint));
       setMessages((m) => [
         ...m,
         { role: "user", text: message, slots: [] },
@@ -71,6 +78,7 @@ export function useAgentStream({ endpoint, onCartUpdate, onChangeUpdate }: Opts)
         const handle = (ev: StreamEvent) => {
           if (ev.type === "tool_call" || ev.type === "progress") {
             if ("label" in ev && ev.label) setActivity(ev.label);
+            else if (ev.type === "tool_call") setActivity(describeToolTr(ev.tool));
           } else if (ev.type === "activity" && ev.content) {
             setActivity(ev.content);
           } else if (ev.type === "tool_result") {
@@ -127,7 +135,6 @@ export function useAgentStream({ endpoint, onCartUpdate, onChangeUpdate }: Opts)
               if (!raw) continue;
               try {
                 const parsed = JSON.parse(raw) as StreamEvent;
-                // Some encoders only put type in data; prefer data.type
                 handle(parsed.type ? parsed : ({ ...parsed, type: currentEvent } as StreamEvent));
               } catch {
                 /* ignore bad chunk */
