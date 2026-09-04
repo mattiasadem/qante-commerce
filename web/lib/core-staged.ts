@@ -58,6 +58,37 @@ export function buildStockStage(product: Product, targetQty?: number): StagedCha
   };
 }
 
+/** Suggest a price cut within the 20% demo cap (local only). */
+export function suggestPriceCut(product: Product) {
+  const floor = Math.round(product.price * 0.8 * 10) / 10;
+  const pct = product.compare_at && product.compare_at > product.price ? 0.92 : 0.88;
+  let next = Math.round(product.price * pct * 10) / 10;
+  if (next >= product.price) next = Math.max(floor, Math.round((product.price - 40) * 10) / 10);
+  return Math.max(floor, Math.min(product.price - 0.1, next));
+}
+
+export function buildPriceStage(product: Product, targetPrice?: number): StagedChange {
+  const after = targetPrice ?? suggestPriceCut(product);
+  const before = product.price;
+  const drop = Math.max(0, Math.round((1 - after / before) * 1000) / 10);
+  return {
+    id: `chg_price_${product.id}_${Date.now().toString(36)}`,
+    kind: "price",
+    product_id: product.id,
+    product_name: product.name,
+    staged_by: "operatör",
+    created_at: new Date().toISOString(),
+    variant_count: 1,
+    before: { fiyat: money(before) },
+    after: { fiyat: money(after) },
+    reason: drop >= 10
+      ? `Hareket yavaş. %${drop} indirim önerisi, fiyat cap %20 içinde.`
+      : `Küçük fiyat adımı (%${drop}). Cap %20; yazma F2 ve ikas kapalı.`,
+    guardrails: [ok("price", "fiyat sınırı"), ok("discount", "indirim derinliği"), ok("protected", "korunan alan")],
+    status: "staged",
+  };
+}
+
 export function suggestListingCopy(product: Product) {
   const title = product.name.includes("·") ? product.name : `${product.name} · ${product.category}`;
   const base = product.description.replace(/\s+/g, " ").trim();
