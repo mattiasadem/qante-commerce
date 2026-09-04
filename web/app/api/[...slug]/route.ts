@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { BRAND, demoTurn, getProduct, getProducts, mergeStaged, logoSvg, merchantTurn, computeAlerts, computeIssues, computeSnapshot, weeklyBars, type LedgerEntry } from "@/lib/core";
+import { BRAND, buildStockStage, demoTurn, getProduct, getProducts, mergeStaged, logoSvg, merchantTurn, computeAlerts, computeIssues, computeSnapshot, weeklyBars, type LedgerEntry, type StagedChange } from "@/lib/core";
 
 export const dynamic = "force-dynamic";
 const CART = "qante_cart";
 const ORDER = "qante_order";
 const LEDGER = "qante_ledger";
+const EXTRA = "qante_extra_staged";
 type Line = { product_id: string; qty: number };
 
 function cookie(req: Request, name: string) {
@@ -18,6 +19,13 @@ function parseCart(raw?: string): Line[] {
 function parseLedger(raw?: string): Record<string, LedgerEntry> {
   if (!raw) return {};
   try { const d = JSON.parse(raw) as Record<string, LedgerEntry>; return d && typeof d === "object" ? d : {}; } catch { return {}; }
+}
+function parseExtras(raw?: string): StagedChange[] {
+  if (!raw) return [];
+  try {
+    const d = JSON.parse(raw) as StagedChange[];
+    return Array.isArray(d) ? d.filter((c) => c && c.id && c.kind && c.product_id) : [];
+  } catch { return []; }
 }
 function enrich(items: Line[]) {
   const lines = items.map((item) => {
@@ -52,7 +60,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
   if (slug === "merchant/reads/issues" || slug === "merchant/issues") return NextResponse.json({ issues: computeIssues() });
   if (slug === "merchant/reads/weekly" || slug === "merchant/weekly") return NextResponse.json({ bars: weeklyBars() });
   if (slug === "merchant/reads/staged" || slug === "merchant/staged") {
-    return NextResponse.json({ changes: mergeStaged(parseLedger(cookie(req, LEDGER))), writes_enabled: false, demo: true });
+    return NextResponse.json({
+      changes: mergeStaged(parseLedger(cookie(req, LEDGER)), parseExtras(cookie(req, EXTRA))),
+      writes_enabled: false,
+      demo: true,
+    });
   }
   return NextResponse.json({ error: "not found" }, { status: 404 });
 }
@@ -118,7 +130,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     const body = (await req.json()) as { id?: string; action?: string; reason?: string };
     const id = body.id ?? "";
     const ledger = parseLedger(cookie(req, LEDGER));
-    const current = mergeStaged(ledger).find((c) => c.id === id);
+    const extras = parseExtras(cookie(req, EXTRA));
+    const current = mergeStaged(ledger, extras).find((c) => c.id === id);
     if (!current) return NextResponse.json({ error: "not found" }, { status: 404 });
     if (body.action === "discard") {
       const note = (body.reason ?? "").trim();
@@ -127,9 +140,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     } else if (body.action === "approve") {
       ledger[id] = { status: "applied", decided_at: new Date().toISOString() };
     } else return NextResponse.json({ error: "bad action" }, { status: 400 });
-    const change = mergeStaged(ledger).find((c) => c.id === id);
+    const change = mergeStaged(ledger, extras).find((c) => c.id === id);
     const res = NextResponse.json({ change, demo: true, ikas_written: false });
     return setCookies(res, [{ name: LEDGER, value: JSON.stringify(ledger) }]);
+  }
+
+  if (slug === "merchant/stage") {
+    const body = (await req.json()) as { kind?: string; product_id?: string; productId?: string; target_qty?: number };
+    const productId = body.product_id ?? body.productId ?? "";
+    const product = getProduct(productId);
+    if (!product) return NextResponse.json({ error: "product not found" }, { status: 404 });
+    if ((body.kind ?? "stock") !== "stock") return NextResponse.json({ error: "kind unsupported" }, { status: 400 });
+    const change = buildStockStage(product, body.target_qty);
+    const extras = [change, ...parseExtras(cookie(req, EXTRA))].slice(0, 40);
+    const res = NextResponse.json({ change, demo: true, ikas_written: false });
+    return setCookies(res, [{ name: EXTRA, value: JSON.stringify(extras) }]);
   }
   return NextResponse.json({ error: "not found" }, { status: 404 });
 }
