@@ -3,11 +3,23 @@ import { shortDate } from "@/lib/core-types";
 import { PRODUCTS } from "@/lib/core-art";
 import { ORDERS } from "@/lib/core-catalog";
 
-export function mergeOrders(ledger: Record<string, OrderLedgerEntry> = {}): Order[] {
-  return ORDERS.map((o) => {
-    const e = ledger[o.id];
-    return e ? { ...o, status: e.status } : o;
-  });
+export function mergeOrders(ledger: Record<string, OrderLedgerEntry> = {}, extras: Order[] = []): Order[] {
+  const byId = new Map<string, Order>();
+  for (const o of ORDERS) byId.set(o.id, o);
+  for (const o of extras) {
+    if (o?.id && Array.isArray(o.items)) byId.set(o.id, o);
+  }
+  return [...byId.values()]
+    .map((o) => {
+      const e = ledger[o.id];
+      return e ? { ...o, status: e.status } : o;
+    })
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}
+
+/** True for session checkout rows written by /api/cart checkout (local demo). */
+export function isStoreCheckoutOrder(id: string) {
+  return id.startsWith("ord_demo_");
 }
 
 /** Primary operator CTA for a seed/demo order status (local ledger only). */
