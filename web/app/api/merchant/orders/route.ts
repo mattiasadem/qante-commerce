@@ -131,6 +131,29 @@ export async function POST(req: Request) {
     return res;
   }
 
+  if (action === "cancel_all") {
+    const wanted = Array.isArray(body.ids) ? body.ids.filter((x) => typeof x === "string" && x) : [];
+    const all = mergeOrders(ledger, demos);
+    const targets = (wanted.length ? all.filter((o) => wanted.includes(o.id)) : all).filter(
+      (o) => o.status === "paid" || o.status === "pending_payment",
+    );
+    if (!targets.length) return NextResponse.json({ error: "nothing to cancel" }, { status: 400 });
+    for (const o of targets) ledger[o.id] = { status: "cancelled", decided_at: now };
+    const orders = mergeOrders(ledger, demos);
+    const issues = computeIssues(new Date(), orders);
+    const cancelled = targets.map((t) => orders.find((o) => o.id === t.id)!).filter(Boolean);
+    const res = NextResponse.json({
+      orders,
+      issues,
+      cancelled,
+      count: cancelled.length,
+      demo: true,
+      ikas_written: false,
+    });
+    res.cookies.set(ORDER_LEDGER, JSON.stringify(ledger), { path: "/", sameSite: "lax", maxAge: 60 * 60 * 24 * 30 });
+    return res;
+  }
+
   const id = body.id ?? "";
   const current = mergeOrders(ledger, demos).find((o) => o.id === id);
   if (!current) return NextResponse.json({ error: "not found" }, { status: 404 });
