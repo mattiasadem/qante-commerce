@@ -78,6 +78,29 @@ export function CatalogTable({ products }: { products: Product[] }) {
     }
   }
 
+
+  async function stageListingAll() {
+    if (!discountIds.length) return;
+    setBusy("bulk");
+    setFlash(null);
+    try {
+      const res = await fetch("/api/merchant/stage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "listing_all", kind: "listing", product_ids: discountIds }),
+      });
+      const data = await res.json() as { changes?: StagedChange[]; count?: number; error?: string };
+      if (!res.ok || !data.changes?.length) {
+        setFlash(data.error ?? "Toplu düzelt yazılamadı");
+        return;
+      }
+      setFlash(`${data.count ?? data.changes.length} liste önerisi Bekleyen'e eklendi · ikas'a gitmedi`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+
   return (
     <>
       <div className="chips scroll" role="tablist" aria-label="Katalog filtresi">
@@ -102,6 +125,14 @@ export function CatalogTable({ products }: { products: Product[] }) {
           >
             {busy === "bulk" ? "…" : `Toplu indirim (${discountIds.length})`}
           </button>
+          <button
+            className="btn"
+            type="button"
+            disabled={busy === "bulk"}
+            onClick={() => void stageListingAll()}
+          >
+            {busy === "bulk" ? "…" : `Toplu düzelt (${discountIds.length})`}
+          </button>
           <span className="faint">görünen filtre · yerel kuyruk · ikas kapalı</span>
         </div>
       ) : null}
@@ -112,7 +143,7 @@ export function CatalogTable({ products }: { products: Product[] }) {
         </p>
       ) : (
         <p className="muted" style={{ marginTop: -4, marginBottom: 16 }}>
-          Filtre chipleri küme seçer · Toplu indirim / Düzelt / İndirim / Yenile yerel kuyruğa yazar · Onayla ikas&apos;a gitmez
+          Filtre chipleri küme seçer · Toplu indirim / Toplu düzelt / Düzelt / İndirim / Yenile yerel kuyruğa yazar · Onayla ikas&apos;a gitmez
         </p>
       )}
       <div className="table-wrap">
