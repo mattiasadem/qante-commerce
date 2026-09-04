@@ -72,10 +72,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     const raw = cookie(req, ORDER);
     if (!raw) return NextResponse.json({ error: "not found" }, { status: 404 });
     try {
-      const order = JSON.parse(raw) as { order_id: string };
+      const order = JSON.parse(raw) as { order_id: string; status?: string };
       const want = url.searchParams.get("id");
       if (want && want !== order.order_id) return NextResponse.json({ error: "not found" }, { status: 404 });
-      return NextResponse.json(order);
+      const desk = ordersFor(req).find((o) => o.id === order.order_id);
+      return NextResponse.json({ ...order, status: desk?.status ?? order.status ?? "paid" });
     } catch { return NextResponse.json({ error: "not found" }, { status: 404 }); }
   }
   if (slug === "merchant/reads/snapshot" || slug === "merchant/snapshot") return NextResponse.json(computeSnapshot());
@@ -174,6 +175,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
         subtotal: cart.subtotal,
         currency: "TRY",
         created_at,
+        status: "paid",
         note: "ikas checkout simüle · yerel defter · Siparişler'e düşer",
       };
       const deskOrder: Order = {
