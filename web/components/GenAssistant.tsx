@@ -4,8 +4,10 @@ import { useAsk, useCart } from "@/components/ui-shell";
 import { Suggestions } from "web-shared";
 import { ActivityLine, GenerativeBlock } from "@/components/generative";
 import { useAgentStream } from "@/lib/use-agent-stream";
+import { SHOP_ACTIVITY_DEFAULT } from "@/lib/tool-copy-tr";
 
 const STARTERS = ["Keten bakıyorum", "Eve bir vazo", "Yün atkı var mı", "Bunu sepete ekle"];
+const FALLBACK = SHOP_ACTIVITY_DEFAULT[0];
 
 export function AssistantPane({ productId, prefill }: { productId?: string; prefill?: string }) {
   const { ask } = useAsk();
@@ -22,6 +24,8 @@ export function AssistantPane({ productId, prefill }: { productId?: string; pref
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ask]);
+
+  const line = activity || FALLBACK;
 
   return (
     <>
@@ -43,7 +47,7 @@ export function AssistantPane({ productId, prefill }: { productId?: string; pref
                 {m.slots.map((slot) => (
                   <GenerativeBlock key={slot.stream_id} slot={slot} onAsk={(t) => void submit(t, productId)} />
                 ))}
-                {m.pending ? <ActivityLine label={activity || "Ürünleri arıyorum…"} /> : null}
+                {m.pending ? <ActivityLine label={line} /> : null}
                 {!m.pending && m.suggestions?.length ? (
                   <Suggestions suggestions={m.suggestions.slice(0, 3)} onPick={(s) => void submit(s, productId)} disabled={busy} />
                 ) : null}
@@ -53,7 +57,7 @@ export function AssistantPane({ productId, prefill }: { productId?: string; pref
         ))}
       </div>
       {busy && !messages.some((m) => m.role === "assistant" && m.pending) ? (
-        <ActivityLine label={activity || "Ürünleri arıyorum…"} />
+        <ActivityLine label={line} />
       ) : null}
       <form className="composer" onSubmit={(e) => { e.preventDefault(); void submit(input, productId); setInput(""); }}>
         <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="ne arıyorsun" aria-label="Asistan" />
