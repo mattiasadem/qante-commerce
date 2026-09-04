@@ -1,27 +1,88 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { StagedChange } from "@/lib/core";
 import { KIND_LABEL, shortDate } from "@/lib/core";
 
+type KindFilter = "all" | "price" | "stock" | "listing";
+
+const KIND_FILTERS: { id: KindFilter; label: string }[] = [
+  { id: "all", label: "Tümü" },
+  { id: "price", label: "Fiyat" },
+  { id: "stock", label: "Stok" },
+  { id: "listing", label: "Liste" },
+];
+
 export function StagedQueue({ initial }: { initial: StagedChange[] }) {
   const [items, setItems] = useState(initial);
+  const [kind, setKind] = useState<KindFilter>("all");
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [flash, setFlash] = useState<string | null>(null);
+
   useEffect(() => {
     void fetch("/api/merchant/staged", { cache: "no-store" }).then((r) => r.json()).then((d: { changes?: StagedChange[] }) => {
       if (d.changes) setItems(d.changes);
     });
   }, []);
+
+  const pending = useMemo(() => items.filter((c) => c.status === "staged"), [items]);
+  const filteredPending = useMemo(
+    () => (kind === "all" ? pending : pending.filter((c) => c.kind === kind)),
+    [pending, kind],
+  );
+  const history = useMemo(() => items.filter((c) => c.status !== "staged"), [items]);
+  const kindCounts = useMemo(() => {
+    const c: Record<KindFilter, number> = { all: pending.length, price: 0, stock: 0, listing: 0 };
+    for (const x of pending) {
+      if (x.kind === "price" || x.kind === "stock" || x.kind === "listing") c[x.kind] += 1;
+    }
+    return c;
+  }, [pending]);
+
   async function mutate(id: string, action: "approve" | "discard", note?: string) {
     setBusy(id);
+    setFlash(null);
     try {
-      const res = await fetch("/api/merchant/changes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, action, reason: note }) });
+      const res = await fetch("/api/merchant/changes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action, reason: note }),
+      });
       const data = await res.json() as { change?: StagedChange };
-      if (data.change) setItems((xs) => xs.map((x) => x.id === id ? data.change! : x));
-    } finally { setBusy(null); }
+      if (data.change) setItems((xs) => xs.map((x) => (x.id === id ? data.change! : x)));
+    } finally {
+      setBusy(null);
+    }
   }
-  function approve(id: string) { void mutate(id, "approve"); }
+
+  async function approveAll() {
+    const ids = filteredPending.map((c) => c.id);
+    if (!ids.length) return;
+    setBusy("bulk");
+    setFlash(null);
+    try {
+      const res = await fetch("/api/merchant/changes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "approve_all", ids }),
+      });
+      const data = await res.json() as { changes?: StagedChange[]; error?: string };
+      if (!res.ok || !data.changes) {
+        setFlash(data.error ?? "Toplu onay yazılamadı");
+        return;
+      }
+      const byId = new Map(data.changes.map((c) => [c.id, c]));
+      setItems((xs) => xs.map((x) => byId.get(x.id) ?? x));
+      setFlash(`${ids.length} değişiklik yerel deftere yazıldı · ikas'a gitmedi`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  function approve(id: string) {
+    void mutate(id, "approve");
+  }
   function reject() {
     if (!rejectId || !reason.trim()) return;
     const id = rejectId;
@@ -30,15 +91,51 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
     setReason("");
     void mutate(id, "discard", note);
   }
+
   return (
     <>
-      <p className="muted" style={{ marginTop: -8, marginBottom: 16 }}>
-        <span className="banner-demo">DEMO kuyruk · Onayla yerel deftere yazar, ikas’a gitmez</span>
+      <p className="muted" style={{ marginTop: -8, marginBottom: 12 }}>
+        <span className="banner-demo">DEMO kuyruk · Onayla / Toplu onayla yerel deftere yazar, ikas’a gitmez</span>
       </p>
-      {items.filter((c) => c.status === "staged").length === 0 ? (
-        <div className="empty"><div className="mark" /><h3>Bekleyen yok</h3><p>Onay ve redler geçmişte. Canlı ikas yazılmadı.</p></div>
+      <div className="chips scroll" role="tablist" aria-label="Bekleyen tür filtresi" style={{ marginBottom: 12 }}>
+        {KIND_FILTERS.map((f) => (
+          <button
+            key={f.id}
+            className={`chip ${kind === f.id ? "on" : ""}`}
+            type="button"
+            aria-pressed={kind === f.id}
+            onClick={() => setKind(f.id)}
+          >
+            {f.label} {kindCounts[f.id]}
+          </button>
+        ))}
+      </div>
+      {flash ? (
+        <p className="muted" style={{ marginBottom: 12 }}>
+          <span className="banner-demo">{flash}</span>
+        </p>
       ) : null}
-      {items.filter((c) => c.status === "staged").map((c) => (
+      {filteredPending.length > 0 ? (
+        <div className="actions" style={{ marginBottom: 16, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <button
+            className="btn btn-primary"
+            type="button"
+            disabled={busy === "bulk"}
+            onClick={() => void approveAll()}
+          >
+            {busy === "bulk" ? "…" : `Toplu onayla (${filteredPending.length})`}
+          </button>
+          <span className="faint">görünen bekleyenler · tek cookie yazımı</span>
+        </div>
+      ) : null}
+      {filteredPending.length === 0 ? (
+        <div className="empty">
+          <div className="mark" />
+          <h3>{pending.length === 0 ? "Bekleyen yok" : "Bu filtrede bekleyen yok"}</h3>
+          <p>{pending.length === 0 ? "Onay ve redler geçmişte. Canlı ikas yazılmadı." : "Başka bir tür seç veya katalogdan yeni öneri ekle."}</p>
+        </div>
+      ) : null}
+      {filteredPending.map((c) => (
         <article className="change" key={c.id}>
           <div className="change-head">
             <div>
@@ -46,7 +143,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
               <div className="faint">{c.product_name} · {c.staged_by} · {shortDate(c.created_at)} · {c.variant_count} varyant</div>
             </div>
             <span className={`tag ${c.status === "staged" ? "accent" : c.status === "discarded" ? "danger" : "ok"}`}>
-              {c.status === "staged" ? "Onay bekliyor" : c.status === "discarded" ? "reddedildi" : "uygulandı"}
+              {c.status === "staged" ? "bekliyor" : c.status === "discarded" ? "reddedildi" : "uygulandı"}
             </span>
           </div>
           <div className="diff">
@@ -59,14 +156,14 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
           </div>
           {c.status === "staged" ? (
             <div className="actions">
-              <button className="btn btn-primary" type="button" disabled={busy === c.id} onClick={() => approve(c.id)}>Onayla</button>
-              <button className="btn" type="button" onClick={() => { setRejectId(c.id); setReason(""); }}>Reddet</button>
+              <button className="btn btn-primary" type="button" disabled={busy === c.id || busy === "bulk"} onClick={() => approve(c.id)}>Onayla</button>
+              <button className="btn" type="button" disabled={busy === "bulk"} onClick={() => { setRejectId(c.id); setReason(""); }}>Reddet</button>
             </div>
           ) : null}
         </article>
       ))}
-      {items.some((c) => c.status !== "staged") ? <h2 style={{ marginTop: 28 }}>Geçmiş</h2> : null}
-      {items.filter((c) => c.status !== "staged").map((c) => (
+      {history.length ? <h2 style={{ marginTop: 28 }}>Geçmiş</h2> : null}
+      {history.map((c) => (
         <article className="change" key={`h-${c.id}`}>
           <div className="change-head">
             <div>
