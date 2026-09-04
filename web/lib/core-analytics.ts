@@ -1,7 +1,32 @@
-import type { Alert, Issue, Snapshot, WeeklyBar } from "@/lib/core-types";
+import type { Alert, Issue, Order, OrderLedgerEntry, Snapshot, WeeklyBar } from "@/lib/core-types";
 import { shortDate } from "@/lib/core-types";
 import { PRODUCTS } from "@/lib/core-art";
 import { ORDERS } from "@/lib/core-catalog";
+
+export function mergeOrders(ledger: Record<string, OrderLedgerEntry> = {}): Order[] {
+  return ORDERS.map((o) => {
+    const e = ledger[o.id];
+    return e ? { ...o, status: e.status } : o;
+  });
+}
+
+/** Primary operator CTA for a seed/demo order status (local ledger only). */
+export function nextOrderAction(status: string): { action: string; label: string } | null {
+  if (status === "paid") return { action: "ship", label: "Kargola" };
+  if (status === "shipped") return { action: "fulfill", label: "Teslim" };
+  if (status === "pending_payment") return { action: "mark_paid", label: "Ödeme alındı" };
+  if (status === "return_requested") return { action: "close_return", label: "İade kapat" };
+  return null;
+}
+
+export function applyOrderAction(status: string, action: string): string | null {
+  if (action === "ship" && status === "paid") return "shipped";
+  if (action === "fulfill" && status === "shipped") return "fulfilled";
+  if (action === "mark_paid" && status === "pending_payment") return "paid";
+  if (action === "close_return" && status === "return_requested") return "fulfilled";
+  if (action === "cancel" && (status === "paid" || status === "pending_payment")) return "cancelled";
+  return null;
+}
 
 const REV = new Set(["fulfilled", "shipped", "paid", "return_requested"]);
 const iso = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
@@ -45,9 +70,9 @@ export function computeAlerts(now = new Date()): Alert[] {
   }
   return a;
 }
-export function computeIssues(now = new Date()): Issue[] {
+export function computeIssues(now = new Date(), orders: Order[] = ORDERS): Issue[] {
   const a: Issue[] = [];
-  for (const o of ORDERS) {
+  for (const o of orders) {
     const age_hours = Math.round(((now.getTime() - new Date(o.created_at).getTime()) / 3600000) * 10) / 10;
     if (o.status === "paid" && age_hours > 48) a.push({ kind: "unshipped", order_id: o.id, status: o.status, age_hours, total: o.total, message: `${o.id} ${Math.floor(age_hours)} saattir kargoya verilmedi.` });
     else if (o.status === "pending_payment" && age_hours > 24) a.push({ kind: "pending_payment", order_id: o.id, status: o.status, age_hours, total: o.total, message: `${o.id} ödemesi ${Math.floor(age_hours)} saattir bekliyor.` });

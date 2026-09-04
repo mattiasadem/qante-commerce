@@ -18,6 +18,7 @@ export type StagedChange = {
   guardrails: Guard[]; status: "staged" | "discarded" | "applied"; decision_note?: string;
 };
 export type LedgerEntry = { status: "applied" | "discarded"; decision_note?: string; decided_at?: string };
+export type OrderLedgerEntry = { status: string; decided_at?: string; note?: string };
 export type UiBlock = { type: string; products?: Product[]; rows?: { label: string; value: string }[]; columns?: string[]; table?: string[][] };
 export type ChatResponse = { text: string; ui: UiBlock[]; suggestions: string[]; activity: string };
 
