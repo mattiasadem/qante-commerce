@@ -1,1 +1,1 @@
-USE_FILE:/workspace/_push_ui_content.txt
+USE_FILE:/workspace/_push_ui_compiled.tsx
