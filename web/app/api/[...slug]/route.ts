@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { BRAND, buildListingStage, buildStockStage, demoTurn, getProduct, getProducts, mergeStaged, logoSvg, merchantTurn, computeAlerts, computeIssues, computeSnapshot, weeklyBars, type LedgerEntry, type StagedChange } from "@/lib/core";
+import { BRAND, buildListingStage, buildPriceStage, buildStockStage, demoTurn, getProduct, getProducts, mergeStaged, logoSvg, merchantTurn, computeAlerts, computeIssues, computeSnapshot, weeklyBars, type LedgerEntry, type StagedChange } from "@/lib/core";
 
 export const dynamic = "force-dynamic";
 const CART = "qante_cart";
@@ -146,7 +146,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   }
 
   if (slug === "merchant/stage") {
-    const body = (await req.json()) as { kind?: string; product_id?: string; productId?: string; target_qty?: number };
+    const body = (await req.json()) as { kind?: string; product_id?: string; productId?: string; target_qty?: number; target_price?: number };
     const productId = body.product_id ?? body.productId ?? "";
     const product = getProduct(productId);
     if (!product) return NextResponse.json({ error: "product not found" }, { status: 404 });
@@ -154,6 +154,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     let change: StagedChange;
     if (kind === "stock") change = buildStockStage(product, body.target_qty);
     else if (kind === "listing") change = buildListingStage(product);
+    else if (kind === "price") change = buildPriceStage(product, body.target_price);
     else return NextResponse.json({ error: "kind unsupported" }, { status: 400 });
     const extras = [change, ...parseExtras(cookie(req, EXTRA))].slice(0, 40);
     const res = NextResponse.json({ change, demo: true, ikas_written: false });
