@@ -1,4 +1,4 @@
-use client";
+'use client';
 import { useEffect, useMemo, useState } from "react";
 import type { StagedChange } from "@/lib/core";
 import { KIND_LABEL, shortDate } from "@/lib/core";
