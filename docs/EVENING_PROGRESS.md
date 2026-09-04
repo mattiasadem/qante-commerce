@@ -1,9 +1,9 @@
-# Evening progress — 2026-09-04 ~18:40 PT
+# Evening progress — 2026-09-04 ~18:38 PT
 
-HEAD main: (this slice) — merchant Stok Toplu yenile. Filter chips pick the set; bulk stages unique product restocks into Bekleyen (local extra cookie, ikas_written false). No qante.vercel.app. No Vercel (quota 0). Parent d671ef1.
+HEAD main: 79a15c6 — merchant Stok Toplu yenile. Filter chips pick the set; bulk stages unique product restocks into Bekleyen (local extra cookie, ikas_written false). No qante.vercel.app. No Vercel (quota 0). Parent d671ef1.
 
 ## Commits
-- (this) Stok Toplu yenile restock_all
+- 79a15c6 Stok Toplu yenile restock_all
 - d671ef1 stream-protocol describeToolTr
 - 1d1b404/a3b560d/f9fbf7a/908f679 remove (shop) duplicates
 - fb52922 useAgentStream TR defaults
