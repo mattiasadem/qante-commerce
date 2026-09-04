@@ -176,6 +176,29 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
     }
   }
 
+  async function cancelAll(ids: string[]) {
+    if (!ids.length) return;
+    setBusy("bulk");
+    setFlash(null);
+    try {
+      const res = await fetch("/api/merchant/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "cancel_all", ids }),
+      });
+      const data = await res.json() as { orders?: Order[]; issues?: Issue[]; count?: number; error?: string };
+      if (!res.ok || !data.orders) {
+        setFlash(data.error ?? "Toplu iptal yazılamadı");
+        return;
+      }
+      setOrders(data.orders);
+      if (data.issues) setIssues(data.issues);
+      setFlash(`${data.count ?? ids.length} sipariş iptal · yerel defter · ikas'a gitmedi`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   const openIds = useMemo(() => new Set(issues.map((i) => i.order_id)), [issues]);
   const issueById = useMemo(() => {
     const m = new Map<string, Issue>();
@@ -204,6 +227,7 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
   const fulfillable = useMemo(() => rows.filter((o) => o.status === "shipped"), [rows]);
   const closableReturns = useMemo(() => rows.filter((o) => o.status === "return_requested"), [rows]);
   const payable = useMemo(() => rows.filter((o) => o.status === "pending_payment"), [rows]);
+  const cancellable = useMemo(() => rows.filter((o) => canCancelOrder(o.status)), [rows]);
 
   return (
     <>
@@ -220,10 +244,10 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
         </p>
       ) : (
         <p className="muted" style={{ marginTop: -4, marginBottom: 16 }}>
-          Mağaza checkout Siparişler&apos;e düşer · Kargola / Toplu kargola / Toplu teslim / Toplu iade kapat / Toplu ödeme alındı / İptal yerel deftere yazar · ikas&apos;a gitmez
+          Mağaza checkout Siparişler&apos;e düşer · Kargola / Toplu kargola / Toplu teslim / Toplu iade kapat / Toplu ödeme alındı / Toplu iptal / İptal yerel deftere yazar · ikas&apos;a gitmez
         </p>
       )}
-      {(shippable.length > 0 || fulfillable.length > 0 || closableReturns.length > 0 || payable.length > 0) ? (
+      {(shippable.length > 0 || fulfillable.length > 0 || closableReturns.length > 0 || payable.length > 0 || cancellable.length > 0) ? (
         <div className="actions" style={{ marginBottom: 16, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
           {shippable.length > 0 ? (
             <button
@@ -263,6 +287,16 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
               onClick={() => void markPaidAll(payable.map((o) => o.id))}
             >
               {busy === "bulk" ? "…" : `Toplu ödeme alındı (${payable.length})`}
+            </button>
+          ) : null}
+          {cancellable.length > 0 ? (
+            <button
+              className="btn"
+              type="button"
+              disabled={busy === "bulk"}
+              onClick={() => void cancelAll(cancellable.map((o) => o.id))}
+            >
+              {busy === "bulk" ? "…" : `Toplu iptal (${cancellable.length})`}
             </button>
           ) : null}
           <span className="faint">görünen filtre · tek cookie yazımı · ikas kapalı</span>
