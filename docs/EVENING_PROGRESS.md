@@ -1,8 +1,9 @@
-# Evening progress — 2026-09-04 ~18:38 PT
+# Evening progress — 2026-09-04 ~18:47 PT
 
-HEAD main: 79a15c6 — merchant Stok Toplu yenile. Filter chips pick the set; bulk stages unique product restocks into Bekleyen (local extra cookie, ikas_written false). No qante.vercel.app. No Vercel (quota 0). Parent d671ef1.
+HEAD main: 2354d4e — restore Toplu teslim UI after accidental truncate (17515e03 had PLACEHOLDER_WILL_REPLACE). fulfill_all API already at e9abcbbc; UI now has fulfillAll / Toplu teslim again. No qante.vercel.app. No Vercel (quota 0).
 
 ## Commits
+- 2354d4e fix(merchant): restore Toplu teslim UI after accidental truncate
 - 79a15c6 Stok Toplu yenile restock_all
 - d671ef1 stream-protocol describeToolTr
 - 1d1b404/a3b560d/f9fbf7a/908f679 remove (shop) duplicates
@@ -14,10 +15,11 @@ HEAD main: 79a15c6 — merchant Stok Toplu yenile. Filter chips pick the set; bu
 - edf2ece/9429e41 GenAssistant + AssistantRail alias
 
 ## Click
-1. /merchant/stok — chips Tükendi or Düşük
-2. Toplu yenile (N) — flash + Bekleyen'e git
-3. /merchant/bekleyen — new Stok yenileme rows, Onayla local only
-4. Home: Keten bakiyorum -> drip
-5. /siparis: Siparisi iptal et / Iade talep et (local ledger)
+1. /merchant/siparisler — shipped rows → Toplu teslim (N)
+2. /merchant/stok — chips Tükendi or Düşük
+3. Toplu yenile (N) — flash + Bekleyen'e git
+4. /merchant/bekleyen — new Stok yenileme rows, Onayla local only
+5. Home: Keten bakiyorum -> drip
+6. /siparis: Siparisi iptal et / Iade talep et (local ledger)
 
 https://github.com/mattiasadem/qante-commerce
