@@ -1,0 +1,12 @@
+{
+  "name": "qante-commerce",
+  "private": true,
+  "workspaces": [
+    "vendor/web-shared",
+    "web"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w web",
+    "build": "npm run build --workspaces --if-present"
+  }
+}
