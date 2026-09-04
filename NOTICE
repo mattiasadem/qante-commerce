@@ -1,0 +1,16 @@
+Qante Commerce Agents
+Copyright 2026 Nivorius GmbH
+
+This repository builds on Anthropic's commerce-agents blueprint
+(https://github.com/anthropics/commerce-agents), licensed under the
+Apache License, Version 2.0.
+
+- vendor/web-shared/, vendor/demo_common/, and vendor/skills/ are carried
+  unmodified from Anthropic's repository at commit
+  fd4d59224ab96b43c6dc6888207c67b3bd5a24cf (examples/web-shared,
+  examples/demo_common, shopping-agent/skills, merchant-agent/skills).
+  Copyright 2026 Anthropic PBC.
+- Blueprint core packages (commerce-common, shopping-agent/*, merchant-agent/*)
+  are not vendored as source; requirements.txt pins them from Anthropic's
+  repository at the same commit when the agent runtimes are installed.
+- vendor/pyproject.toml and the Qante hosts/apps are Nivorius-authored.

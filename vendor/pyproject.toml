@@ -1,0 +1,14 @@
+# Qante shim: makes the carried (unmodified) demo_common package from
+# Anthropic's commerce-agents examples installable via `pip install -e ./vendor`.
+# See NOTICE. Do not edit files under vendor/demo_common or vendor/skills.
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "commerce-agents-demo-common"
+version = "0.0.0"
+requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = ["demo_common"]

@@ -5,12 +5,17 @@ fastapi>=0.115
 uvicorn[standard]>=0.32
 
 # Blueprint packages from github.com/anthropics/commerce-agents (Apache-2.0).
-# Do NOT install, vendor, or modify shopping_agent / merchant_agent / commerce_common
-# until a commit pin is confirmed. Intended git pins for F1+:
-#   commerce-common @ git+https://github.com/anthropics/commerce-agents.git@<COMMIT>#subdirectory=packages/commerce-common
-#   shopping-agent-core @ git+https://github.com/anthropics/commerce-agents.git@<COMMIT>#subdirectory=packages/shopping-agent-core
-#   shopping-agent-runtime @ git+https://github.com/anthropics/commerce-agents.git@<COMMIT>#subdirectory=packages/shopping-agent-runtime
-#   merchant-agent-core @ git+https://github.com/anthropics/commerce-agents.git@<COMMIT>#subdirectory=packages/merchant-agent-core
-#   merchant-agent-runtime @ git+https://github.com/anthropics/commerce-agents.git@<COMMIT>#subdirectory=packages/merchant-agent-runtime
-# Subdirectory paths are unconfirmed. Check the blueprint repo layout before pinning.
-# Never edit those packages; extend via config, executor subclass, or PresentationExtension.
+# Pin matches Shopify/claude-for-commerce-examples and the vendor/ snapshot.
+# UPSTREAM = https://github.com/anthropics/commerce-agents@fd4d59224ab96b43c6dc6888207c67b3bd5a24cf
+#
+# Install for F1+ agent runtimes (do NOT edit those packages):
+#   commerce-common[examples] @ git+https://github.com/anthropics/commerce-agents@fd4d59224ab96b43c6dc6888207c67b3bd5a24cf#subdirectory=commerce-common
+#   shopping-agent-core @ git+https://github.com/anthropics/commerce-agents@fd4d59224ab96b43c6dc6888207c67b3bd5a24cf#subdirectory=shopping-agent/core
+#   shopping-agent-runtime @ git+https://github.com/anthropics/commerce-agents@fd4d59224ab96b43c6dc6888207c67b3bd5a24cf#subdirectory=shopping-agent/runtime-messages-api
+#   merchant-agent-core @ git+https://github.com/anthropics/commerce-agents@fd4d59224ab96b43c6dc6888207c67b3bd5a24cf#subdirectory=merchant-agent/core
+#   merchant-agent-runtime @ git+https://github.com/anthropics/commerce-agents@fd4d59224ab96b43c6dc6888207c67b3bd5a24cf#subdirectory=merchant-agent/runtime-messages-api
+#   -e ./vendor
+#
+# Uncomment the block above when wiring shopping_agent / merchant_agent.
+# Until then F0 hosts use only the top pins. Never edit blueprint packages;
+# extend via config, executor subclass, or PresentationExtension.
