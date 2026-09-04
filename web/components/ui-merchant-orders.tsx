@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { Issue, Order } from "@/lib/core";
-import { STATUS_LABEL, getProduct, isStoreCheckoutOrder, money, nextOrderAction, shortDate } from "@/lib/core";
+import { STATUS_LABEL, canCancelOrder, getProduct, isStoreCheckoutOrder, money, nextOrderAction, shortDate } from "@/lib/core";
 import { Logo } from "@/components/ui-shell";
 
 const ORDER_FILTERS: { id: string; label: string; match: (o: Order, open: Set<string>) => boolean }[] = [
@@ -123,7 +123,7 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
         </p>
       ) : (
         <p className="muted" style={{ marginTop: -4, marginBottom: 16 }}>
-          Mağaza checkout Siparişler&apos;e düşer · Kargola yerel deftere yazar · ikas&apos;a gitmez
+          Mağaza checkout Siparişler&apos;e düşer · Kargola / İptal yerel deftere yazar · ikas&apos;a gitmez
         </p>
       )}
       {rows.length === 0 ? (
@@ -153,6 +153,16 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
                     onClick={() => void act(o.id, cta.action)}
                   >
                     {busy === o.id ? "…" : cta.label}
+                  </button>
+                ) : null}
+                {canCancelOrder(o.status) ? (
+                  <button
+                    className="btn"
+                    type="button"
+                    disabled={busy === o.id}
+                    onClick={() => void act(o.id, "cancel")}
+                  >
+                    {busy === o.id ? "…" : "İptal"}
                   </button>
                 ) : null}
                 <Link className="btn" href={`/merchant/sohbet?q=${encodeURIComponent(o.id)}`}>Sor</Link>
