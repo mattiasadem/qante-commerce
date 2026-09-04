@@ -4,6 +4,7 @@ import type { StagedChange } from "@/lib/core";
 import { KIND_LABEL, shortDate } from "@/lib/core";
 
 type KindFilter = "all" | "price" | "stock" | "listing";
+type HistoryFilter = "all" | "applied" | "discarded";
 
 const KIND_FILTERS: { id: KindFilter; label: string }[] = [
   { id: "all", label: "Tümü" },
@@ -12,9 +13,16 @@ const KIND_FILTERS: { id: KindFilter; label: string }[] = [
   { id: "listing", label: "Liste" },
 ];
 
+const HISTORY_FILTERS: { id: HistoryFilter; label: string }[] = [
+  { id: "all", label: "Tümü" },
+  { id: "applied", label: "Uygulandı" },
+  { id: "discarded", label: "Reddedildi" },
+];
+
 export function StagedQueue({ initial }: { initial: StagedChange[] }) {
   const [items, setItems] = useState(initial);
   const [kind, setKind] = useState<KindFilter>("all");
+  const [hist, setHist] = useState<HistoryFilter>("all");
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [rejectBulk, setRejectBulk] = useState(false);
   const [reason, setReason] = useState("");
@@ -33,6 +41,10 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
     [pending, kind],
   );
   const history = useMemo(() => items.filter((c) => c.status !== "staged"), [items]);
+  const filteredHistory = useMemo(
+    () => (hist === "all" ? history : history.filter((c) => c.status === hist)),
+    [history, hist],
+  );
   const kindCounts = useMemo(() => {
     const c: Record<KindFilter, number> = { all: pending.length, price: 0, stock: 0, listing: 0 };
     for (const x of pending) {
@@ -40,8 +52,15 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
     }
     return c;
   }, [pending]);
+  const histCounts = useMemo(() => {
+    const c: Record<HistoryFilter, number> = { all: history.length, applied: 0, discarded: 0 };
+    for (const x of history) {
+      if (x.status === "applied" || x.status === "discarded") c[x.status] += 1;
+    }
+    return c;
+  }, [history]);
 
-  async function mutate(id: string, action: "approve" | "discard", note?: string) {
+  async function mutate(id: string, action: "approve" | "discard" | "restage", note?: string) {
     setBusy(id);
     setFlash(null);
     try {
@@ -50,8 +69,13 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, action, reason: note }),
       });
-      const data = await res.json() as { change?: StagedChange };
-      if (data.change) setItems((xs) => xs.map((x) => (x.id === id ? data.change! : x)));
+      const data = await res.json() as { change?: StagedChange; error?: string };
+      if (!res.ok || !data.change) {
+        setFlash(data.error ?? "İşlem yazılamadı");
+        return;
+      }
+      setItems((xs) => xs.map((x) => (x.id === id ? data.change! : x)));
+      if (action === "restage") setFlash("Tekrar bekleyen kuyruğa alındı · yerel defter · ikas'a gitmedi");
     } finally {
       setBusy(null);
     }
@@ -105,6 +129,30 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
     }
   }
 
+  async function restageAll() {
+    const ids = filteredHistory.map((c) => c.id);
+    if (!ids.length) return;
+    setBusy("bulk-hist");
+    setFlash(null);
+    try {
+      const res = await fetch("/api/merchant/changes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "restage_all", ids }),
+      });
+      const data = await res.json() as { changes?: StagedChange[]; error?: string };
+      if (!res.ok || !data.changes) {
+        setFlash(data.error ?? "Toplu kuyruğa alma yazılamadı");
+        return;
+      }
+      const byId = new Map(data.changes.map((c) => [c.id, c]));
+      setItems((xs) => xs.map((x) => byId.get(x.id) ?? x));
+      setFlash(`${ids.length} değişiklik tekrar bekleyene alındı · yerel defter · ikas'a gitmedi`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   function approve(id: string) {
     void mutate(id, "approve");
   }
@@ -128,7 +176,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
   return (
     <>
       <p className="muted" style={{ marginTop: -8, marginBottom: 12 }}>
-        <span className="banner-demo">DEMO kuyruk · Onayla / Toplu onayla / Toplu reddet yerel deftere yazar, ikas’a gitmez</span>
+        <span className="banner-demo">DEMO kuyruk · Onayla / Toplu onayla / Toplu reddet / Tekrar kuyruğa al yerel deftere yazar, ikas’a gitmez</span>
       </p>
       <div className="chips scroll" role="tablist" aria-label="Bekleyen tür filtresi" style={{ marginBottom: 12 }}>
         {KIND_FILTERS.map((f) => (
@@ -153,7 +201,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
           <button
             className="btn btn-primary"
             type="button"
-            disabled={busy === "bulk"}
+            disabled={busy === "bulk" || busy === "bulk-hist"}
             onClick={() => void approveAll()}
           >
             {busy === "bulk" ? "…" : `Toplu onayla (${filteredPending.length})`}
@@ -161,7 +209,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
           <button
             className="btn"
             type="button"
-            disabled={busy === "bulk"}
+            disabled={busy === "bulk" || busy === "bulk-hist"}
             onClick={() => { setRejectBulk(true); setRejectId(null); setReason(""); }}
           >
             {busy === "bulk" ? "…" : `Toplu reddet (${filteredPending.length})`}
@@ -197,14 +245,49 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
           </div>
           {c.status === "staged" ? (
             <div className="actions">
-              <button className="btn btn-primary" type="button" disabled={busy === c.id || busy === "bulk"} onClick={() => approve(c.id)}>Onayla</button>
-              <button className="btn" type="button" disabled={busy === "bulk"} onClick={() => { setRejectId(c.id); setReason(""); }}>Reddet</button>
+              <button className="btn btn-primary" type="button" disabled={busy === c.id || busy === "bulk" || busy === "bulk-hist"} onClick={() => approve(c.id)}>Onayla</button>
+              <button className="btn" type="button" disabled={busy === "bulk" || busy === "bulk-hist"} onClick={() => { setRejectId(c.id); setReason(""); }}>Reddet</button>
             </div>
           ) : null}
         </article>
       ))}
       {history.length ? <h2 style={{ marginTop: 28 }}>Geçmiş</h2> : null}
-      {history.map((c) => (
+      {history.length ? (
+        <div className="chips scroll" role="tablist" aria-label="Geçmiş durum filtresi" style={{ marginBottom: 12 }}>
+          {HISTORY_FILTERS.map((f) => (
+            <button
+              key={f.id}
+              className={`chip ${hist === f.id ? "on" : ""}`}
+              type="button"
+              aria-pressed={hist === f.id}
+              onClick={() => setHist(f.id)}
+            >
+              {f.label} {histCounts[f.id]}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      {filteredHistory.length > 0 ? (
+        <div className="actions" style={{ marginBottom: 16, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <button
+            className="btn"
+            type="button"
+            disabled={busy === "bulk" || busy === "bulk-hist"}
+            onClick={() => void restageAll()}
+          >
+            {busy === "bulk-hist" ? "…" : `Toplu kuyruğa al (${filteredHistory.length})`}
+          </button>
+          <span className="faint">görünen geçmiş · tekrar bekleyen</span>
+        </div>
+      ) : null}
+      {history.length && filteredHistory.length === 0 ? (
+        <div className="empty">
+          <div className="mark" />
+          <h3>Bu filtrede geçmiş yok</h3>
+          <p>Uygulandı veya Reddedildi seç, ya da Tümü.</p>
+        </div>
+      ) : null}
+      {filteredHistory.map((c) => (
         <article className="change" key={`h-${c.id}`}>
           <div className="change-head">
             <div>
@@ -216,6 +299,16 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
           <div className="diff">
             <div className="col"><div className="k">Önce</div>{Object.entries(c.before).map(([k, v]) => <div key={k}>{k}: {v}</div>)}</div>
             <div className="col"><div className="k">Sonra</div>{Object.entries(c.after).map(([k, v]) => <div key={k}>{k}: {v}</div>)}</div>
+          </div>
+          <div className="actions">
+            <button
+              className="btn btn-primary"
+              type="button"
+              disabled={busy === c.id || busy === "bulk" || busy === "bulk-hist"}
+              onClick={() => void mutate(c.id, "restage")}
+            >
+              {busy === c.id ? "…" : "Tekrar kuyruğa al"}
+            </button>
           </div>
         </article>
       ))}

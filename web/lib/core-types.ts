@@ -17,7 +17,7 @@ export type StagedChange = {
   before: Record<string, string>; after: Record<string, string>; reason: string;
   guardrails: Guard[]; status: "staged" | "discarded" | "applied"; decision_note?: string;
 };
-export type LedgerEntry = { status: "applied" | "discarded"; decision_note?: string; decided_at?: string };
+export type LedgerEntry = { status: "applied" | "discarded" | "staged"; decision_note?: string; decided_at?: string };
 export type OrderLedgerEntry = { status: string; decided_at?: string; note?: string };
 export type DigestItem = {
   kind: "low_stock" | "out_of_stock" | "slow_mover" | "order_issue" | "metric" | "pending_change" | "note";

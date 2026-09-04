@@ -27,6 +27,26 @@ export const STAGED: StagedChange[] = [
     guardrails: [ok("price", "fiyat sınırı"), ok("discount", "indirim derinliği"), ok("protected", "korunan alan")],
     status: "staged",
   },
+
+  {
+    id: "chg_listing_polo_done", kind: "listing", product_id: "prod_pamuklu_tisort", product_name: "Pamuklu Tişört",
+    staged_by: "operatör", created_at: "2026-09-01T14:20:00+03:00", variant_count: 1,
+    before: { başlık: "Pamuklu Tişört", açıklama: "Yumuşak pamuk tişört." },
+    after: { başlık: "Pamuklu Tişört · Giyim", açıklama: "Yumuşak pamuk tişört. Doğal malzeme, hızlı kargo." },
+    reason: "Liste kalite 72. Başlık ve açıklama netleştirme; yazma F2 ve ikas kapalı.",
+    guardrails: [ok("listing", "liste alanı"), ok("protected", "korunan alan")],
+    status: "applied",
+    decision_note: "yerel onay · demo",
+  },
+  {
+    id: "chg_price_canta_rej", kind: "price", product_id: "prod_ipek_fular", product_name: "İpek Fular",
+    staged_by: "ajan", created_at: "2026-09-01T18:00:00+03:00", variant_count: 1,
+    before: { fiyat: money(329.5) }, after: { fiyat: money(259.5) },
+    reason: "Derin indirim denemesi. Cap %20 dışında kaldı.",
+    guardrails: [ok("price", "fiyat sınırı"), { id: "discount", label: "indirim derinliği", ok: false }, ok("protected", "korunan alan")],
+    status: "discarded",
+    decision_note: "cap dışı · demo",
+  },
 ];
 export const getStaged = () => STAGED;
 

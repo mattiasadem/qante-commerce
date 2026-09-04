@@ -57,6 +57,18 @@ export async function POST(req: Request) {
     return setCookies(res, [{ name: LEDGER, value: JSON.stringify(ledger) }]);
   }
 
+  if (body.action === "restage_all") {
+    const wanted = Array.isArray(body.ids) ? body.ids.filter((x) => typeof x === "string" && x) : [];
+    const history = mergeStaged(ledger, extras).filter((c) => c.status === "applied" || c.status === "discarded");
+    const targets = wanted.length ? history.filter((c) => wanted.includes(c.id)) : history;
+    if (!targets.length) return NextResponse.json({ error: "nothing to restage" }, { status: 400 });
+    for (const c of targets) ledger[c.id] = { status: "staged", decided_at: now };
+    const merged = mergeStaged(ledger, extras);
+    const changes = targets.map((t) => merged.find((c) => c.id === t.id)!).filter(Boolean);
+    const res = NextResponse.json({ changes, demo: true, ikas_written: false, count: changes.length });
+    return setCookies(res, [{ name: LEDGER, value: JSON.stringify(ledger) }]);
+  }
+
   const id = body.id ?? "";
   const current = mergeStaged(ledger, extras).find((c) => c.id === id);
   if (!current) return NextResponse.json({ error: "not found" }, { status: 404 });
@@ -66,6 +78,9 @@ export async function POST(req: Request) {
     ledger[id] = { status: "discarded", decision_note: note, decided_at: now };
   } else if (body.action === "approve") {
     ledger[id] = { status: "applied", decided_at: now };
+  } else if (body.action === "restage") {
+    if (current.status === "staged") return NextResponse.json({ error: "already staged" }, { status: 400 });
+    ledger[id] = { status: "staged", decided_at: now };
   } else return NextResponse.json({ error: "bad action" }, { status: 400 });
   const change = mergeStaged(ledger, extras).find((c) => c.id === id);
   const res = NextResponse.json({ change, demo: true, ikas_written: false });
