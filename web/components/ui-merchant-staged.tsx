@@ -46,7 +46,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
               <div className="faint">{c.product_name} · {c.staged_by} · {shortDate(c.created_at)} · {c.variant_count} varyant</div>
             </div>
             <span className={`tag ${c.status === "staged" ? "accent" : c.status === "discarded" ? "danger" : "ok"}`}>
-              {c.status === "staged" ? "bekliyor" : c.status === "discarded" ? "reddedildi" : "uygulandı"}
+              {c.status === "staged" ? "Onay bekliyor" : c.status === "discarded" ? "reddedildi" : "uygulandı"}
             </span>
           </div>
           <div className="diff">

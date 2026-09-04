@@ -1,54 +1,18 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import type { ChatAction, ChatResponse, StagedChange } from "@/lib/core";
+import type { ChatAction, StagedChange } from "@/lib/core";
+import { ActivityLine, GenerativeBlock } from "@/components/generative";
+import { useAgentStream } from "@/lib/use-agent-stream";
+import { Suggestions } from "web-shared";
 
-type Msg = {
-  role: "user" | "assistant";
-  text: string;
-  ui?: ChatResponse["ui"];
-  suggestions?: string[];
-  actions?: ChatAction[];
-};
-
-const STARTERS = ["Bu hafta ciro", "Stoğu bitmeye yakın", "Açık siparişler"];
+const STARTERS = ["Bu hafta ciro", "Stoğu bitmeye yakın", "Bekleyen değişiklikler"];
 
 export function MerchantChat({ prefill }: { prefill?: string }) {
   const [input, setInput] = useState(prefill ?? "");
-  const [messages, setMessages] = useState<Msg[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [activity, setActivity] = useState("");
+  const { messages, busy, activity, submit } = useAgentStream({ endpoint: "/api/merchant/chat" });
   const [stageBusy, setStageBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
-
-  async function submit(text: string) {
-    const message = text.trim();
-    if (!message || busy) return;
-    setBusy(true);
-    setActivity("özet rakamlara bakıyorum");
-    setInput("");
-    setFlash(null);
-    setMessages((m) => [...m, { role: "user", text: message }]);
-    try {
-      const turn = (await (await fetch("/api/merchant/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
-      })).json()) as ChatResponse;
-      setActivity(turn.activity);
-      await new Promise((r) => setTimeout(r, 280));
-      setMessages((m) => [...m, {
-        role: "assistant",
-        text: turn.text,
-        ui: turn.ui,
-        suggestions: turn.suggestions?.slice(0, 3),
-        actions: turn.actions,
-      }]);
-    } finally {
-      setBusy(false);
-      setActivity("");
-    }
-  }
 
   async function runAction(a: ChatAction) {
     const key = `${a.kind}:${a.product_id}`;
@@ -83,10 +47,11 @@ export function MerchantChat({ prefill }: { prefill?: string }) {
       boot.current = true;
       void submit(prefill);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefill]);
 
   return (
-    <div className="card" style={{ padding: 0, maxWidth: 760, overflow: "hidden" }}>
+    <div className="card" style={{ padding: 0, maxWidth: 760, overflow: "hidden" }} data-component="MerchantChat">
       {flash ? (
         <p className="muted" style={{ margin: "12px 16px 0" }}>
           <span className="banner-demo">{flash}</span>{" "}
@@ -94,72 +59,59 @@ export function MerchantChat({ prefill }: { prefill?: string }) {
         </p>
       ) : (
         <p className="muted" style={{ margin: "12px 16px 0" }}>
-          Sohbet CTAları yerel Bekleyen kuyruğuna yazar · Onayla ikas'a gitmez
+          Digest + change_preview · CTAlar yerel Bekleyen kuyruğuna yazar · Onayla ikas'a gitmez
         </p>
       )}
       <div className="rail-log" style={{ minHeight: 320 }}>
         {messages.length === 0 ? (
           <>
-            <div className="turn">Haftalık özet, stok veya açık sipariş. Veri seed kaydından gelir.</div>
-            <div className="chips" style={{ marginTop: 10 }}>
-              {STARTERS.map((s) => (
-                <button key={s} className="chip" type="button" onClick={() => void submit(s)}>{s}</button>
-              ))}
-            </div>
+            <div className="turn">Haftalık özet, stok veya bekleyen. Kartlar akışla gelir.</div>
+            <Suggestions suggestions={STARTERS} onPick={(s) => void submit(s)} disabled={busy} />
           </>
         ) : null}
         {messages.map((m, i) => (
           <div key={i}>
-            <div className={`turn ${m.role === "user" ? "user" : ""}`}>{m.text}</div>
-            {m.ui?.map((b, k) => (
-              <div key={k} style={{ marginTop: 10 }}>
-                {b.rows ? (
-                  <div className="metrics-inline">
-                    {b.rows.map((r) => (
-                      <div key={r.label}><span className="muted">{r.label}</span><strong>{r.value}</strong></div>
-                    ))}
+            {m.role === "user" ? (
+              <div className="turn user">{m.text}</div>
+            ) : (
+              <>
+                {m.text ? <div className="turn">{m.text}</div> : null}
+                {m.slots.map((slot) => (
+                  <div key={slot.stream_id} style={{ marginTop: 10 }}>
+                    <GenerativeBlock slot={slot} onAsk={(t) => void submit(t)} />
                   </div>
-                ) : null}
-                {b.table ? (
-                  <div className="table-wrap" style={{ marginTop: 8 }}>
-                    <table className="data">
-                      <thead><tr>{(b.columns ?? []).map((c) => <th key={c}>{c}</th>)}</tr></thead>
-                      <tbody>{b.table.map((row, ri) => <tr key={ri}>{row.map((cell, ci) => <td key={ci}>{cell}</td>)}</tr>)}</tbody>
-                    </table>
-                  </div>
-                ) : null}
-              </div>
-            ))}
-            {m.actions?.length ? (
-              <div className="actions" style={{ marginTop: 10, flexWrap: "wrap", gap: 8 }}>
-                {m.actions.map((a) => {
-                  const key = `${a.kind}:${a.product_id}`;
-                  return (
-                    <button
-                      key={key + a.label}
-                      className="btn btn-primary"
-                      type="button"
-                      disabled={stageBusy === key || busy}
-                      onClick={() => void runAction(a)}
-                    >
-                      {stageBusy === key ? "…" : a.label}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : null}
-            {m.suggestions?.length ? (
-              <div className="chips" style={{ marginTop: 8 }}>
-                {m.suggestions.map((s) => (
-                  <button key={s} className="chip" type="button" disabled={busy} onClick={() => void submit(s)}>{s}</button>
                 ))}
-              </div>
-            ) : null}
+                {m.pending ? <ActivityLine label={activity || "Özet rakamlara bakıyorum…"} /> : null}
+                {(m.actions as ChatAction[] | undefined)?.length ? (
+                  <div className="actions" style={{ marginTop: 10, flexWrap: "wrap", gap: 8 }}>
+                    {(m.actions as ChatAction[]).map((a) => {
+                      const key = `${a.kind}:${a.product_id}`;
+                      return (
+                        <button
+                          key={key + a.label}
+                          className="btn btn-primary"
+                          type="button"
+                          disabled={stageBusy === key || busy}
+                          onClick={() => void runAction(a)}
+                        >
+                          {stageBusy === key ? "…" : a.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+                {!m.pending && m.suggestions?.length ? (
+                  <Suggestions suggestions={m.suggestions.slice(0, 3)} onPick={(s) => void submit(s)} disabled={busy} />
+                ) : null}
+              </>
+            )}
           </div>
         ))}
       </div>
-      {busy ? <div className="activity">{activity}</div> : null}
-      <form className="composer" onSubmit={(e) => { e.preventDefault(); void submit(input); }}>
+      {busy && !messages.some((m) => m.role === "assistant" && m.pending) ? (
+        <ActivityLine label={activity || "Özet rakamlara bakıyorum…"} />
+      ) : null}
+      <form className="composer" onSubmit={(e) => { e.preventDefault(); void submit(input); setInput(""); }}>
         <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="bu hafta ciro" aria-label="Operatör mesajı" />
         <button className="btn btn-primary" type="submit" disabled={busy}>Gönder</button>
       </form>
