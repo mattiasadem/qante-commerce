@@ -5,6 +5,9 @@ import type { ChatAction, StagedChange } from "@/lib/core";
 import { ActivityLine, GenerativeBlock } from "@/components/generative";
 import { useAgentStream } from "@/lib/use-agent-stream";
 import { Suggestions } from "web-shared";
+import { MERCHANT_ACTIVITY_DEFAULT } from "@/lib/tool-copy-tr";
+
+const MERCHANT_FALLBACK = MERCHANT_ACTIVITY_DEFAULT[0];
 
 const STARTERS = ["Bu hafta ciro", "Stoğu bitmeye yakın", "Bekleyen değişiklikler"];
 
@@ -81,7 +84,7 @@ export function MerchantChat({ prefill }: { prefill?: string }) {
                     <GenerativeBlock slot={slot} onAsk={(t) => void submit(t)} />
                   </div>
                 ))}
-                {m.pending ? <ActivityLine label={activity || "Özet rakamlara bakıyorum…"} /> : null}
+                {m.pending ? <ActivityLine label={activity || MERCHANT_FALLBACK} /> : null}
                 {(m.actions as ChatAction[] | undefined)?.length ? (
                   <div className="actions" style={{ marginTop: 10, flexWrap: "wrap", gap: 8 }}>
                     {(m.actions as ChatAction[]).map((a) => {
@@ -109,7 +112,7 @@ export function MerchantChat({ prefill }: { prefill?: string }) {
         ))}
       </div>
       {busy && !messages.some((m) => m.role === "assistant" && m.pending) ? (
-        <ActivityLine label={activity || "Özet rakamlara bakıyorum…"} />
+        <ActivityLine label={activity || MERCHANT_FALLBACK} />
       ) : null}
       <form className="composer" onSubmit={(e) => { e.preventDefault(); void submit(input); setInput(""); }}>
         <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="bu hafta ciro" aria-label="Operatör mesajı" />
