@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { STATUS_LABEL, money, orderProgress } from "@/lib/core";
+import { STATUS_LABEL, canRequestReturn, money, orderProgress } from "@/lib/core";
 import { ShipBar, ShopFooter } from "@/components/ui-shell";
 
 type DemoOrderView = {
@@ -20,6 +20,8 @@ export function OrderConfirm() {
   const [order, setOrder] = useState<DemoOrderView | null>(null);
   const [missing, setMissing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [flash, setFlash] = useState<string | null>(null);
 
   const load = useCallback(() => {
     const q = id ? `/api/order?id=${encodeURIComponent(id)}` : "/api/order";
@@ -46,16 +48,39 @@ export function OrderConfirm() {
     } catch { /* ignore */ }
   }
 
+  async function requestReturn() {
+    if (!order) return;
+    setBusy(true);
+    setFlash(null);
+    try {
+      const res = await fetch("/api/merchant/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: order.order_id, action: "request_return" }),
+      });
+      const data = await res.json() as { order?: { id: string; status: string }; error?: string };
+      if (!res.ok || !data.order) {
+        setFlash(data.error ?? "İade yazılamadı");
+        return;
+      }
+      setOrder((o) => (o ? { ...o, status: data.order!.status } : o));
+      setFlash("İade talebi yerel deftere yazıldı · ikas'a gitmedi");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const status = order?.status ?? "paid";
   const progress = orderProgress(status);
   const statusLabel = STATUS_LABEL[status] ?? status;
+  const returning = status === "return_requested";
 
   return (
     <div className="grid-wrap" style={{ maxWidth: 720 }}>
       <div className="hero-row">
-        <h1>{progress.cancelled ? "Sipariş iptal" : "Sipariş alındı"}</h1>
+        <h1>{progress.cancelled ? "Sipariş iptal" : returning ? "İade talebi" : "Sipariş alındı"}</h1>
         {order ? (
-          <span className={`tag ${progress.cancelled ? "danger" : status === "fulfilled" ? "ok" : status === "shipped" ? "warn" : "ok"}`}>
+          <span className={`tag ${progress.cancelled || returning ? "danger" : status === "fulfilled" ? "ok" : status === "shipped" ? "warn" : "ok"}`}>
             {statusLabel} · demo
           </span>
         ) : null}
@@ -70,6 +95,7 @@ export function OrderConfirm() {
             <button className="chip" type="button" style={{ marginLeft: 10 }} onClick={() => void copyId()}>{copied ? "kopyalandı" : "Kopyala"}</button>
           </p>
           <p className="faint">{order.note ?? "ikas checkout simüle · yerel defter · Siparişler'e düşer"} · kargo tahmini 1–3 iş günü</p>
+          {flash ? <p className="muted" style={{ marginTop: 8 }}><span className="banner-demo">{flash}</span></p> : null}
           <div className="chips" style={{ margin: "14px 0 6px" }} aria-label="Sipariş adımları">
             {progress.steps.map((label, i) => (
               <span key={label} className={`chip ${i <= progress.active ? "on" : ""}`}>{label}</span>
@@ -90,12 +116,21 @@ export function OrderConfirm() {
             <span className="muted">Toplam</span>
             <strong>{money(order.subtotal)}</strong>
           </div>
-          {!progress.cancelled ? <ShipBar subtotal={order.subtotal} /> : (
+          {progress.cancelled ? (
             <p className="muted" style={{ marginTop: 14 }}>Operatör İptal yazdı · yerel defter · ikas&apos;a gitmedi</p>
+          ) : returning ? (
+            <p className="muted" style={{ marginTop: 14 }}>İade açık · operatör İade kapat ile kapatır · ikas&apos;a gitmez</p>
+          ) : (
+            <ShipBar subtotal={order.subtotal} />
           )}
           <div className="actions" style={{ marginTop: 22, display: "flex", gap: 10, flexWrap: "wrap" }}>
             <Link href="/" className="btn btn-primary">Mağazaya dön</Link>
             <Link href={`/merchant/siparisler?focus=${encodeURIComponent(order.order_id)}`} className="btn">Operatörde gör</Link>
+            {canRequestReturn(status) ? (
+              <button className="btn" type="button" disabled={busy} onClick={() => void requestReturn()}>
+                {busy ? "…" : "İade talep et"}
+              </button>
+            ) : null}
           </div>
         </>
       )}
