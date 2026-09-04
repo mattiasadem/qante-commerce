@@ -1,6 +1,7 @@
 /** Client/server stub for generative UI protocol (SSE → registry). Full Claude runtime optional tonight. */
 
 import type { Product, StagedChange, UiBlock } from "@/lib/core";
+import { describeToolTr } from "@/lib/tool-copy-tr";
 
 export type StreamEvent =
   | { type: "tool_call"; tool: string; id: string; label?: string }
@@ -151,7 +152,8 @@ export function buildTurnEvents(opts: {
       : shoppingLabels(opts.activity, opts.ui, Boolean(opts.addProductId));
   labels.forEach((label, i) => {
     const id = `tc_${i}`;
-    events.push({ type: "tool_call", tool: i === 0 ? "search_catalog" : "check_inventory", id, label });
+    const tool = i === 0 ? "search_catalog" : "check_inventory";
+    events.push({ type: "tool_call", tool, id, label: label || describeToolTr(tool) });
     events.push({ type: "progress", tool_id: id, label });
     events.push({ type: "tool_result", tool: i === 0 ? "search_catalog" : "check_inventory", id });
   });
