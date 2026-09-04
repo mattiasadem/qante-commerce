@@ -21,9 +21,10 @@ export type GenSlot = {
   stream_id: string;
   component: string;
   payload: unknown;
-  status: "partial" | "final";
+  status: "pending" | "partial" | "final";
 };
 
+/** Controlled GenUI registry — maps presentation component name → React view. */
 export function GenerativeBlock({
   slot,
   onAsk,
@@ -52,9 +53,9 @@ export function GenerativeBlock({
       );
     default:
       return partial ? null : (
-        <div className="faint" data-component={slot.component}>
-          Bilinmeyen kart: {slot.component}
-        </div>
+        <p className="faint" style={{ marginTop: 8 }}>
+          Bu yüzey henüz yok: {slot.component}
+        </p>
       );
   }
 }
