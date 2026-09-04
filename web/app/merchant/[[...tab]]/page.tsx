@@ -21,7 +21,7 @@ export default async function MerchantPage({
 
   let body: ReactNode;
   if (tab === "sohbet") {
-    body = <><h1>Sohbet</h1><MerchantChat prefill={q} /></>;
+    body = <><h1>Sohbet</h1><p className="muted" style={{ marginTop: -8, marginBottom: 16 }}>Starter chipleri · Yenile/Düzelt/İndirim yerel Bekleyen kuyruğuna yazar · Onayla ikas'a gitmez</p><MerchantChat prefill={q} /></>;
   } else if (tab === "bekleyen") {
     body = <><h1>Bekleyen</h1><StagedQueue initial={getStaged()} /></>;
   } else if (tab === "katalog") {
