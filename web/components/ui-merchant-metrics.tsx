@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useState } from "react";
 import type { Alert, Issue, Snapshot, WeeklyBar } from "@/lib/core";
 import { money, number, percent } from "@/lib/core";
 
@@ -31,24 +32,74 @@ export function MiniBars({ bars }: { bars: WeeklyBar[] }) {
   );
 }
 
+function issueAction(kind: string): { action: string; label: string } | null {
+  if (kind === "unshipped") return { action: "ship", label: "Kargola" };
+  if (kind === "pending_payment") return { action: "mark_paid", label: "Ödeme alındı" };
+  if (kind === "return_open") return { action: "close_return", label: "İade kapat" };
+  return null;
+}
+
 export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[] }) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [gone, setGone] = useState<Set<string>>(() => new Set());
+  const [flash, setFlash] = useState<string | null>(null);
+
+  async function act(orderId: string, action: string) {
+    setBusy(orderId);
+    setFlash(null);
+    try {
+      const res = await fetch("/api/merchant/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: orderId, action }),
+      });
+      const data = await res.json() as { order?: { id: string; status: string }; error?: string };
+      if (!res.ok || !data.order) {
+        setFlash(data.error ?? "İşlem yapılamadı");
+        return;
+      }
+      setGone((s) => new Set(s).add(orderId));
+      setFlash(`${data.order.id} · yerel defter güncellendi`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  const visibleIssues = issues.filter((i) => !gone.has(i.order_id));
+
   return (
-    <div className="list">
-      {alerts.map((a) => (
-        <div className="list-row" key={`${a.kind}-${a.product_id}`}>
-          <div><div>{a.message}</div><div className="faint">{a.product_name}{a.days_cover != null ? ` · ${a.days_cover} gün cover` : ""}</div></div>
-          <span className={`tag ${a.kind === "out_of_stock" ? "danger" : "warn"}`}>{a.kind === "out_of_stock" ? "tükendi" : a.kind === "low_stock" ? "düşük stok" : "yavaş"}</span>
-          <Link className="btn" href={`/merchant/sohbet?q=${encodeURIComponent(a.product_name)}`}>Sor</Link>
-        </div>
-      ))}
-      {issues.map((i) => (
-        <div className="list-row" key={`${i.kind}-${i.order_id}`}>
-          <div><div>{i.message}</div><div className="faint">{money(i.total)}</div></div>
-          <span className="tag danger">{i.kind === "unshipped" ? "kargolanmadı" : i.kind === "pending_payment" ? "ödeme" : "iade"}</span>
-          <Link className="btn" href={`/merchant/sohbet?q=${encodeURIComponent(i.order_id)}`}>Sor</Link>
-        </div>
-      ))}
-      {alerts.length === 0 && issues.length === 0 ? <div className="list-row"><span className="muted">Dikkat gerektiren kayıt yok.</span></div> : null}
-    </div>
+    <>
+      {flash ? (
+        <p className="muted" style={{ marginBottom: 12 }}>
+          <span className="banner-demo">{flash}</span>{" "}
+          <Link href="/merchant/siparisler">Siparişler</Link>
+        </p>
+      ) : null}
+      <div className="list">
+        {alerts.map((a) => (
+          <div className="list-row" key={`${a.kind}-${a.product_id}`}>
+            <div><div>{a.message}</div><div className="faint">{a.product_name}{a.days_cover != null ? ` · ${a.days_cover} gün cover` : ""}</div></div>
+            <span className={`tag ${a.kind === "out_of_stock" ? "danger" : "warn"}`}>{a.kind === "out_of_stock" ? "tükendi" : a.kind === "low_stock" ? "düşük stok" : "yavaş"}</span>
+            <Link className="btn" href={`/merchant/sohbet?q=${encodeURIComponent(a.product_name)}`}>Sor</Link>
+          </div>
+        ))}
+        {visibleIssues.map((i) => {
+          const cta = issueAction(i.kind);
+          return (
+            <div className="list-row" key={`${i.kind}-${i.order_id}`}>
+              <div><div>{i.message}</div><div className="faint">{money(i.total)}</div></div>
+              <span className="tag danger">{i.kind === "unshipped" ? "kargolanmadı" : i.kind === "pending_payment" ? "ödeme" : "iade"}</span>
+              {cta ? (
+                <button className="btn btn-primary" type="button" disabled={busy === i.order_id} onClick={() => void act(i.order_id, cta.action)}>
+                  {busy === i.order_id ? "…" : cta.label}
+                </button>
+              ) : null}
+              <Link className="btn" href={`/merchant/sohbet?q=${encodeURIComponent(i.order_id)}`}>Sor</Link>
+            </div>
+          );
+        })}
+        {alerts.length === 0 && visibleIssues.length === 0 ? <div className="list-row"><span className="muted">Dikkat gerektiren kayıt yok.</span></div> : null}
+      </div>
+    </>
   );
 }
