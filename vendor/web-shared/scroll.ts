@@ -5,8 +5,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+/** Px from the bottom within which the reader still counts as following. */
 const STICK_PX = 96;
 
+/** Scrolling up holds the position; a send or `jumpToLatest` re-engages following. */
 export function useStickToBottom(
   items: readonly unknown[],
   busy: boolean,
@@ -22,6 +24,7 @@ export function useStickToBottom(
   const scrollToBottom = useCallback((behavior: ScrollBehavior) => {
     const node = scrollRef.current;
     if (!node) return;
+    // Ignore the scroll events this raises; a smooth scroll emits them well past the next frame.
     programmaticUntil.current = performance.now() + (behavior === "smooth" ? 500 : 50);
     node.scrollTo({ top: node.scrollHeight, behavior });
   }, []);
@@ -32,6 +35,8 @@ export function useStickToBottom(
     scrollToBottom("auto");
   }, [scrollToBottom]);
 
+  // A send appends items and gets one smooth scroll; per-delta updates scroll instantly so
+  // animations do not pile up.
   useEffect(() => {
     const appended = items.length !== previousCount.current;
     previousCount.current = items.length;
