@@ -31,6 +31,21 @@ export function nextOrderAction(status: string): { action: string; label: string
   return null;
 }
 
+/** Secondary cancel CTA — paid / ödeme bekliyor only (local ledger). */
+export function canCancelOrder(status: string) {
+  return status === "paid" || status === "pending_payment";
+}
+
+/** Progress steps for buyer confirm page chips. */
+export function orderProgress(status: string): { steps: string[]; active: number; cancelled?: boolean } {
+  if (status === "cancelled") return { steps: ["Ödeme", "İptal"], active: 1, cancelled: true };
+  if (status === "pending_payment") return { steps: ["Ödeme", "Hazırlık", "Kargo", "Teslim"], active: 0 };
+  if (status === "paid") return { steps: ["Ödeme", "Hazırlık", "Kargo", "Teslim"], active: 1 };
+  if (status === "shipped") return { steps: ["Ödeme", "Hazırlık", "Kargo", "Teslim"], active: 2 };
+  if (status === "fulfilled" || status === "return_requested") return { steps: ["Ödeme", "Hazırlık", "Kargo", "Teslim"], active: 3 };
+  return { steps: ["Ödeme", "Hazırlık", "Kargo", "Teslim"], active: 1 };
+}
+
 export function applyOrderAction(status: string, action: string): string | null {
   if (action === "ship" && status === "paid") return "shipped";
   if (action === "fulfill" && status === "shipped") return "fulfilled";
