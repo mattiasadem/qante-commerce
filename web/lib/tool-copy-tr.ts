@@ -1,13 +1,15 @@
 /** Turkish activity-line wrapper. Do not edit vendor/tool-copy.ts. */
 
 const TOOL_TR: Record<string, string> = {
+  search_catalog: "Katalogda arıyorum…",
   search_products: "Katalogda arıyorum…",
+  check_inventory: "Stok ve fiyatı doğruluyorum…",
   get_product_details: "Ürün detayına bakıyorum…",
   search_policies: "İade ve kargo metnine bakıyorum…",
   get_cart: "Sepete bakıyorum…",
   add_to_cart: "Sepeti güncelliyorum…",
   present_products: "Kartları hazırlıyorum…",
-  present_comparison: "Üç seçeneği karşılaştırıyorum…",
+  present_comparison: "Seçenekleri yan yana koyuyorum…",
   present_suggestions: "Sonraki adımları yazıyorum…",
   get_business_snapshot: "Özet rakamlara bakıyorum…",
   get_inventory_alerts: "Stok uyarısına bakıyorum…",
