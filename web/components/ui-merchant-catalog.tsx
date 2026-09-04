@@ -25,12 +25,13 @@ export function CatalogTable({ products }: { products: Product[] }) {
     });
   }, [products, filter]);
 
-  async function stageChange(p: Product, kind: "listing" | "price") {
+  async function stageChange(p: Product, kind: "listing" | "price" | "stock") {
     setBusy(`${p.id}:${kind}`);
     setFlash(null);
     try {
       const body: Record<string, string | number> = { kind, product_id: p.id };
       if (kind === "price") body.target_price = suggestPriceCut(p);
+      if (kind === "stock") body.target_qty = suggestRestockQty(p.stock);
       const res = await fetch("/api/merchant/stage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -44,6 +45,8 @@ export function CatalogTable({ products }: { products: Product[] }) {
       if (kind === "listing") {
         const afterTitle = data.change.after.başlık ?? data.change.after["başlık"] ?? p.name;
         setFlash(`${data.change.product_name} · liste → Bekleyen (${afterTitle})`);
+      } else if (kind === "stock") {
+        setFlash(`${data.change.product_name} · ${data.change.before.stok} → ${data.change.after.stok} Bekleyen'e eklendi`);
       } else {
         setFlash(`${data.change.product_name} · ${data.change.before.fiyat} → ${data.change.after.fiyat} Bekleyen'e eklendi`);
       }
@@ -73,7 +76,7 @@ export function CatalogTable({ products }: { products: Product[] }) {
         </p>
       ) : (
         <p className="muted" style={{ marginTop: -4, marginBottom: 16 }}>
-          Düzelt liste, İndirim fiyat önerisi yazar · Onayla ikas'a gitmez
+          Düzelt liste, İndirim fiyat, Yenile stok önerisi yazar · Onayla ikas'a gitmez
         </p>
       )}
       <div className="table-wrap">
@@ -96,6 +99,9 @@ export function CatalogTable({ products }: { products: Product[] }) {
                     </button>{" "}
                     <button className="btn" type="button" disabled={busy === `${p.id}:price`} onClick={() => void stageChange(p, "price")}>
                       {busy === `${p.id}:price` ? "…" : "İndirim"}
+                    </button>{" "}
+                    <button className="btn" type="button" disabled={busy === `${p.id}:stock`} onClick={() => void stageChange(p, "stock")} title={`öneri ${suggestRestockQty(p.stock)}`}>
+                      {busy === `${p.id}:stock` ? "…" : "Yenile"}
                     </button>{" "}
                     <Link className="btn" href={`/merchant/sohbet?q=${encodeURIComponent(p.name + " başlığını düzelt")}`}>Sor</Link>
                   </td>
