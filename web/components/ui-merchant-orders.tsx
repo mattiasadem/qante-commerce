@@ -1,1 +1,1 @@
-PLACEHOLDER_WILL_REPLACE
+USE_FILE:/workspace/_push_ui_content.txt
