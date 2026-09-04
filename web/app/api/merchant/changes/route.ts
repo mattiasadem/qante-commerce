@@ -43,6 +43,20 @@ export async function POST(req: Request) {
     return setCookies(res, [{ name: LEDGER, value: JSON.stringify(ledger) }]);
   }
 
+  if (body.action === "discard_all") {
+    const wanted = Array.isArray(body.ids) ? body.ids.filter((x) => typeof x === "string" && x) : [];
+    const note = (body.reason ?? "").trim();
+    if (!note) return NextResponse.json({ error: "reason required" }, { status: 400 });
+    const pending = mergeStaged(ledger, extras).filter((c) => c.status === "staged");
+    const targets = wanted.length ? pending.filter((c) => wanted.includes(c.id)) : pending;
+    if (!targets.length) return NextResponse.json({ error: "nothing to discard" }, { status: 400 });
+    for (const c of targets) ledger[c.id] = { status: "discarded", decision_note: note, decided_at: now };
+    const merged = mergeStaged(ledger, extras);
+    const changes = targets.map((t) => merged.find((c) => c.id === t.id)!).filter(Boolean);
+    const res = NextResponse.json({ changes, demo: true, ikas_written: false, count: changes.length });
+    return setCookies(res, [{ name: LEDGER, value: JSON.stringify(ledger) }]);
+  }
+
   const id = body.id ?? "";
   const current = mergeStaged(ledger, extras).find((c) => c.id === id);
   if (!current) return NextResponse.json({ error: "not found" }, { status: 404 });

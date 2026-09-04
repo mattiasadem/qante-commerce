@@ -1,4 +1,4 @@
-"use client";
+use client";
 import { useEffect, useMemo, useState } from "react";
 import type { StagedChange } from "@/lib/core";
 import { KIND_LABEL, shortDate } from "@/lib/core";
@@ -16,6 +16,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
   const [items, setItems] = useState(initial);
   const [kind, setKind] = useState<KindFilter>("all");
   const [rejectId, setRejectId] = useState<string | null>(null);
+  const [rejectBulk, setRejectBulk] = useState(false);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
@@ -80,13 +81,45 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
     }
   }
 
+  async function discardAll(note: string) {
+    const ids = filteredPending.map((c) => c.id);
+    if (!ids.length || !note.trim()) return;
+    setBusy("bulk");
+    setFlash(null);
+    try {
+      const res = await fetch("/api/merchant/changes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "discard_all", ids, reason: note.trim() }),
+      });
+      const data = await res.json() as { changes?: StagedChange[]; error?: string };
+      if (!res.ok || !data.changes) {
+        setFlash(data.error ?? "Toplu red yazılamadı");
+        return;
+      }
+      const byId = new Map(data.changes.map((c) => [c.id, c]));
+      setItems((xs) => xs.map((x) => byId.get(x.id) ?? x));
+      setFlash(`${ids.length} değişiklik reddedildi · yerel defter · ikas'a gitmedi`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   function approve(id: string) {
     void mutate(id, "approve");
   }
   function reject() {
-    if (!rejectId || !reason.trim()) return;
-    const id = rejectId;
     const note = reason.trim();
+    if (!note) return;
+    if (rejectBulk) {
+      setRejectBulk(false);
+      setRejectId(null);
+      setReason("");
+      void discardAll(note);
+      return;
+    }
+    if (!rejectId) return;
+    const id = rejectId;
     setRejectId(null);
     setReason("");
     void mutate(id, "discard", note);
@@ -95,7 +128,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
   return (
     <>
       <p className="muted" style={{ marginTop: -8, marginBottom: 12 }}>
-        <span className="banner-demo">DEMO kuyruk · Onayla / Toplu onayla yerel deftere yazar, ikas’a gitmez</span>
+        <span className="banner-demo">DEMO kuyruk · Onayla / Toplu onayla / Toplu reddet yerel deftere yazar, ikas’a gitmez</span>
       </p>
       <div className="chips scroll" role="tablist" aria-label="Bekleyen tür filtresi" style={{ marginBottom: 12 }}>
         {KIND_FILTERS.map((f) => (
@@ -124,6 +157,14 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
             onClick={() => void approveAll()}
           >
             {busy === "bulk" ? "…" : `Toplu onayla (${filteredPending.length})`}
+          </button>
+          <button
+            className="btn"
+            type="button"
+            disabled={busy === "bulk"}
+            onClick={() => { setRejectBulk(true); setRejectId(null); setReason(""); }}
+          >
+            {busy === "bulk" ? "…" : `Toplu reddet (${filteredPending.length})`}
           </button>
           <span className="faint">görünen bekleyenler · tek cookie yazımı</span>
         </div>
@@ -178,14 +219,16 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
           </div>
         </article>
       ))}
-      {rejectId ? (
+      {rejectId || rejectBulk ? (
         <div className="dialog">
           <div className="box">
-            <h2>Red nedeni</h2>
+            <h2>{rejectBulk ? `Toplu red · ${filteredPending.length} değişiklik` : "Red nedeni"}</h2>
             <textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="neden reddedildi" aria-label="Red nedeni" />
             <div className="actions">
-              <button className="btn btn-primary" type="button" disabled={!reason.trim()} onClick={reject}>Reddet</button>
-              <button className="btn" type="button" onClick={() => setRejectId(null)}>Vazgeç</button>
+              <button className="btn btn-primary" type="button" disabled={!reason.trim() || busy === "bulk"} onClick={reject}>
+                {rejectBulk ? `Toplu reddet (${filteredPending.length})` : "Reddet"}
+              </button>
+              <button className="btn" type="button" onClick={() => { setRejectId(null); setRejectBulk(false); }}>Vazgeç</button>
             </div>
           </div>
         </div>
