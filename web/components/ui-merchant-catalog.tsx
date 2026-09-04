@@ -13,6 +13,8 @@ const STOCK_FILTERS: { id: string; label: string; match: (a: Alert) => boolean }
 
 export function CatalogTable({ products }: { products: Product[] }) {
   const [filter, setFilter] = useState<"all" | "low" | "out" | "weak">("all");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [flash, setFlash] = useState<string | null>(null);
   const rows = useMemo(() => {
     return products.filter((p) => {
       const q = qualityScore(p);
@@ -22,6 +24,28 @@ export function CatalogTable({ products }: { products: Product[] }) {
       return true;
     });
   }, [products, filter]);
+
+  async function stageListing(p: Product) {
+    setBusy(p.id);
+    setFlash(null);
+    try {
+      const res = await fetch("/api/merchant/stage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "listing", product_id: p.id }),
+      });
+      const data = await res.json() as { change?: StagedChange; error?: string };
+      if (!res.ok || !data.change) {
+        setFlash(data.error ?? "Kuyruğa yazılamadı");
+        return;
+      }
+      const afterTitle = data.change.after.başlık ?? data.change.after["başlık"] ?? p.name;
+      setFlash(`${data.change.product_name} · liste → Bekleyen (${afterTitle})`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   return (
     <>
       <div className="chips scroll" role="tablist" aria-label="Katalog filtresi">
@@ -36,6 +60,16 @@ export function CatalogTable({ products }: { products: Product[] }) {
           </button>
         ))}
       </div>
+      {flash ? (
+        <p className="muted" style={{ marginBottom: 12 }}>
+          <span className="banner-demo">{flash}</span>{" "}
+          <Link href="/merchant/bekleyen">Bekleyen'e git</Link>
+        </p>
+      ) : (
+        <p className="muted" style={{ marginTop: -4, marginBottom: 16 }}>
+          Düzelt yerel kuyruğa liste önerisi yazar · Onayla ikas'a gitmez
+        </p>
+      )}
       <div className="table-wrap">
         <table className="data">
           <thead><tr><th></th><th>Ürün</th><th>SKU</th><th>Stok</th><th>Fiyat</th><th>Kalite</th><th></th></tr></thead>
@@ -50,7 +84,12 @@ export function CatalogTable({ products }: { products: Product[] }) {
                   <td>{p.stock}</td>
                   <td>{money(p.price)}</td>
                   <td><span className="score">{q}<i><b style={{ width: `${q}%` }} /></i></span></td>
-                  <td><Link className="btn" href={`/merchant/sohbet?q=${encodeURIComponent(p.name + " başlığını düzelt")}`}>Düzelt</Link></td>
+                  <td style={{ whiteSpace: "nowrap" }}>
+                    <button className="btn btn-primary" type="button" disabled={busy === p.id} onClick={() => void stageListing(p)}>
+                      {busy === p.id ? "…" : "Düzelt"}
+                    </button>{" "}
+                    <Link className="btn" href={`/merchant/sohbet?q=${encodeURIComponent(p.name + " başlığını düzelt")}`}>Sor</Link>
+                  </td>
                 </tr>
               );
             })}
