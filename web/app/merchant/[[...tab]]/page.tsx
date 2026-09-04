@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import { AlertList, CatalogTable, MerchantChat, MetricCards, MiniBars, OrdersView, StagedQueue, StockView } from "@/components/ui-merchant";
 import { MerchantShell } from "@/components/ui-shell";
 import { computeAlerts, computeIssues, computeSnapshot, getOrders, getProducts, getStaged, shortDate, weeklyBars } from "@/lib/core";
@@ -29,7 +30,7 @@ export default async function MerchantPage({
   } else if (tab === "stok") {
     body = <><h1>Stok</h1><p className="muted" style={{ marginTop: -8, marginBottom: 16 }}>Filtre chipleri · Yenile yerel Bekleyen kuyruğuna yazar · Sor sohbete gider</p><StockView alerts={alerts} /></>;
   } else if (tab === "siparisler") {
-    body = <><h1>Siparişler</h1><p className="muted" style={{ marginTop: -8, marginBottom: 16 }}>Tüm seed siparişler · Kargola / Teslim / Ödeme alındı yerel deftere yazar · Sor sohbete gider</p><OrdersView orders={getOrders()} issues={issues} /></>;
+    body = <><h1>Siparişler</h1><p className="muted" style={{ marginTop: -8, marginBottom: 16 }}>Mağaza checkout + seed · Kargola yerel deftere yazar · Sor sohbete gider</p><Suspense fallback={<p className="muted">siparişler…</p>}><OrdersView orders={getOrders()} issues={issues} /></Suspense></>;
   } else {
     body = (
       <>
