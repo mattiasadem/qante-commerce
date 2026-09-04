@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { Alert, Product, StagedChange } from "@/lib/core";
-import { money, qualityScore, suggestRestockQty } from "@/lib/core";
+import { money, qualityScore, suggestPriceCut, suggestRestockQty } from "@/lib/core";
 
 const STOCK_FILTERS: { id: string; label: string; match: (a: Alert) => boolean }[] = [
   { id: "all", label: "Tümü", match: () => true },
@@ -25,22 +25,28 @@ export function CatalogTable({ products }: { products: Product[] }) {
     });
   }, [products, filter]);
 
-  async function stageListing(p: Product) {
-    setBusy(p.id);
+  async function stageChange(p: Product, kind: "listing" | "price") {
+    setBusy(`${p.id}:${kind}`);
     setFlash(null);
     try {
+      const body: Record<string, string | number> = { kind, product_id: p.id };
+      if (kind === "price") body.target_price = suggestPriceCut(p);
       const res = await fetch("/api/merchant/stage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind: "listing", product_id: p.id }),
+        body: JSON.stringify(body),
       });
       const data = await res.json() as { change?: StagedChange; error?: string };
       if (!res.ok || !data.change) {
         setFlash(data.error ?? "Kuyruğa yazılamadı");
         return;
       }
-      const afterTitle = data.change.after.başlık ?? data.change.after["başlık"] ?? p.name;
-      setFlash(`${data.change.product_name} · liste → Bekleyen (${afterTitle})`);
+      if (kind === "listing") {
+        const afterTitle = data.change.after.başlık ?? data.change.after["başlık"] ?? p.name;
+        setFlash(`${data.change.product_name} · liste → Bekleyen (${afterTitle})`);
+      } else {
+        setFlash(`${data.change.product_name} · ${data.change.before.fiyat} → ${data.change.after.fiyat} Bekleyen'e eklendi`);
+      }
     } finally {
       setBusy(null);
     }
@@ -67,7 +73,7 @@ export function CatalogTable({ products }: { products: Product[] }) {
         </p>
       ) : (
         <p className="muted" style={{ marginTop: -4, marginBottom: 16 }}>
-          Düzelt yerel kuyruğa liste önerisi yazar · Onayla ikas'a gitmez
+          Düzelt liste, İndirim fiyat önerisi yazar · Onayla ikas'a gitmez
         </p>
       )}
       <div className="table-wrap">
@@ -85,8 +91,11 @@ export function CatalogTable({ products }: { products: Product[] }) {
                   <td>{money(p.price)}</td>
                   <td><span className="score">{q}<i><b style={{ width: `${q}%` }} /></i></span></td>
                   <td style={{ whiteSpace: "nowrap" }}>
-                    <button className="btn btn-primary" type="button" disabled={busy === p.id} onClick={() => void stageListing(p)}>
-                      {busy === p.id ? "…" : "Düzelt"}
+                    <button className="btn btn-primary" type="button" disabled={busy === `${p.id}:listing`} onClick={() => void stageChange(p, "listing")}>
+                      {busy === `${p.id}:listing` ? "…" : "Düzelt"}
+                    </button>{" "}
+                    <button className="btn" type="button" disabled={busy === `${p.id}:price`} onClick={() => void stageChange(p, "price")}>
+                      {busy === `${p.id}:price` ? "…" : "İndirim"}
                     </button>{" "}
                     <Link className="btn" href={`/merchant/sohbet?q=${encodeURIComponent(p.name + " başlığını düzelt")}`}>Sor</Link>
                   </td>
