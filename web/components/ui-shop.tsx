@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import type { ChatResponse, Product, UiBlock } from "@/lib/core";
+import { useEffect, useState } from "react";
+import type { Product } from "@/lib/core";
 import { CATEGORIES, RETURN_DAYS, SHIP_FREE, money } from "@/lib/core";
 import { CheckoutNote, LineList, PayButton, ShipBar, ShopFooter, useAsk, useCart } from "@/components/ui-shell";
 
@@ -37,117 +37,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
   return <div className="grid">{products.map((p) => <ProductCard key={p.id} product={p} />)}</div>;
 }
 
-type Msg = { role: "user" | "assistant"; text: string; ui?: UiBlock[]; suggestions?: string[] };
-const STARTERS = ["Keten bakıyorum", "Eve bir vazo", "Yün atkı var mı"];
-
-async function sendChat(message: string, productId?: string): Promise<ChatResponse> {
-  const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message, productId }) });
-  return (await res.json()) as ChatResponse;
-}
-
-function ProductUi({ block }: { block: UiBlock }) {
-  const { add } = useCart();
-  const products = block.products ?? [];
-  if (!products.length) return null;
-  const wrap = block.type === "present_comparison" ? "compare-grid" : "carousel";
-  return (
-    <div className={wrap}>
-      {products.map((p) => (
-        <div key={p.id} className="tile">
-          <Link href={`/urun/${p.id}`}><img src={p.image} alt={p.name} /></Link>
-          <div className="meta">
-            <Link href={`/urun/${p.id}`}>{p.name}</Link>
-            <div className="faint">{money(p.price)}{p.stock <= 0 ? " · tükendi" : ""}</div>
-            <button className="chip" type="button" disabled={p.stock <= 0} onClick={() => void add(p.id)} style={{ marginTop: 8 }}>Ekle</button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export function AssistantPane({ productId, prefill }: { productId?: string; prefill?: string }) {
-  const { ask } = useAsk();
-  const [input, setInput] = useState(prefill ?? "");
-  const [messages, setMessages] = useState<Msg[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [activity, setActivity] = useState("");
-  const seen = useRef(0);
-
-  async function submit(text: string, pid?: string) {
-    const message = text.trim();
-    if (!message || busy) return;
-    setBusy(true);
-    setActivity("katalogda bakıyorum");
-    setInput("");
-    setMessages((m) => [...m, { role: "user", text: message }]);
-    try {
-      const turn = await sendChat(message, pid ?? productId);
-      setActivity(turn.activity || "katalogda bakıyorum");
-      await new Promise((r) => setTimeout(r, 380));
-      setMessages((m) => [...m, { role: "assistant", text: turn.text, ui: turn.ui, suggestions: turn.suggestions.slice(0, 3) }]);
-    } finally {
-      setBusy(false);
-      setActivity("");
-    }
-  }
-
-  useEffect(() => {
-    if (ask && ask.n !== seen.current) {
-      seen.current = ask.n;
-      void submit(ask.message, ask.productId ?? productId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ask]);
-
-  return (
-    <>
-      <div className="rail-head"><span>Qante Asistan</span><span className="faint">katalog</span></div>
-      <div className="rail-log">
-        {messages.length === 0 ? (
-          <>
-            <div className="turn">Merhaba. Ne arıyorsun — keten, ev, yün.</div>
-            <div className="chips">{STARTERS.map((s) => <button key={s} className="chip" type="button" onClick={() => void submit(s)}>{s}</button>)}</div>
-          </>
-        ) : null}
-        {messages.map((m, i) => (
-          <div key={i}>
-            <div className={`turn ${m.role === "user" ? "user" : ""}`}>{m.text}</div>
-            {m.ui?.map((b, k) => <ProductUi key={k} block={b} />)}
-            {m.suggestions?.length ? <div className="chips" style={{ marginTop: 8 }}>{m.suggestions.slice(0, 3).map((s) => <button key={s} className="chip" type="button" onClick={() => void submit(s)}>{s}</button>)}</div> : null}
-          </div>
-        ))}
-      </div>
-      {busy ? <div className="activity" aria-live="polite">{activity || "katalogda bakıyorum"}</div> : null}
-      <form className="composer" onSubmit={(e) => { e.preventDefault(); void submit(input); }}>
-        <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="ne arıyorsun" aria-label="Asistan" />
-        <button className="btn btn-primary" type="submit" disabled={busy}>Gönder</button>
-      </form>
-    </>
-  );
-}
-
-export function AssistantRail({ productId }: { productId?: string }) {
-  return (
-    <aside className="rail" role="complementary" aria-label="Qante Asistan" data-component="AssistantRail">
-      <AssistantPane productId={productId} />
-    </aside>
-  );
-}
-
-export function AssistantSheet({ productId }: { productId?: string }) {
-  const { sheetOpen, setSheetOpen } = useAsk();
-  if (!sheetOpen) return null;
-  return (
-    <div className="sheet" role="dialog" aria-label="Qante Asistan">
-      <div className="drawer-head">
-        <strong>Qante Asistan</strong>
-        <button className="icon-btn" type="button" onClick={() => setSheetOpen(false)} aria-label="Kapat">Kapat</button>
-      </div>
-      <AssistantPane productId={productId} />
-    </div>
-  );
-}
+export { AssistantPane, AssistantRail, AssistantSheet } from "@/components/GenAssistant";
 
 export function HomeView({ products, featured, query, category, greeting, dateLabel }: {
   products: Product[]; featured: Product[]; query?: string; category?: string; greeting: string; dateLabel: string;
