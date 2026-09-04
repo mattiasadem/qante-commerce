@@ -68,6 +68,27 @@ export async function POST(req: Request) {
     return res;
   }
 
+  if (action === "fulfill_all") {
+    const wanted = Array.isArray(body.ids) ? body.ids.filter((x) => typeof x === "string" && x) : [];
+    const all = mergeOrders(ledger, demos);
+    const targets = (wanted.length ? all.filter((o) => wanted.includes(o.id)) : all).filter((o) => o.status === "shipped");
+    if (!targets.length) return NextResponse.json({ error: "nothing to fulfill" }, { status: 400 });
+    for (const o of targets) ledger[o.id] = { status: "fulfilled", decided_at: now };
+    const orders = mergeOrders(ledger, demos);
+    const issues = computeIssues(new Date(), orders);
+    const fulfilled = targets.map((t) => orders.find((o) => o.id === t.id)!).filter(Boolean);
+    const res = NextResponse.json({
+      orders,
+      issues,
+      fulfilled,
+      count: fulfilled.length,
+      demo: true,
+      ikas_written: false,
+    });
+    res.cookies.set(ORDER_LEDGER, JSON.stringify(ledger), { path: "/", sameSite: "lax", maxAge: 60 * 60 * 24 * 30 });
+    return res;
+  }
+
   const id = body.id ?? "";
   const current = mergeOrders(ledger, demos).find((o) => o.id === id);
   if (!current) return NextResponse.json({ error: "not found" }, { status: 404 });
