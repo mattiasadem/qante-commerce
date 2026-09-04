@@ -1,0 +1,1 @@
+@file:///tmp/contract-ready.py
