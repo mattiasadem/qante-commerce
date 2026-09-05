@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Product } from "@/lib/core";
 import { RETURN_DAYS, SHIP_FREE, money } from "@/lib/core";
-import { CheckoutNote, LineList, OrderNoteField, PayButton, ShipBar, ShopFooter, useAsk, useCart, ClearCartButton } from "@/components/ui-shell";
+import { CheckoutNote, LineList, OrderNoteField, PayButton, ShipBar, ShopFooter, useAsk, useCart, ClearCartButton, SaveAllForLaterButton } from "@/components/ui-shell";
 import { AddButton, BuyNowButton, FavoriteButton, NotifyRestockButton, ProductCard, ShareButton, pushRecent } from "@/components/ui-shop-core";
 
 export function AskAboutProduct({ product }: { product: Product }) {
@@ -103,13 +103,22 @@ export function CartPageView() {
     <div className="grid-wrap" style={{ maxWidth: 720 }}>
       <h1>Sepet</h1>
       {cart.items.length === 0 ? (
-        <div className="empty"><div className="mark" /><h3>Sepet henüz boş</h3><p><Link href="/">Mağazaya bak</Link></p></div>
+        <div className="empty">
+          <div className="mark" />
+          <h3>Sepet henüz boş</h3>
+          <p>Keten, yün veya ev. Gridden bir parça ekle.</p>
+          <p style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+            <Link className="btn" href="/">Mağazaya bak</Link>
+            <Link className="btn" href="/?fav=1" data-cta="empty-to-favorites">Favorilere bak</Link>
+          </p>
+        </div>
       ) : (
         <>
           <LineList extra />
           <ShipBar subtotal={cart.subtotal} />
           <p>Ara toplam <strong>{money(cart.subtotal)}</strong></p>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+            <SaveAllForLaterButton />
             <ClearCartButton />
           </div>
           <OrderNoteField />
