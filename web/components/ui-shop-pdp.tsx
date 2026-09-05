@@ -12,12 +12,26 @@ export function AskAboutProduct({ product }: { product: Product }) {
     { label: "Bu ürünü sor", msg: `${product.name}` },
     { label: "Bedeni var mı", msg: `${product.name} bedeni var mı` },
     { label: "İade nasıl", msg: "iade nasıl" },
-    { label: "Benzeri", msg: `${product.name} benzeri` },
+    { label: "Benzerlerini getir", msg: `${product.name} benzerlerini getir` },
   ];
   return (
     <div className="chips" style={{ marginTop: 18 }}>
-      {chips.map((c) => <button key={c.label} className="chip" type="button" onClick={() => requestAsk(c.msg, product.id)}>{c.label}</button>)}
+      {chips.map((c) => <button key={c.label} className="chip" type="button" onClick={() => requestAsk(c.msg, product.id)} data-cta={c.label === "Benzerlerini getir" ? "pdp-benzer-chip" : undefined}>{c.label}</button>)}
     </div>
+  );
+}
+
+export function BenzerDripButton({ product }: { product: Product }) {
+  const { requestAsk } = useAsk();
+  return (
+    <button
+      className="chip"
+      type="button"
+      data-cta="pdp-benzer-drip"
+      onClick={() => requestAsk(`${product.name} benzerlerini getir`, product.id)}
+    >
+      Benzerlerini getir
+    </button>
   );
 }
 
@@ -85,7 +99,10 @@ export function PdpView({ product, related }: { product: Product; related: Produ
         <AskAboutProduct product={product} />
         {related.length ? (
           <>
-            <div className="section-label">Yakın üç</div>
+            <div className="section-label" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+              <span>Yakın üç</span>
+              <BenzerDripButton product={product} />
+            </div>
             <div className="featured" style={{ gridTemplateColumns: "repeat(3,minmax(0,1fr))" }}>
               {related.map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
