@@ -10,7 +10,7 @@ type CartCtx = {
   update: (id: string, q: number) => Promise<void>;
   remove: (id: string) => Promise<void>;
   clear: () => Promise<void>;
-  checkout: () => Promise<DemoOrder | null>;
+  checkout: (note?: string) => Promise<DemoOrder | null>;
   applyCart: (next: Cart) => void;
   refresh: () => Promise<void>;
 };
@@ -33,11 +33,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const update = useCallback(async (productId: string, qty: number) => { setCart(await cartCall({ action: "update", productId, qty })); }, []);
   const remove = useCallback(async (productId: string) => { setCart(await cartCall({ action: "remove", productId })); }, []);
   const clear = useCallback(async () => { setCart(await cartCall({ action: "clear" })); }, []);
-  const checkout = useCallback(async () => {
-    const res = await fetch("/api/cart", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "checkout" }) });
+  const checkout = useCallback(async (note?: string) => {
+    const body: { action: string; note?: string } = { action: "checkout" };
+    const trimmed = (note ?? "").trim();
+    if (trimmed) body.note = trimmed.slice(0, 240);
+    const res = await fetch("/api/cart", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const data = await res.json() as DemoOrder & { error?: string };
     if (data.error || !data.order_id) return null;
     setCart({ items: [], subtotal: 0, currency: "TRY" });
+    try { sessionStorage.removeItem("qante_checkout_note"); } catch { /* ignore */ }
     return data;
   }, []);
   const count = useMemo(() => cart.items.reduce((s, i) => s + i.qty, 0), [cart]);
