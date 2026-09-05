@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Product } from "@/lib/core";
 import { CATEGORIES } from "@/lib/core";
 import { ShopFooter, useAsk, useCart } from "@/components/ui-shell";
@@ -11,6 +11,7 @@ export function HomeView({
   featured,
   query,
   category,
+  initialFav = false,
   greeting,
   dateLabel,
 }: {
@@ -18,6 +19,7 @@ export function HomeView({
   featured: Product[];
   query?: string;
   category?: string;
+  initialFav?: boolean;
   greeting: string;
   dateLabel: string;
 }) {
@@ -30,8 +32,24 @@ export function HomeView({
   const [sort, setSort] = useState<SortId>("default");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [onSaleOnly, setOnSaleOnly] = useState(false);
-  const [favOnly, setFavOnly] = useState(false);
+  const [favOnly, setFavOnly] = useState(Boolean(initialFav));
   const [recentOnly, setRecentOnly] = useState(false);
+  function setFavFilter(next: boolean) {
+    setFavOnly(next);
+    if (next) setRecentOnly(false);
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (category) params.set("cat", category);
+    if (next) params.set("fav", "1");
+    const qs = params.toString();
+    router.replace(qs ? `/?${qs}` : "/", { scroll: false });
+  }
+  useEffect(() => {
+    if (initialFav) {
+      setFavOnly(true);
+      setRecentOnly(false);
+    }
+  }, [initialFav]);
   function pick(cat: string) {
     const next = category === cat ? "" : cat;
     requestAsk(next ? `${next} bakıyorum` : "öne çıkanlar");
@@ -142,10 +160,7 @@ export function HomeView({
           type="button"
           aria-pressed={favOnly}
           data-filter="favorites"
-          onClick={() => {
-            setFavOnly((v) => !v);
-            setRecentOnly(false);
-          }}
+          onClick={() => setFavFilter(!favOnly)}
         >
           Favoriler{favIds.length ? ` · ${favIds.length}` : ""}
         </button>
@@ -155,8 +170,11 @@ export function HomeView({
           aria-pressed={recentOnly}
           data-filter="recent"
           onClick={() => {
-            setRecentOnly((v) => !v);
-            setFavOnly(false);
+            setRecentOnly((v) => {
+              const next = !v;
+              if (next && favOnly) setFavFilter(false);
+              return next;
+            });
           }}
         >
           Son bakılanlar{recentIds.length ? ` · ${recentIds.length}` : ""}
@@ -192,7 +210,7 @@ export function HomeView({
             data-cta="clear-favorites"
             onClick={() => {
               clearFavorites();
-              setFavOnly(false);
+              setFavFilter(false);
             }}
           >
             Favorileri temizle
