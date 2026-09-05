@@ -6,7 +6,7 @@ export {
   useAsk,
 } from "@/components/ui-shell-providers";
 export type { DemoOrder } from "@/components/ui-shell-providers";
-export { LineList } from "@/components/ui-shell-line";
+export { LineList, SaveAllForLaterButton } from "@/components/ui-shell-line";
 export {
   Logo,
   ShipBar,

@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useState } from "react";
 import { money } from "@/lib/core";
 import { useCart } from "@/components/ui-shell-providers";
 
@@ -12,6 +13,17 @@ function addFavoriteId(id: string) {
       localStorage.setItem(FAV_KEY, JSON.stringify([...list, id]));
       window.dispatchEvent(new CustomEvent("qante-favorites"));
     }
+  } catch { /* ignore */ }
+}
+
+function addFavoriteIds(ids: string[]) {
+  try {
+    const prev = JSON.parse(localStorage.getItem(FAV_KEY) || "[]") as string[];
+    const list = Array.isArray(prev) ? prev.filter((x) => typeof x === "string") : [];
+    const set = new Set(list);
+    for (const id of ids) if (typeof id === "string" && id) set.add(id);
+    localStorage.setItem(FAV_KEY, JSON.stringify([...set]));
+    window.dispatchEvent(new CustomEvent("qante-favorites"));
   } catch { /* ignore */ }
 }
 
@@ -47,5 +59,32 @@ export function LineList({ extra }: { extra?: boolean }) {
         </div>
       ))}
     </>
+  );
+}
+
+/** Move every cart line into Favoriler, then clear the cart. */
+export function SaveAllForLaterButton({ className = "btn" }: { className?: string }) {
+  const { cart, clear } = useCart();
+  const [busy, setBusy] = useState(false);
+  if (cart.items.length === 0) return null;
+  return (
+    <button
+      className={className}
+      type="button"
+      disabled={busy}
+      data-cta="save-all-for-later"
+      title="Tüm satırları favorilere taşı, sepeti boşalt"
+      onClick={async () => {
+        setBusy(true);
+        try {
+          addFavoriteIds(cart.items.map((l) => l.product_id));
+          await clear();
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      {busy ? "…" : `Tümünü sonra al · ${cart.items.length}`}
+    </button>
   );
 }
