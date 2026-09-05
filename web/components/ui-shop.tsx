@@ -59,6 +59,7 @@ export function HomeView({ products, featured, query, category, greeting, dateLa
   const { requestAsk } = useAsk();
   const router = useRouter();
   const [sort, setSort] = useState<SortId>("default");
+  const [inStockOnly, setInStockOnly] = useState(false);
   function pick(cat: string) {
     const next = category === cat ? "" : cat;
     requestAsk(next ? `${next} bakıyorum` : "öne çıkanlar");
@@ -68,7 +69,8 @@ export function HomeView({ products, featured, query, category, greeting, dateLa
     router.push(params.toString() ? `/?${params}` : "/");
   }
   const filtered = useMemo(() => {
-    const list = [...products];
+    let list = [...products];
+    if (inStockOnly) list = list.filter((p) => p.stock > 0);
     if (sort === "price_asc") list.sort((a, b) => a.price - b.price);
     else if (sort === "price_desc") list.sort((a, b) => b.price - a.price);
     else if (sort === "stock") list.sort((a, b) => {
@@ -78,7 +80,7 @@ export function HomeView({ products, featured, query, category, greeting, dateLa
       return b.stock - a.stock;
     });
     return list;
-  }, [products, sort]);
+  }, [products, sort, inStockOnly]);
   return (
     <div className="grid-wrap">
       <div className="hero-row">
@@ -95,14 +97,23 @@ export function HomeView({ products, featured, query, category, greeting, dateLa
         {SORTS.map((s) => (
           <button key={s.id} className={`chip ${sort === s.id ? "on" : ""}`} type="button" aria-pressed={sort === s.id} onClick={() => setSort(s.id)}>{s.label}</button>
         ))}
+        <button
+          className={`chip ${inStockOnly ? "on" : ""}`}
+          type="button"
+          aria-pressed={inStockOnly}
+          data-filter="in-stock"
+          onClick={() => setInStockOnly((v) => !v)}
+        >
+          Sadece stokta
+        </button>
       </div>
-      {!query && !category && featured.length && sort === "default" ? (
+      {!query && !category && featured.length && sort === "default" && !inStockOnly ? (
         <>
           <div className="section-label">Öne çıkan</div>
           <div className="featured">{featured.map((p) => <ProductCard key={p.id} product={p} />)}</div>
         </>
       ) : null}
-      <div className="section-label">{query ? `${filtered.length} sonuç · ${query}` : category ? category : "Katalog"}{sort !== "default" ? ` · ${SORTS.find((s) => s.id === sort)?.label}` : ""}</div>
+      <div className="section-label">{query ? `${filtered.length} sonuç · ${query}` : category ? category : "Katalog"}{sort !== "default" ? ` · ${SORTS.find((s) => s.id === sort)?.label}` : ""}{inStockOnly ? " · stokta" : ""}</div>
       <ProductGrid products={filtered} />
       <ShopFooter />
     </div>
