@@ -43,7 +43,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   let items = parseCart(cookie(req, CART));
-  const body = (await req.json()) as { action?: string; productId?: string; product_id?: string; qty?: number };
+  const body = (await req.json()) as { action?: string; productId?: string; product_id?: string; qty?: number; note?: string };
   const productId = body.productId ?? body.product_id;
   const qty = body.qty ?? 1;
   const action = body.action ?? "add";
@@ -59,7 +59,12 @@ export async function POST(req: Request) {
       currency: "TRY",
       created_at,
       status: "paid",
-      note: "ikas checkout simüle · yerel defter · Siparişler'e düşer",
+      note: (() => {
+        const buyer = typeof body.note === "string" ? body.note.trim().slice(0, 240) : "";
+        return buyer
+          ? `Alıcı notu: ${buyer} · ikas checkout simüle · yerel defter`
+          : "ikas checkout simüle · yerel defter · Siparişler'e düşer";
+      })(),
     };
     const deskOrder: Order = {
       id: order_id,
