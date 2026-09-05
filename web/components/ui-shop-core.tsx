@@ -77,6 +77,52 @@ export function FavoriteButton({
   );
 }
 
+const RECENT_KEY = "qante_recent_views";
+const RECENT_MAX = 8;
+
+export function readRecent(): string[] {
+  try {
+    const raw = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]") as string[];
+    return Array.isArray(raw) ? raw.filter((x) => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+export function writeRecent(ids: string[]) {
+  try {
+    localStorage.setItem(RECENT_KEY, JSON.stringify(ids.slice(0, RECENT_MAX)));
+    window.dispatchEvent(new CustomEvent("qante-recent"));
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Record a PDP view — newest first, deduped, capped. */
+export function pushRecent(id: string) {
+  const prev = readRecent().filter((x) => x !== id);
+  writeRecent([id, ...prev]);
+}
+
+export function clearRecent() {
+  writeRecent([]);
+}
+
+export function useRecentViews() {
+  const [ids, setIds] = useState<string[]>([]);
+  useEffect(() => {
+    const sync = () => setIds(readRecent());
+    sync();
+    window.addEventListener("storage", sync);
+    window.addEventListener("qante-recent", sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener("qante-recent", sync);
+    };
+  }, []);
+  return { ids, clear: clearRecent };
+}
+
 export function AddButton({ productId, disabled, qty = 1 }: { productId: string; disabled?: boolean; qty?: number }) {
   const { add } = useCart();
   const n = Math.max(1, qty);

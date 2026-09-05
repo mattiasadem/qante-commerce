@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Product } from "@/lib/core";
 import { RETURN_DAYS, SHIP_FREE, money } from "@/lib/core";
 import { CheckoutNote, LineList, PayButton, ShipBar, ShopFooter, useAsk, useCart, ClearCartButton } from "@/components/ui-shell";
-import { AddButton, BuyNowButton, FavoriteButton, NotifyRestockButton, ProductCard } from "@/components/ui-shop-core";
+import { AddButton, BuyNowButton, FavoriteButton, NotifyRestockButton, ProductCard, pushRecent } from "@/components/ui-shop-core";
 
 export function AskAboutProduct({ product }: { product: Product }) {
   const { requestAsk } = useAsk();
@@ -28,6 +28,9 @@ export function PdpView({ product, related }: { product: Product; related: Produ
   const [qty, setQty] = useState(1);
   const out = product.stock <= 0;
   const maxQty = Math.max(1, product.stock);
+  useEffect(() => {
+    pushRecent(product.id);
+  }, [product.id]);
   return (
     <div className="product-page">
       <div className="gallery">

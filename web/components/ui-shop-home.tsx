@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import type { Product } from "@/lib/core";
 import { CATEGORIES } from "@/lib/core";
 import { ShopFooter, useAsk } from "@/components/ui-shell";
-import { ProductCard, ProductGrid, SORTS, useFavorites, type SortId } from "@/components/ui-shop-core";
+import { ProductCard, ProductGrid, SORTS, useFavorites, useRecentViews, type SortId } from "@/components/ui-shop-core";
 
 export function HomeView({
   products,
@@ -24,10 +24,12 @@ export function HomeView({
   const { requestAsk } = useAsk();
   const router = useRouter();
   const { ids: favIds } = useFavorites();
+  const { ids: recentIds, clear: clearRecentViews } = useRecentViews();
   const [sort, setSort] = useState<SortId>("default");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [onSaleOnly, setOnSaleOnly] = useState(false);
   const [favOnly, setFavOnly] = useState(false);
+  const [recentOnly, setRecentOnly] = useState(false);
   function pick(cat: string) {
     const next = category === cat ? "" : cat;
     requestAsk(next ? `${next} bakıyorum` : "öne çıkanlar");
@@ -42,6 +44,11 @@ export function HomeView({
       const set = new Set(favIds);
       list = list.filter((p) => set.has(p.id));
     }
+    if (recentOnly) {
+      const order = new Map(recentIds.map((id, i) => [id, i]));
+      list = list.filter((p) => order.has(p.id));
+      list.sort((a, b) => (order.get(a.id)! - order.get(b.id)!));
+    }
     if (inStockOnly) list = list.filter((p) => p.stock > 0);
     if (onSaleOnly) list = list.filter((p) => typeof p.compare_at === "number" && p.compare_at > p.price);
     if (sort === "price_asc") list.sort((a, b) => a.price - b.price);
@@ -54,9 +61,15 @@ export function HomeView({
         return b.stock - a.stock;
       });
     return list;
-  }, [products, sort, inStockOnly, onSaleOnly, favOnly, favIds]);
+  }, [products, sort, inStockOnly, onSaleOnly, favOnly, favIds, recentOnly, recentIds]);
+  const recentProducts = useMemo(() => {
+    const map = new Map(products.map((p) => [p.id, p]));
+    return recentIds.map((id) => map.get(id)).filter(Boolean) as Product[];
+  }, [products, recentIds]);
   const showFeatured =
-    !query && !category && featured.length && sort === "default" && !inStockOnly && !onSaleOnly && !favOnly;
+    !query && !category && featured.length && sort === "default" && !inStockOnly && !onSaleOnly && !favOnly && !recentOnly;
+  const showRecentRail =
+    !query && !category && recentProducts.length > 0 && sort === "default" && !inStockOnly && !onSaleOnly && !favOnly && !recentOnly;
   return (
     <div className="grid-wrap">
       <div className="hero-row">
@@ -112,11 +125,49 @@ export function HomeView({
           type="button"
           aria-pressed={favOnly}
           data-filter="favorites"
-          onClick={() => setFavOnly((v) => !v)}
+          onClick={() => {
+            setFavOnly((v) => !v);
+            setRecentOnly(false);
+          }}
         >
           Favoriler{favIds.length ? ` · ${favIds.length}` : ""}
         </button>
+        <button
+          className={`chip ${recentOnly ? "on" : ""}`}
+          type="button"
+          aria-pressed={recentOnly}
+          data-filter="recent"
+          onClick={() => {
+            setRecentOnly((v) => !v);
+            setFavOnly(false);
+          }}
+        >
+          Son bakılanlar{recentIds.length ? ` · ${recentIds.length}` : ""}
+        </button>
+        {recentOnly && recentIds.length ? (
+          <button
+            className="chip"
+            type="button"
+            data-cta="clear-recent"
+            onClick={() => {
+              clearRecentViews();
+              setRecentOnly(false);
+            }}
+          >
+            Geçmişi temizle
+          </button>
+        ) : null}
       </div>
+      {showRecentRail ? (
+        <>
+          <div className="section-label">Son bakılanlar</div>
+          <div className="featured" data-rail="recent">
+            {recentProducts.slice(0, 4).map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </>
+      ) : null}
       {showFeatured ? (
         <>
           <div className="section-label">Öne çıkan</div>
@@ -132,9 +183,11 @@ export function HomeView({
           ? `${filtered.length} sonuç · ${query}`
           : favOnly
             ? `Favoriler · ${filtered.length}`
-            : category
-              ? category
-              : "Katalog"}
+            : recentOnly
+              ? `Son bakılanlar · ${filtered.length}`
+              : category
+                ? category
+                : "Katalog"}
         {sort !== "default" ? ` · ${SORTS.find((s) => s.id === sort)?.label}` : ""}
         {inStockOnly ? " · stokta" : ""}
         {onSaleOnly ? " · indirimli" : ""}
