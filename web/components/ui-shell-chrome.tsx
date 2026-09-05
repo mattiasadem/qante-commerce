@@ -1,11 +1,34 @@
 "use client";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
 import { money, SHIP_FREE } from "@/lib/core";
 import { useAsk, useCart } from "@/components/ui-shell-providers";
 import { LineList } from "@/components/ui-shell-line";
 import { OrderNoteField, readCheckoutNote } from "@/components/ui-order-note";
+
+const FAV_KEY = "qante_favorites";
+function useFavCount() {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const raw = JSON.parse(localStorage.getItem(FAV_KEY) || "[]") as unknown;
+        setN(Array.isArray(raw) ? raw.filter((x) => typeof x === "string").length : 0);
+      } catch {
+        setN(0);
+      }
+    };
+    sync();
+    window.addEventListener("qante-favorites", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("qante-favorites", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  return n;
+}
 
 export function Logo({ size = 28 }: { size?: number }) {
   return (
@@ -27,12 +50,21 @@ export function ShipBar({ subtotal }: { subtotal: number }) {
   );
 }
 
-function EmptyBag() {
+function EmptyBag({ onClose }: { onClose?: () => void }) {
   return (
     <div className="empty">
       <div className="mark" aria-hidden="true" />
       <h3>Sepet henüz boş</h3>
       <p>Keten, yün veya ev. Gridden bir parça ekle.</p>
+      <Link
+        className="btn"
+        href="/?fav=1"
+        data-cta="empty-to-favorites"
+        onClick={() => onClose?.()}
+        style={{ marginTop: 14, display: "inline-block" }}
+      >
+        Favorilere bak
+      </Link>
     </div>
   );
 }
@@ -81,7 +113,7 @@ export function CartDrawer() {
       <div className="drawer-backdrop" hidden={!cartOpen} onClick={() => setCartOpen(false)} data-component="CartDrawer" />
       <aside className="drawer" hidden={!cartOpen} role="dialog" aria-label="Sepet" data-component="CartDrawer">
         <div className="drawer-head"><strong>Sepet</strong><button className="icon-btn" type="button" onClick={() => setCartOpen(false)} aria-label="Kapat">Kapat</button></div>
-        <div className="drawer-body">{cart.items.length === 0 ? <EmptyBag /> : <LineList />}</div>
+        <div className="drawer-body">{cart.items.length === 0 ? <EmptyBag onClose={() => setCartOpen(false)} /> : <LineList />}</div>
         <div className="drawer-foot">
           <ShipBar subtotal={cart.subtotal} />
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}><span className="muted">Ara toplam</span><strong>{money(cart.subtotal)}</strong></div>
@@ -102,6 +134,9 @@ export function StoreShell({ children }: { children: ReactNode }) {
   const [q, setQ] = useState("");
   const router = useRouter();
   const path = usePathname();
+  const search = useSearchParams();
+  const favCount = useFavCount();
+  const favOn = path === "/" && (search.get("fav") === "1" || search.get("fav") === "true");
   return (
     <>
       <header className="header">
@@ -115,6 +150,14 @@ export function StoreShell({ children }: { children: ReactNode }) {
           <input className="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="ne arıyorsun" aria-label="Ara" />
         </form>
         <div className="header-actions">
+          <Link
+            href="/?fav=1"
+            className={`icon-btn ${favOn ? "on" : ""}`}
+            data-cta="nav-favorites"
+            aria-label="Favoriler"
+          >
+            Favoriler{favCount > 0 ? <span className="badge">{favCount}</span> : null}
+          </Link>
           <Link href="/siparislerim" className={`icon-btn ${path.startsWith("/siparislerim") ? "on" : ""}`} data-cta="my-orders">Siparişlerim</Link>
           <Link href="/merchant" className="icon-btn">Operatör</Link>
           <button className="icon-btn" type="button" onClick={() => setCartOpen(true)} aria-label="Sepet">
@@ -125,12 +168,12 @@ export function StoreShell({ children }: { children: ReactNode }) {
       <CartDrawer />
       {children}
       <nav className="dock" aria-label="Mobil">
-        <Link href="/" className={path === "/" ? "on" : ""}>Mağaza</Link>
+        <Link href="/" className={path === "/" && !favOn ? "on" : ""}>Mağaza</Link>
+        <Link href="/?fav=1" className={favOn ? "on" : ""} data-cta="dock-favorites">Favori{favCount > 0 ? ` ${favCount}` : ""}</Link>
         <Link href="/siparislerim" className={path.startsWith("/siparislerim") ? "on" : ""}>Sipariş</Link>
         <button type="button" onClick={() => setSheetOpen(true)}>Asistan</button>
         <button type="button" className={path === "/sepet" ? "on" : ""} onClick={() => setCartOpen(true)}>
-          Sepet{count > 0 ? ` ${count}` : ""}
-        </button>
+          Sepet{count > 0 ? ` ${count}` : ""}</button>
       </nav>
     </>
   );
