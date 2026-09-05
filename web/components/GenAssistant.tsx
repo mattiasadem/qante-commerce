@@ -7,6 +7,7 @@ import { useAgentStream } from "@/lib/use-agent-stream";
 import { SHOP_ACTIVITY_DEFAULT } from "@/lib/tool-copy-tr";
 
 const STARTERS = ["Keten bakıyorum", "Eve bir vazo", "Yün atkı var mı", "Bunu sepete ekle"];
+const PDP_STARTERS = ["Benzerlerini getir", "Bedeni var mı", "İade nasıl", "Bunu sepete ekle"];
 const FALLBACK = SHOP_ACTIVITY_DEFAULT[0];
 
 export function AssistantPane({ productId, prefill }: { productId?: string; prefill?: string }) {
@@ -34,7 +35,7 @@ export function AssistantPane({ productId, prefill }: { productId?: string; pref
         {messages.length === 0 ? (
           <>
             <div className="turn">Merhaba. Ne arıyorsun — keten, ev, yün. Kartlar akışla gelir.</div>
-            <Suggestions suggestions={STARTERS} onPick={(s) => void submit(s, productId)} disabled={busy} />
+            <Suggestions suggestions={productId ? PDP_STARTERS : STARTERS} onPick={(s) => void submit(s, productId)} disabled={busy} />
           </>
         ) : null}
         {messages.map((m, i) => (
