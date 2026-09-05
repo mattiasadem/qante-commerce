@@ -115,6 +115,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
           <input className="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="ne arıyorsun" aria-label="Ara" />
         </form>
         <div className="header-actions">
+          <Link href="/siparislerim" className={`icon-btn ${path.startsWith("/siparislerim") ? "on" : ""}`} data-cta="my-orders">Siparişlerim</Link>
           <Link href="/merchant" className="icon-btn">Operatör</Link>
           <button className="icon-btn" type="button" onClick={() => setCartOpen(true)} aria-label="Sepet">
             Sepet{count > 0 ? <span className={`badge ${badgePop ? "ac-pop" : ""}`}>{count}</span> : null}
@@ -125,6 +126,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
       {children}
       <nav className="dock" aria-label="Mobil">
         <Link href="/" className={path === "/" ? "on" : ""}>Mağaza</Link>
+        <Link href="/siparislerim" className={path.startsWith("/siparislerim") ? "on" : ""}>Sipariş</Link>
         <button type="button" onClick={() => setSheetOpen(true)}>Asistan</button>
         <button type="button" className={path === "/sepet" ? "on" : ""} onClick={() => setCartOpen(true)}>
           Sepet{count > 0 ? ` ${count}` : ""}
