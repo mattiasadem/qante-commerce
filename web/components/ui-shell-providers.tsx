@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Cart } from "@/lib/core";
+import { clearCoupon } from "@/components/ui-coupon";
 
 const empty: Cart = { items: [], subtotal: 0, currency: "TRY" };
 export type DemoOrder = { order_id: string; items: Cart["items"]; subtotal: number; currency: string; created_at: string };
@@ -42,6 +43,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (data.error || !data.order_id) return null;
     setCart({ items: [], subtotal: 0, currency: "TRY" });
     try { sessionStorage.removeItem("qante_checkout_note"); } catch { /* ignore */ }
+    try { clearCoupon(); } catch { /* ignore */ }
     return data;
   }, []);
   const count = useMemo(() => cart.items.reduce((s, i) => s + i.qty, 0), [cart]);
