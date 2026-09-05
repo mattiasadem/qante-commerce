@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { Product } from "@/lib/core";
 import { RETURN_DAYS, SHIP_FREE, money } from "@/lib/core";
 import { CheckoutNote, LineList, OrderNoteField, PayButton, ShipBar, ShopFooter, useAsk, useCart, ClearCartButton, SaveAllForLaterButton } from "@/components/ui-shell";
+import { CouponField, CouponTotals, isFreeShip, useCoupon } from "@/components/ui-coupon";
 import { AddButton, BuyNowButton, FavoriteButton, NotifyRestockButton, ProductCard, ShareButton, pushRecent } from "@/components/ui-shop-core";
 
 export function AskAboutProduct({ product }: { product: Product }) {
@@ -116,6 +117,8 @@ export function PdpView({ product, related }: { product: Product; related: Produ
 
 export function CartPageView() {
   const { cart } = useCart();
+  const { coupon } = useCoupon();
+  const freeShip = isFreeShip(cart.subtotal, coupon);
   return (
     <div className="grid-wrap" style={{ maxWidth: 720 }}>
       <h1>Sepet</h1>
@@ -132,12 +135,14 @@ export function CartPageView() {
       ) : (
         <>
           <LineList extra />
-          <ShipBar subtotal={cart.subtotal} />
+          <ShipBar subtotal={cart.subtotal} freeShip={freeShip} />
           <p>Ara toplam <strong>{money(cart.subtotal)}</strong></p>
+          <CouponTotals subtotal={cart.subtotal} />
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
             <SaveAllForLaterButton />
             <ClearCartButton />
           </div>
+          <CouponField />
           <OrderNoteField />
           <PayButton />
           <CheckoutNote />
