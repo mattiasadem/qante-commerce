@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Product } from "@/lib/core";
 import { RETURN_DAYS, SHIP_FREE, money } from "@/lib/core";
-import { CheckoutNote, LineList, PayButton, ShipBar, ShopFooter, useAsk, useCart, ClearCartButton } from "@/components/ui-shell";
+import { CheckoutNote, LineList, OrderNoteField, PayButton, ShipBar, ShopFooter, useAsk, useCart, ClearCartButton } from "@/components/ui-shell";
 import { AddButton, BuyNowButton, FavoriteButton, NotifyRestockButton, ProductCard, ShareButton, pushRecent } from "@/components/ui-shop-core";
 
 export function AskAboutProduct({ product }: { product: Product }) {
@@ -112,6 +112,7 @@ export function CartPageView() {
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
             <ClearCartButton />
           </div>
+          <OrderNoteField />
           <PayButton />
           <CheckoutNote />
         </>
