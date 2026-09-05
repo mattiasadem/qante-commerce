@@ -11,6 +11,7 @@ import {
   canRequestReturn,
   canWithdrawReturn,
   money,
+  orderProgress,
 } from "@/lib/core";
 import { ShopFooter, useCart } from "@/components/ui-shell";
 
@@ -263,6 +264,7 @@ export function MyOrdersView() {
                 const showReturn = canRequestReturn(o.status);
                 const showWithdraw = canWithdrawReturn(o.status);
                 const showReorder = canReorder(o.status);
+                const progress = orderProgress(o.status);
                 return (
                   <div className="list-row" key={o.order_id} style={{ alignItems: "flex-start" }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -275,6 +277,18 @@ export function MyOrdersView() {
                       </div>
                       <div style={{ marginTop: 8 }}>
                         <span className={`tag ${statusTagClass(o.status)}`}>{label}</span>
+                      </div>
+                      <div
+                        className="chips"
+                        style={{ marginTop: 8, flexWrap: "wrap" }}
+                        aria-label="Sipariş adımları"
+                        data-cta="my-orders-progress"
+                      >
+                        {progress.steps.map((step, i) => (
+                          <span key={step} className={`chip ${i <= progress.active ? "on" : ""}`}>
+                            {step}
+                          </span>
+                        ))}
                       </div>
                     </div>
                     <div style={{ textAlign: "right" }}>
