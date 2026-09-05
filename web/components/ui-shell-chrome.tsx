@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { money, SHIP_FREE } from "@/lib/core";
 import { useAsk, useCart } from "@/components/ui-shell-providers";
-import { LineList } from "@/components/ui-shell-line";
+import { LineList, SaveAllForLaterButton } from "@/components/ui-shell-line";
 import { OrderNoteField, readCheckoutNote } from "@/components/ui-order-note";
 
 const FAV_KEY = "qante_favorites";
@@ -118,7 +118,7 @@ export function CartDrawer() {
           <ShipBar subtotal={cart.subtotal} />
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}><span className="muted">Ara toplam</span><strong>{money(cart.subtotal)}</strong></div>
           <Link className="btn" href="/sepet" onClick={() => setCartOpen(false)} style={{ display: "block", textAlign: "center", marginBottom: 8 }}>Sepete git</Link>
-          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}><ClearCartButton className="btn" /></div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}><SaveAllForLaterButton className="btn" /><ClearCartButton className="btn" /></div>
           <OrderNoteField />
           <PayButton />
           <CheckoutNote />
@@ -173,7 +173,8 @@ export function StoreShell({ children }: { children: ReactNode }) {
         <Link href="/siparislerim" className={path.startsWith("/siparislerim") ? "on" : ""}>Sipariş</Link>
         <button type="button" onClick={() => setSheetOpen(true)}>Asistan</button>
         <button type="button" className={path === "/sepet" ? "on" : ""} onClick={() => setCartOpen(true)}>
-          Sepet{count > 0 ? ` ${count}` : ""}</button>
+          Sepet{count > 0 ? ` ${count}` : ""}
+        </button>
       </nav>
     </>
   );
