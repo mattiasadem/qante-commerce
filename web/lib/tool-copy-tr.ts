@@ -8,6 +8,7 @@ const TOOL_TR: Record<string, string> = {
   search_policies: "İade ve kargo metnine bakıyorum…",
   get_cart: "Sepete bakıyorum…",
   add_to_cart: "Sepeti güncelliyorum…",
+  find_similar: "Benzerlerini getiriyorum…",
   present_products: "Kartları hazırlıyorum…",
   present_comparison: "Seçenekleri yan yana koyuyorum…",
   present_suggestions: "Sonraki adımları yazıyorum…",
