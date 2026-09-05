@@ -164,13 +164,30 @@ export function merchantTurn(message: string): ChatResponse {
     };
   }
 
-  if (/sipariş|siparis|iade|ödeme|odeme/.test(text)) {
-    const rows = issues.map((i) => ({ label: i.order_id, value: i.message }));
+  if (/sipariş|siparis|iade|ödeme|odeme|ord_/.test(text)) {
+    const focusId = (text.match(/ord_[a-z0-9_]+/i) ?? [])[0];
+    const focus = focusId
+      ? issues.filter((i) => i.order_id.toLowerCase() === focusId.toLowerCase())
+      : issues;
+    const list = focus.length ? focus : issues;
+    const rows = list.slice(0, 6).map((i) => ({ label: i.order_id, value: i.message }));
+    const actions: ChatAction[] = [];
+    for (const i of list.slice(0, 4)) {
+      if (i.kind === "unshipped") actions.push({ label: `Kargola · ${i.order_id}`, kind: "order", order_id: i.order_id, order_action: "ship" });
+      else if (i.kind === "pending_payment") actions.push({ label: `Ödeme alındı · ${i.order_id}`, kind: "order", order_id: i.order_id, order_action: "mark_paid" });
+      else if (i.kind === "return_open") actions.push({ label: `İade kapat · ${i.order_id}`, kind: "order", order_id: i.order_id, order_action: "close_return" });
+    }
     return {
-      text: `Açık konu ${issues.length}. Durum seed siparişlerinden; Siparişler sekmesinde CTAlar çalışır.`,
-      ui: [{ type: "present_metrics", rows }],
+      text: focusId && focus.length
+        ? `${focus[0].order_id}: ${focus[0].message} CTA yerel deftere yazar; ikas'a gitmez.`
+        : focusId
+          ? `${focusId} açık konuda yok. Aşağıda diğer konular.`
+          : `Açık konu ${issues.length}. CTA yerel Siparişler defterine yazar; ikas'a gitmez.`,
+      ui: [{ type: "present_metrics", rows: rows.length ? rows : [{ label: "Konu", value: "açık kayıt yok" }] }],
       suggestions: ["Bu hafta ciro", "Stoğu bitmeye yakın", "Açık siparişler"],
       activity: "sipariş konularına bakıyorum",
+      activity_steps: ["Sipariş konularına bakıyorum…", "CTA hazırlıyorum…"],
+      actions: actions.length ? actions : undefined,
     };
   }
 
