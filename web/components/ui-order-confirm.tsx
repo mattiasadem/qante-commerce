@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { STATUS_LABEL, canCancelOrder, canConfirmPayment, canConfirmReceived, canRequestReturn, canWithdrawReturn, money, orderProgress } from "@/lib/core";
-import { ShipBar, ShopFooter } from "@/components/ui-shell";
+import { STATUS_LABEL, canCancelOrder, canConfirmPayment, canConfirmReceived, canReorder, canRequestReturn, canWithdrawReturn, money, orderProgress } from "@/lib/core";
+import { ShipBar, ShopFooter, useCart } from "@/components/ui-shell";
 
 type DemoOrderView = {
   order_id: string;
@@ -16,6 +16,8 @@ type DemoOrderView = {
 
 export function OrderConfirm() {
   const params = useSearchParams();
+  const router = useRouter();
+  const { add } = useCart();
   const id = params.get("id") ?? "";
   const [order, setOrder] = useState<DemoOrderView | null>(null);
   const [missing, setMissing] = useState(false);
@@ -160,6 +162,21 @@ export function OrderConfirm() {
     }
   }
 
+  async function reorder() {
+    if (!order) return;
+    setBusy(true);
+    setFlash(null);
+    try {
+      for (const line of order.items) {
+        await add(line.product_id, line.qty);
+      }
+      setFlash("Sepete eklendi · Tekrar satın al");
+      router.push("/sepet");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const status = order?.status ?? "paid";
   const progress = orderProgress(status);
   const statusLabel = STATUS_LABEL[status] ?? status;
@@ -239,6 +256,11 @@ export function OrderConfirm() {
             {canWithdrawReturn(status) ? (
               <button className="btn btn-primary" type="button" disabled={busy} onClick={() => void withdrawReturn()}>
                 {busy ? "…" : "İade talebini geri al"}
+              </button>
+            ) : null}
+            {canReorder(status) ? (
+              <button className="btn btn-primary" type="button" disabled={busy} onClick={() => void reorder()}>
+                {busy ? "…" : "Tekrar satın al"}
               </button>
             ) : null}
           </div>
