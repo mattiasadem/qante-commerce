@@ -6,6 +6,7 @@ export {
   ProductGrid,
   FavoriteButton,
   useFavorites,
+  useRecentViews,
 } from "@/components/ui-shop-core";
 export { HomeView } from "@/components/ui-shop-home";
 export {
