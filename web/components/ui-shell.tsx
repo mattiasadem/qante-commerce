@@ -11,7 +11,6 @@ export {
   Logo,
   ShipBar,
   CheckoutNote,
-  OrderNoteField,
   PayButton,
   ClearCartButton,
   CartDrawer,
