@@ -1,10 +1,81 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Product } from "@/lib/core";
 import { money } from "@/lib/core";
 import { useAsk, useCart } from "@/components/ui-shell";
+
+const FAV_KEY = "qante_favorites";
+
+export function readFavorites(): string[] {
+  try {
+    const raw = JSON.parse(localStorage.getItem(FAV_KEY) || "[]") as string[];
+    return Array.isArray(raw) ? raw.filter((x) => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+export function writeFavorites(ids: string[]) {
+  try {
+    localStorage.setItem(FAV_KEY, JSON.stringify(ids));
+    window.dispatchEvent(new CustomEvent("qante-favorites"));
+  } catch {
+    /* ignore */
+  }
+}
+
+export function useFavorites() {
+  const [ids, setIds] = useState<string[]>([]);
+  useEffect(() => {
+    const sync = () => setIds(readFavorites());
+    sync();
+    window.addEventListener("storage", sync);
+    window.addEventListener("qante-favorites", sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener("qante-favorites", sync);
+    };
+  }, []);
+  const toggle = useCallback((id: string) => {
+    const prev = readFavorites();
+    const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+    writeFavorites(next);
+    setIds(next);
+  }, []);
+  const has = useCallback((id: string) => ids.includes(id), [ids]);
+  return { ids, has, toggle };
+}
+
+export function FavoriteButton({
+  productId,
+  className = "btn",
+  compact,
+}: {
+  productId: string;
+  className?: string;
+  compact?: boolean;
+}) {
+  const { has, toggle } = useFavorites();
+  const on = has(productId);
+  return (
+    <button
+      className={className}
+      type="button"
+      aria-pressed={on}
+      data-cta="favorite"
+      title={on ? "Favoriden çıkar" : "Favoriye ekle"}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggle(productId);
+      }}
+    >
+      {compact ? (on ? "♥" : "♡") : on ? "Favoride" : "Favoriye ekle"}
+    </button>
+  );
+}
 
 export function AddButton({ productId, disabled, qty = 1 }: { productId: string; disabled?: boolean; qty?: number }) {
   const { add } = useCart();
@@ -48,7 +119,6 @@ export function BuyNowButton({ productId, disabled, qty = 1 }: { productId: stri
   );
 }
 
-
 /** OOS waitlist: localStorage + open ask rail (demo, no email). */
 export function NotifyRestockButton({ product, className = "btn" }: { product: Product; className?: string }) {
   const { requestAsk } = useAsk();
@@ -64,7 +134,9 @@ export function NotifyRestockButton({ product, className = "btn" }: { product: P
           const key = "qante_restock_watch";
           const prev = JSON.parse(localStorage.getItem(key) || "[]") as string[];
           if (!prev.includes(product.id)) localStorage.setItem(key, JSON.stringify([...prev, product.id]));
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
         requestAsk(`${product.name} gelince haber ver`, product.id);
         setDone(true);
       }}
@@ -79,18 +151,30 @@ export function ProductCard({ product }: { product: Product }) {
   const out = product.stock <= 0;
   return (
     <article className="card">
-      <Link href={`/urun/${product.id}`} className="thumb-wrap">
+      <Link href={`/urun/${product.id}`} className="thumb-wrap" style={{ position: "relative" }}>
         <img className="thumb" src={product.image} alt={product.name} />
         {out ? <div className="sold-overlay">tükendi</div> : null}
+        <span style={{ position: "absolute", top: 8, right: 8, zIndex: 2 }}>
+          <FavoriteButton productId={product.id} className="btn quick" compact />
+        </span>
       </Link>
       <div className="card-body">
-        <p className="faint" style={{ margin: "0 0 4px" }}>{product.category}</p>
-        <h3><Link href={`/urun/${product.id}`}>{product.name}</Link></h3>
-        <div><span className="price">{money(product.price)}</span>{product.compare_at ? <span className="compare">{money(product.compare_at)}</span> : null}</div>
+        <p className="faint" style={{ margin: "0 0 4px" }}>
+          {product.category}
+        </p>
+        <h3>
+          <Link href={`/urun/${product.id}`}>{product.name}</Link>
+        </h3>
+        <div>
+          <span className="price">{money(product.price)}</span>
+          {product.compare_at ? <span className="compare">{money(product.compare_at)}</span> : null}
+        </div>
         {out ? (
           <NotifyRestockButton product={product} className="btn quick" />
         ) : (
-          <button className="btn btn-primary quick" type="button" onClick={() => void add(product.id)}>Ekle</button>
+          <button className="btn btn-primary quick" type="button" onClick={() => void add(product.id)}>
+            Ekle
+          </button>
         )}
       </div>
     </article>
@@ -99,11 +183,22 @@ export function ProductCard({ product }: { product: Product }) {
 
 export function ProductGrid({ products }: { products: Product[] }) {
   if (!products.length) {
-    return <div className="empty"><div className="mark" /><h3>Bu süzgeçte parça yok</h3><p>Başka bir kategori veya arama dene.</p></div>;
+    return (
+      <div className="empty">
+        <div className="mark" />
+        <h3>Bu süzgeçte parça yok</h3>
+        <p>Başka bir kategori veya arama dene.</p>
+      </div>
+    );
   }
-  return <div className="grid">{products.map((p) => <ProductCard key={p.id} product={p} />)}</div>;
+  return (
+    <div className="grid">
+      {products.map((p) => (
+        <ProductCard key={p.id} product={p} />
+      ))}
+    </div>
+  );
 }
-
 
 export type SortId = "default" | "price_asc" | "price_desc" | "stock";
 

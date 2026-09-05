@@ -4,16 +4,30 @@ import { useMemo, useState } from "react";
 import type { Product } from "@/lib/core";
 import { CATEGORIES } from "@/lib/core";
 import { ShopFooter, useAsk } from "@/components/ui-shell";
-import { ProductCard, ProductGrid, SORTS, type SortId } from "@/components/ui-shop-core";
+import { ProductCard, ProductGrid, SORTS, useFavorites, type SortId } from "@/components/ui-shop-core";
 
-export function HomeView({ products, featured, query, category, greeting, dateLabel }: {
-  products: Product[]; featured: Product[]; query?: string; category?: string; greeting: string; dateLabel: string;
+export function HomeView({
+  products,
+  featured,
+  query,
+  category,
+  greeting,
+  dateLabel,
+}: {
+  products: Product[];
+  featured: Product[];
+  query?: string;
+  category?: string;
+  greeting: string;
+  dateLabel: string;
 }) {
   const { requestAsk } = useAsk();
   const router = useRouter();
+  const { ids: favIds } = useFavorites();
   const [sort, setSort] = useState<SortId>("default");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [onSaleOnly, setOnSaleOnly] = useState(false);
+  const [favOnly, setFavOnly] = useState(false);
   function pick(cat: string) {
     const next = category === cat ? "" : cat;
     requestAsk(next ? `${next} bakıyorum` : "öne çıkanlar");
@@ -24,18 +38,25 @@ export function HomeView({ products, featured, query, category, greeting, dateLa
   }
   const filtered = useMemo(() => {
     let list = [...products];
+    if (favOnly) {
+      const set = new Set(favIds);
+      list = list.filter((p) => set.has(p.id));
+    }
     if (inStockOnly) list = list.filter((p) => p.stock > 0);
     if (onSaleOnly) list = list.filter((p) => typeof p.compare_at === "number" && p.compare_at > p.price);
     if (sort === "price_asc") list.sort((a, b) => a.price - b.price);
     else if (sort === "price_desc") list.sort((a, b) => b.price - a.price);
-    else if (sort === "stock") list.sort((a, b) => {
-      const ao = a.stock > 0 ? 0 : 1;
-      const bo = b.stock > 0 ? 0 : 1;
-      if (ao !== bo) return ao - bo;
-      return b.stock - a.stock;
-    });
+    else if (sort === "stock")
+      list.sort((a, b) => {
+        const ao = a.stock > 0 ? 0 : 1;
+        const bo = b.stock > 0 ? 0 : 1;
+        if (ao !== bo) return ao - bo;
+        return b.stock - a.stock;
+      });
     return list;
-  }, [products, sort, inStockOnly, onSaleOnly]);
+  }, [products, sort, inStockOnly, onSaleOnly, favOnly, favIds]);
+  const showFeatured =
+    !query && !category && featured.length && sort === "default" && !inStockOnly && !onSaleOnly && !favOnly;
   return (
     <div className="grid-wrap">
       <div className="hero-row">
@@ -45,12 +66,28 @@ export function HomeView({ products, featured, query, category, greeting, dateLa
       <p className="lede">Bugün raflarda keten, yün ve ev. Asistan sağda; arama hem grid hem rayı doldurur.</p>
       <div className="chips scroll" data-chips="category">
         {CATEGORIES.map((c) => (
-          <button key={c} className={`chip ${category === c ? "on" : ""}`} type="button" aria-pressed={category === c} onClick={() => pick(c)}>{c}</button>
+          <button
+            key={c}
+            className={`chip ${category === c ? "on" : ""}`}
+            type="button"
+            aria-pressed={category === c}
+            onClick={() => pick(c)}
+          >
+            {c}
+          </button>
         ))}
       </div>
       <div className="chips scroll" data-chips="sort" role="tablist" aria-label="Sırala" style={{ marginTop: 8 }}>
         {SORTS.map((s) => (
-          <button key={s.id} className={`chip ${sort === s.id ? "on" : ""}`} type="button" aria-pressed={sort === s.id} onClick={() => setSort(s.id)}>{s.label}</button>
+          <button
+            key={s.id}
+            className={`chip ${sort === s.id ? "on" : ""}`}
+            type="button"
+            aria-pressed={sort === s.id}
+            onClick={() => setSort(s.id)}
+          >
+            {s.label}
+          </button>
         ))}
         <button
           className={`chip ${inStockOnly ? "on" : ""}`}
@@ -70,14 +107,38 @@ export function HomeView({ products, featured, query, category, greeting, dateLa
         >
           İndirimli
         </button>
+        <button
+          className={`chip ${favOnly ? "on" : ""}`}
+          type="button"
+          aria-pressed={favOnly}
+          data-filter="favorites"
+          onClick={() => setFavOnly((v) => !v)}
+        >
+          Favoriler{favIds.length ? ` · ${favIds.length}` : ""}
+        </button>
       </div>
-      {!query && !category && featured.length && sort === "default" && !inStockOnly && !onSaleOnly ? (
+      {showFeatured ? (
         <>
           <div className="section-label">Öne çıkan</div>
-          <div className="featured">{featured.map((p) => <ProductCard key={p.id} product={p} />)}</div>
+          <div className="featured">
+            {featured.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
         </>
       ) : null}
-      <div className="section-label">{query ? `${filtered.length} sonuç · ${query}` : category ? category : "Katalog"}{sort !== "default" ? ` · ${SORTS.find((s) => s.id === sort)?.label}` : ""}{inStockOnly ? " · stokta" : ""}{onSaleOnly ? " · indirimli" : ""}</div>
+      <div className="section-label">
+        {query
+          ? `${filtered.length} sonuç · ${query}`
+          : favOnly
+            ? `Favoriler · ${filtered.length}`
+            : category
+              ? category
+              : "Katalog"}
+        {sort !== "default" ? ` · ${SORTS.find((s) => s.id === sort)?.label}` : ""}
+        {inStockOnly ? " · stokta" : ""}
+        {onSaleOnly ? " · indirimli" : ""}
+      </div>
       <ProductGrid products={filtered} />
       <ShopFooter />
     </div>

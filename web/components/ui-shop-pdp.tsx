@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { Product } from "@/lib/core";
 import { RETURN_DAYS, SHIP_FREE, money } from "@/lib/core";
 import { CheckoutNote, LineList, PayButton, ShipBar, ShopFooter, useAsk, useCart, ClearCartButton } from "@/components/ui-shell";
-import { AddButton, BuyNowButton, NotifyRestockButton, ProductCard } from "@/components/ui-shop-core";
+import { AddButton, BuyNowButton, FavoriteButton, NotifyRestockButton, ProductCard } from "@/components/ui-shop-core";
 
 export function AskAboutProduct({ product }: { product: Product }) {
   const { requestAsk } = useAsk();
@@ -68,11 +68,13 @@ export function PdpView({ product, related }: { product: Product; related: Produ
             </div>
             <AddButton productId={product.id} qty={qty} />
             <BuyNowButton productId={product.id} qty={qty} />
+            <FavoriteButton productId={product.id} />
           </div>
         ) : (
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", margin: "12px 0 4px" }}>
             <AddButton productId={product.id} disabled />
             <NotifyRestockButton product={product} />
+            <FavoriteButton productId={product.id} />
           </div>
         )}
         <AskAboutProduct product={product} />

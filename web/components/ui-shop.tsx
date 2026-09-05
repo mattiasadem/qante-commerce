@@ -4,6 +4,8 @@ export {
   BuyNowButton,
   ProductCard,
   ProductGrid,
+  FavoriteButton,
+  useFavorites,
 } from "@/components/ui-shop-core";
 export { HomeView } from "@/components/ui-shop-home";
 export {
