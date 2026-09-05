@@ -231,7 +231,7 @@ export function OrderConfirm() {
             <ShipBar subtotal={order.subtotal} />
           )}
           <div className="actions" style={{ marginTop: 22, display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <Link href="/" className={canConfirmReceived(status) || canConfirmPayment(status) ? "btn" : "btn btn-primary">Mağazaya dön</Link>
+            <Link href="/" className={canConfirmReceived(status) || canConfirmPayment(status) ? "btn" : "btn btn-primary"}>Mağazaya dön</Link>
             <Link href="/siparislerim" className="btn" data-cta="my-orders">Siparişlerim</Link>
             <Link href={`/merchant/siparisler?focus=${encodeURIComponent(order.order_id)}`} className="btn">Operatörde gör</Link>
             {canConfirmPayment(status) ? (
