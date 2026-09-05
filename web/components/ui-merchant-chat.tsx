@@ -18,10 +18,34 @@ export function MerchantChat({ prefill }: { prefill?: string }) {
   const [flash, setFlash] = useState<string | null>(null);
 
   async function runAction(a: ChatAction) {
-    const key = `${a.kind}:${a.product_id}`;
+    const key = a.kind === "order"
+      ? `order:${a.order_id}:${a.order_action}`
+      : `${a.kind}:${a.product_id}`;
     setStageBusy(key);
     setFlash(null);
     try {
+      if (a.kind === "order") {
+        if (!a.order_id || !a.order_action) {
+          setFlash("Sipariş aksiyonu eksik");
+          return;
+        }
+        const res = await fetch("/api/merchant/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: a.order_id, action: a.order_action }),
+        });
+        const data = await res.json() as { order?: { id: string; status: string }; error?: string };
+        if (!res.ok || !data.order) {
+          setFlash(data.error ?? "Sipariş yazılamadı");
+          return;
+        }
+        setFlash(`${data.order.id} · ${data.order.status} · yerel defter · ikas'a gitmedi`);
+        return;
+      }
+      if (!a.product_id) {
+        setFlash("Ürün eksik");
+        return;
+      }
       const body: Record<string, string | number> = { kind: a.kind, product_id: a.product_id };
       if (a.target_qty != null) body.target_qty = a.target_qty;
       if (a.target_price != null) body.target_price = a.target_price;
@@ -58,11 +82,13 @@ export function MerchantChat({ prefill }: { prefill?: string }) {
       {flash ? (
         <p className="muted" style={{ margin: "12px 16px 0" }}>
           <span className="banner-demo">{flash}</span>{" "}
-          <Link href="/merchant/bekleyen">Bekleyen'e git</Link>
+          <Link href={flash.includes("yerel defter") && !flash.includes("Bekleyen") ? "/merchant/siparisler" : "/merchant/bekleyen"}>
+            {flash.includes("yerel defter") && !flash.includes("Bekleyen") ? "Siparişler" : "Bekleyen'e git"}
+          </Link>
         </p>
       ) : (
         <p className="muted" style={{ margin: "12px 16px 0" }}>
-          Digest + change_preview · CTAlar yerel Bekleyen kuyruğuna yazar · Onayla ikas'a gitmez
+          Digest + change_preview · CTAlar yerel Bekleyen veya Siparişler defterine yazar · ikas&apos;a gitmez
         </p>
       )}
       <div className="rail-log" style={{ minHeight: 320 }}>
@@ -88,7 +114,9 @@ export function MerchantChat({ prefill }: { prefill?: string }) {
                 {(m.actions as ChatAction[] | undefined)?.length ? (
                   <div className="actions" style={{ marginTop: 10, flexWrap: "wrap", gap: 8 }}>
                     {(m.actions as ChatAction[]).map((a) => {
-                      const key = `${a.kind}:${a.product_id}`;
+                      const key = a.kind === "order"
+                        ? `order:${a.order_id}:${a.order_action}`
+                        : `${a.kind}:${a.product_id}`;
                       return (
                         <button
                           key={key + a.label}
