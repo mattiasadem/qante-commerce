@@ -5,7 +5,7 @@ import type { Product } from "@/lib/core";
 import { RETURN_DAYS, SHIP_FREE, money } from "@/lib/core";
 import { CheckoutNote, LineList, OrderNoteField, PayButton, ShipBar, ShopFooter, useAsk, useCart, ClearCartButton, SaveAllForLaterButton } from "@/components/ui-shell";
 import { CouponField, CouponTotals, isFreeShip, useCoupon } from "@/components/ui-coupon";
-import { AddButton, BuyNowButton, FavoriteButton, NotifyRestockButton, ProductCard, ShareButton, pushRecent } from "@/components/ui-shop-core";
+import { AddButton, BuyNowButton, FavoriteButton, NotifyRestockButton, ProductCard, ShareButton, isLowStock, pushRecent } from "@/components/ui-shop-core";
 
 export function AskAboutProduct({ product }: { product: Product }) {
   const { requestAsk } = useAsk();
@@ -75,7 +75,13 @@ export function PdpView({ product, related }: { product: Product; related: Produ
             {product.sizes.map((s) => <button key={s} type="button" className={`chip ${size === s ? "on" : ""}`} onClick={() => setSize(s)}>{s}</button>)}
           </div>
         ) : null}
-        <p className="faint">{out ? "tükendi" : `stok ${product.stock} adet`}</p>
+        <p className="faint" data-stock={out ? "out" : isLowStock(product.stock) ? "low" : "ok"}>
+          {out
+            ? "tükendi"
+            : isLowStock(product.stock)
+              ? `Son ${product.stock} adet · acele et`
+              : `stok ${product.stock} adet`}
+        </p>
         <p className="policy-line">İade {RETURN_DAYS} gün · {money(SHIP_FREE)} üzeri kargo yok</p>
         {!out ? (
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", margin: "12px 0 4px" }}>
