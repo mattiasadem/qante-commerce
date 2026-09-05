@@ -5,6 +5,7 @@ import { useState, type ReactNode } from "react";
 import { money, SHIP_FREE } from "@/lib/core";
 import { useAsk, useCart } from "@/components/ui-shell-providers";
 import { LineList } from "@/components/ui-shell-line";
+import { OrderNoteField, readCheckoutNote } from "@/components/ui-order-note";
 
 export function Logo({ size = 28 }: { size?: number }) {
   return (
@@ -40,6 +41,8 @@ export function CheckoutNote() {
   return <p className="faint" style={{ marginTop: 10 }}>ikas checkout simüle. Sipariş yerel deftere yazılır.</p>;
 }
 
+export { OrderNoteField } from "@/components/ui-order-note";
+
 export function PayButton() {
   const { cart, checkout } = useCart();
   const { setCartOpen } = useAsk();
@@ -49,7 +52,7 @@ export function PayButton() {
   return (
     <button className="btn btn-primary" type="button" style={{ width: "100%" }} disabled={busy} onClick={async () => {
       setBusy(true);
-      const order = await checkout();
+      const order = await checkout(readCheckoutNote());
       setBusy(false);
       if (!order) return;
       setCartOpen(false);
@@ -84,6 +87,7 @@ export function CartDrawer() {
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}><span className="muted">Ara toplam</span><strong>{money(cart.subtotal)}</strong></div>
           <Link className="btn" href="/sepet" onClick={() => setCartOpen(false)} style={{ display: "block", textAlign: "center", marginBottom: 8 }}>Sepete git</Link>
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}><ClearCartButton className="btn" /></div>
+          <OrderNoteField />
           <PayButton />
           <CheckoutNote />
         </div>
