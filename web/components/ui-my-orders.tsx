@@ -2,7 +2,16 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { STATUS_LABEL, canReorder, money } from "@/lib/core";
+import {
+  STATUS_LABEL,
+  canCancelOrder,
+  canConfirmPayment,
+  canConfirmReceived,
+  canReorder,
+  canRequestReturn,
+  canWithdrawReturn,
+  money,
+} from "@/lib/core";
 import { ShopFooter, useCart } from "@/components/ui-shell";
 
 type Row = {
@@ -16,6 +25,8 @@ type Row = {
 
 type FilterId = "all" | "pending_payment" | "paid" | "shipped" | "fulfilled" | "cancelled" | "return_requested";
 
+type LedgerAction = "mark_paid" | "fulfill" | "cancel" | "request_return" | "withdraw_return";
+
 const FILTERS: { id: FilterId; label: string }[] = [
   { id: "all", label: "Tümü" },
   { id: "pending_payment", label: "Ödeme bekliyor" },
@@ -25,6 +36,14 @@ const FILTERS: { id: FilterId; label: string }[] = [
   { id: "cancelled", label: "İptal" },
   { id: "return_requested", label: "İade açık" },
 ];
+
+const ACTION_FLASH: Record<LedgerAction, string> = {
+  mark_paid: "Ödeme alındı · yerel defter · ikas'a gitmedi",
+  fulfill: "Teslim alındı · yerel defter · ikas'a gitmedi",
+  cancel: "Sipariş iptal · yerel defter · ikas'a gitmedi",
+  request_return: "İade talebi yerel deftere yazıldı · ikas'a gitmedi",
+  withdraw_return: "İade talebi geri alındı · yerel defter · ikas'a gitmedi",
+};
 
 function fmtWhen(iso: string) {
   try {
@@ -106,6 +125,32 @@ export function MyOrdersView() {
     }
   }
 
+  async function runLedger(o: Row, action: LedgerAction) {
+    setBusyId(o.order_id);
+    setFlash(null);
+    try {
+      const res = await fetch("/api/merchant/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: o.order_id, action }),
+      });
+      const data = (await res.json()) as { order?: { id: string; status: string }; error?: string };
+      if (!res.ok || !data.order) {
+        setFlash(data.error ?? "İşlem yazılamadı");
+        return;
+      }
+      const next = data.order.status;
+      setOrders((prev) =>
+        prev
+          ? prev.map((row) => (row.order_id === o.order_id ? { ...row, status: next } : row))
+          : prev,
+      );
+      setFlash(`${ACTION_FLASH[action]} · ${o.order_id}`);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   return (
     <div className="grid-wrap" style={{ maxWidth: 720 }}>
       <div className="hero-row">
@@ -174,8 +219,14 @@ export function MyOrdersView() {
               {filtered.map((o) => {
                 const label = STATUS_LABEL[o.status] ?? o.status;
                 const names = o.items.map((i) => `${i.name}${i.qty > 1 ? ` ×${i.qty}` : ""}`).join(" · ");
-                const showReorder = canReorder(o.status);
                 const busy = busyId === o.order_id;
+                const locked = busyId !== null;
+                const showPay = canConfirmPayment(o.status);
+                const showRecv = canConfirmReceived(o.status);
+                const showCancel = canCancelOrder(o.status);
+                const showReturn = canRequestReturn(o.status);
+                const showWithdraw = canWithdrawReturn(o.status);
+                const showReorder = canReorder(o.status);
                 return (
                   <div className="list-row" key={o.order_id} style={{ alignItems: "flex-start" }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -192,16 +243,74 @@ export function MyOrdersView() {
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <strong>{money(o.total)}</strong>
-                      <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+                      <div
+                        style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}
+                        data-cta="my-orders-row-actions"
+                      >
                         <Link className="chip" href={`/siparis?id=${encodeURIComponent(o.order_id)}`}>
                           Aç
                         </Link>
+                        {showPay ? (
+                          <button
+                            className="chip"
+                            type="button"
+                            data-cta="pay-from-list"
+                            disabled={locked}
+                            onClick={() => void runLedger(o, "mark_paid")}
+                          >
+                            {busy ? "…" : "Ödeme yaptım"}
+                          </button>
+                        ) : null}
+                        {showRecv ? (
+                          <button
+                            className="chip"
+                            type="button"
+                            data-cta="receive-from-list"
+                            disabled={locked}
+                            onClick={() => void runLedger(o, "fulfill")}
+                          >
+                            {busy ? "…" : "Teslim aldım"}
+                          </button>
+                        ) : null}
+                        {showCancel ? (
+                          <button
+                            className="chip"
+                            type="button"
+                            data-cta="cancel-from-list"
+                            disabled={locked}
+                            onClick={() => void runLedger(o, "cancel")}
+                          >
+                            {busy ? "…" : "İptal"}
+                          </button>
+                        ) : null}
+                        {showReturn ? (
+                          <button
+                            className="chip"
+                            type="button"
+                            data-cta="return-from-list"
+                            disabled={locked}
+                            onClick={() => void runLedger(o, "request_return")}
+                          >
+                            {busy ? "…" : "İade talep"}
+                          </button>
+                        ) : null}
+                        {showWithdraw ? (
+                          <button
+                            className="chip"
+                            type="button"
+                            data-cta="withdraw-return-from-list"
+                            disabled={locked}
+                            onClick={() => void runLedger(o, "withdraw_return")}
+                          >
+                            {busy ? "…" : "İade geri al"}
+                          </button>
+                        ) : null}
                         {showReorder ? (
                           <button
                             className="chip"
                             type="button"
                             data-cta="reorder-from-list"
-                            disabled={busy || busyId !== null}
+                            disabled={locked}
                             onClick={() => void reorderRow(o)}
                           >
                             {busy ? "…" : "Tekrar satın al"}
