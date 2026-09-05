@@ -41,6 +41,11 @@ export function canRequestReturn(status: string) {
   return status === "fulfilled" || status === "shipped";
 }
 
+/** Buyer confirm-receipt CTA on /siparis — kargoda only (local ledger fulfill). */
+export function canConfirmReceived(status: string) {
+  return status === "shipped";
+}
+
 /** Progress steps for buyer confirm page chips. */
 export function orderProgress(status: string): { steps: string[]; active: number; cancelled?: boolean } {
   if (status === "cancelled") return { steps: ["Ödeme", "İptal"], active: 1, cancelled: true };
@@ -114,4 +119,3 @@ export function computeIssues(now = new Date(), orders: Order[] = ORDERS): Issue
   }
   return a;
 }
-

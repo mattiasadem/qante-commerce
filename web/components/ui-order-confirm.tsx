@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { STATUS_LABEL, canCancelOrder, canRequestReturn, money, orderProgress } from "@/lib/core";
+import { STATUS_LABEL, canCancelOrder, canConfirmReceived, canRequestReturn, money, orderProgress } from "@/lib/core";
 import { ShipBar, ShopFooter } from "@/components/ui-shell";
 
 type DemoOrderView = {
@@ -65,6 +65,28 @@ export function OrderConfirm() {
       }
       setOrder((o) => (o ? { ...o, status: data.order!.status } : o));
       setFlash("İade talebi yerel deftere yazıldı · ikas'a gitmedi");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function confirmReceived() {
+    if (!order) return;
+    setBusy(true);
+    setFlash(null);
+    try {
+      const res = await fetch("/api/merchant/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: order.order_id, action: "fulfill" }),
+      });
+      const data = await res.json() as { order?: { id: string; status: string }; error?: string };
+      if (!res.ok || !data.order) {
+        setFlash(data.error ?? "Teslim yazılamadı");
+        return;
+      }
+      setOrder((o) => (o ? { ...o, status: data.order!.status } : o));
+      setFlash("Teslim alındı · yerel defter · ikas'a gitmedi");
     } finally {
       setBusy(false);
     }
@@ -146,8 +168,13 @@ export function OrderConfirm() {
             <ShipBar subtotal={order.subtotal} />
           )}
           <div className="actions" style={{ marginTop: 22, display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <Link href="/" className="btn btn-primary">Mağazaya dön</Link>
+            <Link href="/" className={canConfirmReceived(status) ? "btn" : "btn btn-primary"}>Mağazaya dön</Link>
             <Link href={`/merchant/siparisler?focus=${encodeURIComponent(order.order_id)}`} className="btn">Operatörde gör</Link>
+            {canConfirmReceived(status) ? (
+              <button className="btn btn-primary" type="button" disabled={busy} onClick={() => void confirmReceived()}>
+                {busy ? "…" : "Teslim aldım"}
+              </button>
+            ) : null}
             {canCancelOrder(status) ? (
               <button className="btn" type="button" disabled={busy} onClick={() => void cancelOrder()}>
                 {busy ? "…" : "Siparişi iptal et"}
