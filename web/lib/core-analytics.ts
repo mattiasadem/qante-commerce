@@ -56,6 +56,11 @@ export function canWithdrawReturn(status: string) {
   return status === "return_requested";
 }
 
+/** Buyer reorder CTA on /siparis — teslim / iptal / iade kapalı sonrası sepete geri (local cart). */
+export function canReorder(status: string) {
+  return status === "fulfilled" || status === "cancelled" || status === "return_requested";
+}
+
 /** Progress steps for buyer confirm page chips. */
 export function orderProgress(status: string): { steps: string[]; active: number; cancelled?: boolean } {
   if (status === "cancelled") return { steps: ["Ödeme", "İptal"], active: 1, cancelled: true };
@@ -130,4 +135,3 @@ export function computeIssues(now = new Date(), orders: Order[] = ORDERS): Issue
   }
   return a;
 }
-
