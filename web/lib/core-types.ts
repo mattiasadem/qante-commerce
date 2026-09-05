@@ -47,8 +47,10 @@ export type UiBlock = {
 };
 export type ChatAction = {
   label: string;
-  kind: "stock" | "price" | "listing";
-  product_id: string;
+  kind: "stock" | "price" | "listing" | "order";
+  product_id?: string;
+  order_id?: string;
+  order_action?: "ship" | "mark_paid" | "close_return" | "cancel";
   target_qty?: number;
   target_price?: number;
 };
