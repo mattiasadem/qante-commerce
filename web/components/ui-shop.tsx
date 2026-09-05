@@ -1,1 +1,1 @@
-USE_FILE:/workspace/qante-studio-deploy/components/ui-shop.tsx
+@file:///workspace/qante-studio-deploy/components/ui-shop.tsx
