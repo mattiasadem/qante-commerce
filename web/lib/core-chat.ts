@@ -2,6 +2,7 @@ import type { ChatAction, ChatResponse, Product, UiBlock } from "@/lib/core-type
 import { money, number, percent, RETURN_DAYS, SHIP_FREE } from "@/lib/core-types";
 import { PRODUCTS } from "@/lib/core-art";
 import { getProduct, qualityScore } from "@/lib/core-catalog";
+import { similarTurn } from "@/lib/demo-similar";
 import { KEYS, pick } from "@/lib/core-catalog";
 import { computeAlerts, computeIssues, computeSnapshot } from "@/lib/core-analytics";
 import { getStaged, KIND_LABEL, suggestPriceCut, suggestRestockQty } from "@/lib/core-staged";
@@ -9,6 +10,8 @@ import type { DigestItem } from "@/lib/core-types";
 
 export function demoTurn(message: string, productId?: string | null): ChatResponse {
   const text = message.toLocaleLowerCase("tr-TR");
+  const early = similarTurn(message, productId);
+  if (early) return early;
   const ids: string[] = productId ? [productId] : [];
   for (const [k, v] of Object.entries(KEYS)) if (text.includes(k)) ids.push(...v);
   if (!ids.length) ids.push("prod_keten_gomlek", "prod_seramik_vazo", "prod_yun_kazak");
@@ -79,7 +82,7 @@ export function demoTurn(message: string, productId?: string | null): ChatRespon
     : [{ type: "present_products", title: "Öneriler", layout: "carousel", products, items }];
   const suggestions = add_product_id
     ? ["Keten bakıyorum", "Eve bir vazo", "Yün atkı var mı"]
-    : ["Bunları karşılaştır", "Bunu sepete ekle", "İade nasıl"];
+    : ["Bunları karşılaştır", "Bunu sepete ekle", "Benzerlerini getir"];
   return { text: reply, ui, suggestions: suggestions.slice(0, 3), activity, activity_steps, add_product_id };
 }
 
