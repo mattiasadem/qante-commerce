@@ -146,11 +146,36 @@ export function CouponField() {
         <p className="muted" style={{ marginTop: 6 }}>
           <span className="banner-demo">{err}</span>
         </p>
-      ) : (
-        <p className="faint" style={{ marginTop: 6 }}>
-          QANTE10 · HOSGELDIN · KARGO
-        </p>
-      )}
+      ) : null}
+      <div
+        style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}
+        role="group"
+        aria-label="Hazır kuponlar"
+        data-cta="coupon-quick"
+      >
+        {Object.values(COUPONS).map((c) => (
+          <button
+            key={c.code}
+            className="chip"
+            type="button"
+            data-cta={`coupon-chip-${c.code.toLowerCase()}`}
+            title={c.label}
+            onClick={() => {
+              writeCoupon(c.code);
+              setInput("");
+              setErr(null);
+            }}
+          >
+            {c.code}
+            <span className="faint" style={{ marginLeft: 4 }}>
+              {c.label}
+            </span>
+          </button>
+        ))}
+      </div>
+      <p className="faint" style={{ marginTop: 6 }}>
+        Tıkla ya da yaz · demo kupon · ikas&apos;a gitmez
+      </p>
     </label>
   );
 }
