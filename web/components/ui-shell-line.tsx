@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { money } from "@/lib/core";
 import { useCart } from "@/components/ui-shell-providers";
+import { flashCartToast } from "@/components/ui-cart-toast";
 
 const FAV_KEY = "qante_favorites";
 function addFavoriteId(id: string) {
@@ -27,9 +28,37 @@ function addFavoriteIds(ids: string[]) {
   } catch { /* ignore */ }
 }
 
-/** Cart line: Favorilere taşı + sepetten çıkar. */
+function shortName(name?: string) {
+  const n = (name || "Ürün").trim();
+  return n.length > 28 ? `${n.slice(0, 26)}…` : n;
+}
+
+/** Cart line: Favorilere taşı + sepetten çıkar + Geri al toast. */
 export function LineList({ extra }: { extra?: boolean }) {
   const { cart, update, remove } = useCart();
+
+  async function removeWithUndo(line: (typeof cart.items)[number], kind: "sil" | "sonra") {
+    const id = line.product_id;
+    const qty = Math.max(1, line.qty);
+    const label = shortName(line.product?.name);
+    if (kind === "sonra") addFavoriteId(id);
+    await remove(id);
+    flashCartToast({
+      text: kind === "sonra" ? `${label} · favoriye` : `${label} çıkarıldı`,
+      action: "undo",
+      productId: id,
+      qty,
+    });
+  }
+
+  async function bumpQty(line: (typeof cart.items)[number], next: number) {
+    if (next <= 0) {
+      await removeWithUndo(line, "sil");
+      return;
+    }
+    await update(line.product_id, next);
+  }
+
   return (
     <>
       {cart.items.map((line) => (
@@ -39,9 +68,9 @@ export function LineList({ extra }: { extra?: boolean }) {
             {extra ? <Link href={`/urun/${line.product_id}`}>{line.product?.name}</Link> : <div>{line.product?.name}</div>}
             <div className="faint">{money(line.line_total)}</div>
             <div className="stepper" style={{ marginTop: 8 }}>
-              <button type="button" aria-label="Azalt" onClick={() => void update(line.product_id, line.qty - 1)}>−</button>
+              <button type="button" aria-label="Azalt" data-cta="cart-qty-dec" onClick={() => void bumpQty(line, line.qty - 1)}>−</button>
               <span>{line.qty}</span>
-              <button type="button" aria-label="Artır" onClick={() => void update(line.product_id, line.qty + 1)}>+</button>
+              <button type="button" aria-label="Artır" data-cta="cart-qty-inc" onClick={() => void bumpQty(line, line.qty + 1)}>+</button>
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
@@ -50,11 +79,18 @@ export function LineList({ extra }: { extra?: boolean }) {
               type="button"
               data-cta="save-for-later"
               title="Favorilere taşı, sepetten çıkar"
-              onClick={() => { addFavoriteId(line.product_id); void remove(line.product_id); }}
+              onClick={() => void removeWithUndo(line, "sonra")}
             >
               Sonra al
             </button>
-            <button className="chip" type="button" onClick={() => void remove(line.product_id)}>Sil</button>
+            <button
+              className="chip"
+              type="button"
+              data-cta="cart-remove"
+              onClick={() => void removeWithUndo(line, "sil")}
+            >
+              Sil
+            </button>
           </div>
         </div>
       ))}
