@@ -1,16 +1,15 @@
 # Evening progress
 
-HEAD main: merchant portal visual polish (ops density). Shell grouped nav + sticky topbar; Özet / Bekleyen / Sohbet / tables refined via `web/app/merchant.css`. Local ledger only. No qante.vercel.app.
+HEAD main: (pending) — merchant ops UI wiring: active nav pill, ops-head, bulk-bar, btn-danger Onayla/Reddet/İptal, ops-chat, denser rows/tables. Keeps restage + bulk order/catalog CTAs. Local ledger only. No vendor/. No qante.vercel.app. Skip Vercel. Parent: 2d922fd.
 
-## Merchant UX
-- Shell: Operasyon / Envanter groups, active inset, sticky ops-topbar crumb
-- Özet: metric hierarchy, denser attention list, bulk-bar
-- Bekleyen: sticky ApproveBar, filter-rail, approve-bar on rows
-- Sohbet: ops-chat panel, digest/change_preview card chrome
-- Katalog / Stok / Siparişler: filter-rail, table row hover, bulk-bar
+## Today
+- Merchant portal visual/UX quality (Linear + Shopify admin night)
+- 2d922fd style(merchant) ops CSS density base
+- 34425df storefront Karşılaştır compare tray
 
 ## Smoke
-1. /merchant — Ciro card accent, Dikkat list hover, Toplu yenile
-2. /merchant/bekleyen — sticky Toplu onayla, Onayla/Reddet
-3. /merchant/sohbet — starter chips, digest card
-4. /merchant/katalog + /siparisler — table hover + filters
+1. /merchant — QANTE OPS sidenav active pill, ops-head, metric cards, bulk-bar on Dikkat
+2. /merchant/bekleyen — sticky bulk-bar · Onayla primary · Reddet danger · history restage intact
+3. /merchant/katalog — bulk-bar + btn-sm row actions
+4. /merchant/sohbet — ops-chat chrome · GenUI change_preview Reddet danger
+5. /merchant/stok · /merchant/siparisler — bulk-bar · İptal danger
