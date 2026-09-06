@@ -6,6 +6,7 @@ import { RETURN_DAYS, SHIP_FREE, money } from "@/lib/core";
 import { CheckoutNote, LineList, OrderNoteField, PayButton, ShipBar, ShopFooter, useAsk, useCart, ClearCartButton, SaveAllForLaterButton } from "@/components/ui-shell";
 import { CouponField, CouponTotals, isFreeShip, useCoupon } from "@/components/ui-coupon";
 import { DeliveryField } from "@/components/ui-delivery";
+import { GiftField } from "@/components/ui-gift";
 import { AddButton, BuyNowButton, FavoriteButton, NotifyRestockButton, ProductCard, ShareButton, isLowStock, pushRecent } from "@/components/ui-shop-core";
 import { CompareButton } from "@/components/ui-compare";
 
@@ -261,6 +262,7 @@ export function CartPageView() {
             <ClearCartButton />
           </div>
           <DeliveryField />
+          <GiftField />
           <CouponField />
           <OrderNoteField />
           <PayButton />
