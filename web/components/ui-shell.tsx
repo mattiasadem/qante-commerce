@@ -57,3 +57,5 @@ export { DoormanField, formatDoormanTag, readDoorman, parseDoormanFromNote } fro
 export { DoormanSummaryBanner } from "@/components/ui-doorman-summary";
 export { InsuranceField, formatInsuranceTag, readInsurance, parseInsuranceFromNote, useInsurance } from "@/components/ui-insurance";
 export { InsuranceSummaryBanner } from "@/components/ui-insurance-summary";
+export { NotifyField, formatNotifyTag, readNotify, parseNotifyFromNote, useNotify } from "@/components/ui-notify";
+export { NotifySummaryBanner } from "@/components/ui-notify-summary";
