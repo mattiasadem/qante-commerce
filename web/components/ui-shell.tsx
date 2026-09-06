@@ -39,3 +39,5 @@ export { ShipInstrField, formatShipInstrTag, readShipInstr, parseShipInstrFromNo
 export { ShipInstrSummaryBanner } from "@/components/ui-ship-instr-summary";
 export { ShipDayField, formatShipDayTag, readShipDay, parseShipDayFromNote } from "@/components/ui-ship-day";
 export { ShipDaySummaryBanner } from "@/components/ui-ship-day-summary";
+export { ShipCarrierField, formatShipCarrierTag, readShipCarrier, parseShipCarrierFromNote } from "@/components/ui-ship-carrier";
+export { ShipCarrierSummaryBanner } from "@/components/ui-ship-carrier-summary";
