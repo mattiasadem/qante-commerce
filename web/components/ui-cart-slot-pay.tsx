@@ -32,6 +32,7 @@ import { RecipientField, formatRecipientTag } from "@/components/ui-recipient";
 import { DoormanField, formatDoormanTag } from "@/components/ui-doorman";
 import { InsuranceField, formatInsuranceTag } from "@/components/ui-insurance";
 import { NotifyField, formatNotifyTag } from "@/components/ui-notify";
+import { QuietField, formatQuietTag } from "@/components/ui-quiet";
 import { clearAllVariants, formatVariantsTag } from "@/components/ui-variant";
 import {
   ShipBar,
@@ -75,7 +76,7 @@ export function EmptyBag({ onClose }: { onClose?: () => void }) {
   );
 }
 
-/** PayButton with [odeme:…] + [taksit:…] + [saat:…] + [gun:…] + [firma:…] + [sekil:…] + [hiz:…] + [bahsis:…] + [eko:…] + [alici:…] + [kapici:…] + [sigorta:…] + [bildirim:…] + [fatura:…] + [iletisim:…] + [talimat:…] note tags. */
+/** PayButton with [odeme:…] + [taksit:…] + [saat:…] + [gun:…] + [firma:…] + [sekil:…] + [hiz:…] + [bahsis:…] + [eko:…] + [alici:…] + [kapici:…] + [sigorta:…] + [bildirim:…] + [zil:…] + [fatura:…] + [iletisim:…] + [talimat:…] note tags. */
 export function PayButton() {
   const { cart, checkout } = useCart();
   const { setCartOpen } = useAsk();
@@ -129,6 +130,8 @@ export function PayButton() {
       if (sigorta) note = note ? `${note} ${sigorta}` : sigorta;
       const bildirim = formatNotifyTag();
       if (bildirim) note = note ? `${note} ${bildirim}` : bildirim;
+      const zil = formatQuietTag();
+      if (zil) note = note ? `${note} ${zil}` : zil;
       const taksit = formatTaksitTag();
       if (taksit) note = note ? `${note} ${taksit}` : taksit;
       const vtag = formatVariantsTag(cart.items.map((l) => l.product_id));
@@ -172,6 +175,7 @@ export {
   DoormanField,
   InsuranceField,
   NotifyField,
+  QuietField,
   isPickup,
   useShipMode,
   ShipBar,
