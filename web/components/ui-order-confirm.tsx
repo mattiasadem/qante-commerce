@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { STATUS_LABEL, canCancelOrder, canConfirmPayment, canConfirmReceived, canReorder, canRequestReturn, canWithdrawReturn, money, orderProgress } from "@/lib/core";
 import { parseDeliveryFromNote } from "@/components/ui-delivery";
+import { parseGiftFromNote } from "@/components/ui-gift";
 import { parseVariantsFromNote } from "@/components/ui-variant";
 import { ShipBar, ShopFooter, useCart } from "@/components/ui-shell";
 
@@ -209,6 +210,15 @@ export function OrderConfirm() {
             const line = [d.name, d.phone, d.city, d.address].filter(Boolean).join(" · ");
             return line ? <p className="muted" data-cta="delivery-summary" style={{ marginTop: 6 }}>Teslimat · {line}</p> : null;
           })()}
+          {(() => {
+            const g = parseGiftFromNote(order.note);
+            if (!g) return null;
+            return (
+              <p className="muted" data-cta="gift-summary" style={{ marginTop: 6 }}>
+                Hediye paketi{g.note ? ` · ${g.note}` : ""}
+              </p>
+            );
+          })()}
           <p className="faint">{order.note ?? "ikas checkout simüle · yerel defter · Siparişler'e düşer"} · kargo tahmini 1–3 iş günü</p>
           {flash ? <p className="muted" style={{ marginTop: 8 }}><span className="banner-demo">{flash}</span></p> : null}
           <div className="chips" style={{ margin: "14px 0 6px" }} aria-label="Sipariş adımları">
@@ -243,7 +253,7 @@ export function OrderConfirm() {
             <ShipBar subtotal={order.subtotal} />
           )}
           <div className="actions" style={{ marginTop: 22, display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <Link href="/" className={canConfirmReceived(status) || canConfirmPayment(status) ? "btn" : "btn btn-primary">Mağazaya dön</Link>
+            <Link href="/" className={canConfirmReceived(status) || canConfirmPayment(status) ? "btn" : "btn btn-primary"}>Mağazaya dön</Link>
             <Link href="/siparislerim" className="btn" data-cta="my-orders">Siparişlerim</Link>
             <Link href={`/merchant/siparisler?focus=${encodeURIComponent(order.order_id)}`} className="btn">Operatörde gör</Link>
             {canConfirmPayment(status) ? (
