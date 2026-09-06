@@ -53,3 +53,5 @@ export { EcoField, formatEcoTag, readEco, parseEcoFromNote, useEco } from "@/com
 export { EcoSummaryBanner } from "@/components/ui-eco-summary";
 export { RecipientField, formatRecipientTag, readRecipient, parseRecipientFromNote } from "@/components/ui-recipient";
 export { RecipientSummaryBanner } from "@/components/ui-recipient-summary";
+export { DoormanField, formatDoormanTag, readDoorman, parseDoormanFromNote } from "@/components/ui-doorman";
+export { DoormanSummaryBanner } from "@/components/ui-doorman-summary";
