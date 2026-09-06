@@ -65,3 +65,5 @@ export { CallField, formatCallTag, readCall, parseCallFromNote, useCall } from "
 export { CallSummaryBanner } from "@/components/ui-call-summary";
 export { ReturnField, formatReturnTag, readReturn, parseReturnFromNote, useReturn } from "@/components/ui-return";
 export { ReturnSummaryBanner } from "@/components/ui-return-summary";
+export { PhotoField, formatPhotoTag, readPhoto, parsePhotoFromNote, usePhoto } from "@/components/ui-photo";
+export { PhotoSummaryBanner } from "@/components/ui-photo-summary";
