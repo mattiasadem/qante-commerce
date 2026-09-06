@@ -12,16 +12,20 @@ export {
   ShipBar,
   CheckoutNote,
   OrderNoteField,
-  PayButton,
   ClearCartButton,
-  CartDrawer,
-  StoreShell,
-  ShopFrame,
   ShopFooter,
   MerchantShell,
 } from "@/components/ui-shell-chrome";
+export {
+  PayButton,
+  CartDrawer,
+  StoreShell,
+  ShopFrame,
+} from "@/components/ui-payment-shell";
 export { CouponField, CouponTotals, useCoupon } from "@/components/ui-coupon";
 export { DeliveryField, formatDeliveryTag, readDelivery } from "@/components/ui-delivery";
 export { CartToastHost, flashCartToast } from "@/components/ui-cart-toast";
 export { GiftField, formatGiftTag, readGift } from "@/components/ui-gift";
 export { PaymentField, formatPaymentTag, readPayment, parsePaymentFromNote } from "@/components/ui-payment";
+export { CartPageView } from "@/components/ui-payment-shell";
+export { PaymentSummaryBanner } from "@/components/ui-payment-summary";

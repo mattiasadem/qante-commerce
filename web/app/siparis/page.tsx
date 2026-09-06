@@ -1,12 +1,13 @@
 import { Suspense } from "react";
-import { OrderConfirm } from "@/components/ui-order-confirm";
-import { AssistantRail, AssistantSheet } from "@/components/GenAssistant";
-
-/** Buyer iptal/iade stay on OrderConfirm (local ledger). GenAssistant rail is read-only policy/compare help. */
+import { AssistantRail, AssistantSheet, OrderConfirm } from "@/components/ui-shop";
+import { PaymentSummaryBanner } from "@/components/ui-payment-summary";
 export default function OrderPage() {
   return (
     <div className="shop">
       <Suspense fallback={<div className="grid-wrap"><p className="muted">sipariş</p></div>}>
+        <div className="grid-wrap" style={{ maxWidth: 720, marginBottom: -8 }}>
+          <PaymentSummaryBanner />
+        </div>
         <OrderConfirm />
       </Suspense>
       <AssistantRail />

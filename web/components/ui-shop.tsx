@@ -13,7 +13,7 @@ export { HomeView } from "@/components/ui-shop-home";
 export {
   AskAboutProduct,
   PdpView,
-  CartPageView,
   OrderConfirm,
 } from "@/components/ui-shop-pdp";
+export { CartPageView } from "@/components/ui-payment-shell";
 export { AssistantPane, AssistantRail, AssistantSheet } from "@/components/GenAssistant";
