@@ -56,6 +56,7 @@ function PdpStickyBar({
   size?: string;
   colorName?: string;
 }) {
+  const lineVariant = { ...(colorName ? { color: colorName } : {}), ...(size ? { size } : {}) };
   const variant = [colorName, size].filter(Boolean).join(" · ");
   return (
     <div
@@ -90,8 +91,8 @@ function PdpStickyBar({
             <button type="button" aria-label="Artır" disabled={qty >= maxQty} onClick={() => setQty((q) => Math.min(maxQty, q + 1))}>+</button>
           </div>
           <div style={{ display: "flex", gap: 8, marginLeft: "auto", flexShrink: 0 }}>
-            <AddButton productId={product.id} qty={qty} />
-            <BuyNowButton productId={product.id} qty={qty} />
+            <AddButton productId={product.id} qty={qty} variant={lineVariant} />
+            <BuyNowButton productId={product.id} qty={qty} variant={lineVariant} />
           </div>
         </>
       ) : (
@@ -176,6 +177,11 @@ export function PdpView({ product, related }: { product: Product; related: Produ
               : `stok ${product.stock} adet`}
         </p>
         <p className="policy-line">İade {RETURN_DAYS} gün · {money(SHIP_FREE)} üzeri kargo yok</p>
+        {[colorName, size].filter(Boolean).length ? (
+          <p className="faint" data-cta="pdp-variant-label" style={{ marginTop: 4 }}>
+            Seçilen · {[colorName, size].filter(Boolean).join(" · ")}
+          </p>
+        ) : null}
         {!out ? (
           <div ref={ctaRef} style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", margin: "12px 0 4px" }}>
             <div className="stepper" role="group" aria-label="Adet">
@@ -183,8 +189,8 @@ export function PdpView({ product, related }: { product: Product; related: Produ
               <span aria-live="polite">{qty}</span>
               <button type="button" aria-label="Artır" disabled={qty >= maxQty} onClick={() => setQty((q) => Math.min(maxQty, q + 1))}>+</button>
             </div>
-            <AddButton productId={product.id} qty={qty} />
-            <BuyNowButton productId={product.id} qty={qty} />
+            <AddButton productId={product.id} qty={qty} variant={{ ...(colorName ? { color: colorName } : {}), ...(size ? { size } : {}) }} />
+            <BuyNowButton productId={product.id} qty={qty} variant={{ ...(colorName ? { color: colorName } : {}), ...(size ? { size } : {}) }} />
             <FavoriteButton productId={product.id} />
             <ShareButton productId={product.id} />
             <CompareButton product={product} />
