@@ -26,6 +26,7 @@ import {
   ContactField,
   ShipInstrField,
   ShipDayField,
+  ShipCarrierField,
   CouponField,
   OrderNoteField,
   ShipBar,
@@ -58,6 +59,7 @@ export function CartDrawer() {
           <PaymentField />
           <ShipSlotField />
           <ShipDayField />
+          <ShipCarrierField />
           <InvoiceField />
           <ContactField />
           <CouponField />
@@ -157,6 +159,7 @@ export function CartPageView() {
           <PaymentField />
           <ShipSlotField />
           <ShipDayField />
+          <ShipCarrierField />
           <InvoiceField />
           <ContactField />
           <CouponField />
