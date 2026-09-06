@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { Product } from "@/lib/core";
 import { money } from "@/lib/core";
 import { useAsk, useCart } from "@/components/ui-shell";
+import { CompareButton } from "@/components/ui-compare";
 
 const FAV_KEY = "qante_favorites";
 
@@ -337,13 +338,16 @@ export function ProductCard({ product }: { product: Product }) {
           <span className="price">{money(product.price)}</span>
           {product.compare_at ? <span className="compare">{money(product.compare_at)}</span> : null}
         </div>
-        {out ? (
-          <NotifyRestockButton product={product} className="btn quick" />
-        ) : (
-          <button className="btn btn-primary quick" type="button" onClick={() => void add(product.id)}>
-            Ekle
-          </button>
-        )}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+          {out ? (
+            <NotifyRestockButton product={product} className="btn quick" />
+          ) : (
+            <button className="btn btn-primary quick" type="button" onClick={() => void add(product.id)}>
+              Ekle
+            </button>
+          )}
+          <CompareButton product={product} className="btn quick" compact />
+        </div>
       </div>
     </article>
   );
