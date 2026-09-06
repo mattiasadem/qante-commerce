@@ -3,6 +3,7 @@ import { AssistantRail, AssistantSheet, OrderConfirm } from "@/components/ui-sho
 import { PaymentSummaryBanner } from "@/components/ui-payment-summary";
 import { ShipSlotSummaryBanner } from "@/components/ui-ship-slot-summary";
 import { InvoiceSummaryBanner } from "@/components/ui-invoice-summary";
+import { ContactSummaryBanner } from "@/components/ui-contact-summary";
 export default function OrderPage() {
   return (
     <div className="shop">
@@ -11,6 +12,7 @@ export default function OrderPage() {
           <PaymentSummaryBanner />
           <ShipSlotSummaryBanner />
           <InvoiceSummaryBanner />
+          <ContactSummaryBanner />
         </div>
         <OrderConfirm />
       </Suspense>

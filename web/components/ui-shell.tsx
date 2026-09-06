@@ -33,3 +33,5 @@ export { ShipSlotField, formatShipSlotTag, readShipSlot, parseShipSlotFromNote }
 export { ShipSlotSummaryBanner } from "@/components/ui-ship-slot-summary";
 export { InvoiceField, formatInvoiceTag, readInvoice, parseInvoiceFromNote } from "@/components/ui-invoice";
 export { InvoiceSummaryBanner } from "@/components/ui-invoice-summary";
+export { ContactField, formatContactTag, readContact, parseContactFromNote } from "@/components/ui-contact";
+export { ContactSummaryBanner } from "@/components/ui-contact-summary";
