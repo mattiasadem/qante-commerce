@@ -18,6 +18,7 @@ import { DeliveryField, formatDeliveryTag } from "@/components/ui-delivery";
 import { GiftField, formatGiftTag } from "@/components/ui-gift";
 import { PaymentField, formatPaymentTag } from "@/components/ui-payment";
 import { ShipSlotField, formatShipSlotTag } from "@/components/ui-ship-slot";
+import { InvoiceField, formatInvoiceTag } from "@/components/ui-invoice";
 import { clearAllVariants, formatVariantsTag } from "@/components/ui-variant";
 import {
   ShipBar,
@@ -61,7 +62,7 @@ export function EmptyBag({ onClose }: { onClose?: () => void }) {
   );
 }
 
-/** PayButton with [odeme:…] + [saat:…] note tags. */
+/** PayButton with [odeme:…] + [saat:…] + [fatura:…] note tags. */
 export function PayButton() {
   const { cart, checkout } = useCart();
   const { setCartOpen } = useAsk();
@@ -89,6 +90,8 @@ export function PayButton() {
       if (payTag) note = note ? `${note} ${payTag}` : payTag;
       const saat = formatShipSlotTag();
       if (saat) note = note ? `${note} ${saat}` : saat;
+      const fatura = formatInvoiceTag();
+      if (fatura) note = note ? `${note} ${fatura}` : fatura;
       const vtag = formatVariantsTag(cart.items.map((l) => l.product_id));
       if (vtag) note = note ? `${note} ${vtag}` : vtag;
       const order = await checkout(note);
@@ -116,6 +119,7 @@ export {
   GiftField,
   PaymentField,
   ShipSlotField,
+  InvoiceField,
   ShipBar,
   CheckoutNote,
   ClearCartButton,

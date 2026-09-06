@@ -31,3 +31,5 @@ export { CartPageView } from "@/components/ui-payment-shell";
 export { PaymentSummaryBanner } from "@/components/ui-payment-summary";
 export { ShipSlotField, formatShipSlotTag, readShipSlot, parseShipSlotFromNote } from "@/components/ui-ship-slot";
 export { ShipSlotSummaryBanner } from "@/components/ui-ship-slot-summary";
+export { InvoiceField, formatInvoiceTag, readInvoice, parseInvoiceFromNote } from "@/components/ui-invoice";
+export { InvoiceSummaryBanner } from "@/components/ui-invoice-summary";

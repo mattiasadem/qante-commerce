@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { AssistantRail, AssistantSheet, OrderConfirm } from "@/components/ui-shop";
 import { PaymentSummaryBanner } from "@/components/ui-payment-summary";
 import { ShipSlotSummaryBanner } from "@/components/ui-ship-slot-summary";
+import { InvoiceSummaryBanner } from "@/components/ui-invoice-summary";
 export default function OrderPage() {
   return (
     <div className="shop">
@@ -9,6 +10,7 @@ export default function OrderPage() {
         <div className="grid-wrap" style={{ maxWidth: 720, marginBottom: -8 }}>
           <PaymentSummaryBanner />
           <ShipSlotSummaryBanner />
+          <InvoiceSummaryBanner />
         </div>
         <OrderConfirm />
       </Suspense>

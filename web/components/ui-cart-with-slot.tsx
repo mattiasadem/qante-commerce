@@ -22,6 +22,7 @@ import {
   GiftField,
   PaymentField,
   ShipSlotField,
+  InvoiceField,
   CouponField,
   OrderNoteField,
   ShipBar,
@@ -52,6 +53,7 @@ export function CartDrawer() {
           <GiftField />
           <PaymentField />
           <ShipSlotField />
+          <InvoiceField />
           <CouponField />
           <OrderNoteField />
           <PayButton />
@@ -103,8 +105,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
         <Link href="/siparislerim" className={path.startsWith("/siparislerim") ? "on" : ""}>Sipariş</Link>
         <button type="button" onClick={() => setSheetOpen(true)}>Asistan</button>
         <button type="button" className={path === "/sepet" ? "on" : ""} onClick={() => setCartOpen(true)}>
-          Sepet{count > 0 ? ` ${count}` : ""}
-        </button>
+          Sepet{count > 0 ? ` ${count}` : ""}</button>
       </nav>
     </>
   );
@@ -147,6 +148,7 @@ export function CartPageView() {
           <GiftField />
           <PaymentField />
           <ShipSlotField />
+          <InvoiceField />
           <CouponField />
           <OrderNoteField />
           <PayButton />
