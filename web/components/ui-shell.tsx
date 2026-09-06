@@ -63,3 +63,5 @@ export { QuietField, formatQuietTag, readQuiet, parseQuietFromNote, useQuiet } f
 export { QuietSummaryBanner } from "@/components/ui-quiet-summary";
 export { CallField, formatCallTag, readCall, parseCallFromNote, useCall } from "@/components/ui-call";
 export { CallSummaryBanner } from "@/components/ui-call-summary";
+export { ReturnField, formatReturnTag, readReturn, parseReturnFromNote, useReturn } from "@/components/ui-return";
+export { ReturnSummaryBanner } from "@/components/ui-return-summary";
