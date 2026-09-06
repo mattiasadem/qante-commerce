@@ -40,6 +40,7 @@ import {
   CallField,
   ReturnField,
   PhotoField,
+  FragileField,
   useShipMode,
   CouponField,
   OrderNoteField,
@@ -81,6 +82,7 @@ export function CartDrawer() {
           <CallField />
           <ReturnField />
           <PhotoField />
+          <FragileField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
@@ -195,6 +197,7 @@ export function CartPageView() {
           <CallField />
           <ReturnField />
           <PhotoField />
+          <FragileField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
