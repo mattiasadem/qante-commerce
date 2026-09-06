@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { applyOrderAction, computeIssues, mergeOrders, type Order, type OrderLedgerEntry } from "@/lib/core";
+import { formatShipNote } from "@/lib/ship-track";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,11 @@ function ordersFor(req: Request) {
   return mergeOrders(parseOrderLedger(cookie(req, ORDER_LEDGER)), parseDemoOrders(cookie(req, DEMO_ORDERS)));
 }
 
+/** Preserve existing ledger note across status transitions. */
+function withPreservedNote(prev: OrderLedgerEntry | undefined, status: string, decided_at: string): OrderLedgerEntry {
+  return prev?.note ? { status, decided_at, note: prev.note } : { status, decided_at };
+}
+
 export async function GET(req: Request) {
   const orders = ordersFor(req);
   return NextResponse.json({
@@ -41,7 +47,13 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const body = (await req.json()) as { id?: string; ids?: string[]; action?: string };
+  const body = (await req.json()) as {
+    id?: string;
+    ids?: string[];
+    action?: string;
+    carrier?: string;
+    tracking?: string;
+  };
   const action = body.action ?? "";
   const ledger = parseOrderLedger(cookie(req, ORDER_LEDGER));
   const demos = parseDemoOrders(cookie(req, DEMO_ORDERS));
@@ -52,7 +64,8 @@ export async function POST(req: Request) {
     const all = mergeOrders(ledger, demos);
     const targets = (wanted.length ? all.filter((o) => wanted.includes(o.id)) : all).filter((o) => o.status === "paid");
     if (!targets.length) return NextResponse.json({ error: "nothing to ship" }, { status: 400 });
-    for (const o of targets) ledger[o.id] = { status: "shipped", decided_at: now };
+    // Bulk ship: no per-row tracking; preserve any existing ledger note.
+    for (const o of targets) ledger[o.id] = withPreservedNote(ledger[o.id], "shipped", now);
     const orders = mergeOrders(ledger, demos);
     const issues = computeIssues(new Date(), orders);
     const shipped = targets.map((t) => orders.find((o) => o.id === t.id)!).filter(Boolean);
@@ -73,7 +86,7 @@ export async function POST(req: Request) {
     const all = mergeOrders(ledger, demos);
     const targets = (wanted.length ? all.filter((o) => wanted.includes(o.id)) : all).filter((o) => o.status === "shipped");
     if (!targets.length) return NextResponse.json({ error: "nothing to fulfill" }, { status: 400 });
-    for (const o of targets) ledger[o.id] = { status: "fulfilled", decided_at: now };
+    for (const o of targets) ledger[o.id] = withPreservedNote(ledger[o.id], "fulfilled", now);
     const orders = mergeOrders(ledger, demos);
     const issues = computeIssues(new Date(), orders);
     const fulfilled = targets.map((t) => orders.find((o) => o.id === t.id)!).filter(Boolean);
@@ -94,7 +107,7 @@ export async function POST(req: Request) {
     const all = mergeOrders(ledger, demos);
     const targets = (wanted.length ? all.filter((o) => wanted.includes(o.id)) : all).filter((o) => o.status === "return_requested");
     if (!targets.length) return NextResponse.json({ error: "nothing to close" }, { status: 400 });
-    for (const o of targets) ledger[o.id] = { status: "fulfilled", decided_at: now };
+    for (const o of targets) ledger[o.id] = withPreservedNote(ledger[o.id], "fulfilled", now);
     const orders = mergeOrders(ledger, demos);
     const issues = computeIssues(new Date(), orders);
     const closed = targets.map((t) => orders.find((o) => o.id === t.id)!).filter(Boolean);
@@ -115,7 +128,7 @@ export async function POST(req: Request) {
     const all = mergeOrders(ledger, demos);
     const targets = (wanted.length ? all.filter((o) => wanted.includes(o.id)) : all).filter((o) => o.status === "pending_payment");
     if (!targets.length) return NextResponse.json({ error: "nothing to mark paid" }, { status: 400 });
-    for (const o of targets) ledger[o.id] = { status: "paid", decided_at: now };
+    for (const o of targets) ledger[o.id] = withPreservedNote(ledger[o.id], "paid", now);
     const orders = mergeOrders(ledger, demos);
     const issues = computeIssues(new Date(), orders);
     const paid = targets.map((t) => orders.find((o) => o.id === t.id)!).filter(Boolean);
@@ -138,7 +151,7 @@ export async function POST(req: Request) {
       (o) => o.status === "paid" || o.status === "pending_payment",
     );
     if (!targets.length) return NextResponse.json({ error: "nothing to cancel" }, { status: 400 });
-    for (const o of targets) ledger[o.id] = { status: "cancelled", decided_at: now };
+    for (const o of targets) ledger[o.id] = withPreservedNote(ledger[o.id], "cancelled", now);
     const orders = mergeOrders(ledger, demos);
     const issues = computeIssues(new Date(), orders);
     const cancelled = targets.map((t) => orders.find((o) => o.id === t.id)!).filter(Boolean);
@@ -159,7 +172,17 @@ export async function POST(req: Request) {
   if (!current) return NextResponse.json({ error: "not found" }, { status: 404 });
   const next = applyOrderAction(current.status, action);
   if (!next) return NextResponse.json({ error: "bad action" }, { status: 400 });
-  ledger[id] = { status: next, decided_at: now };
+
+  let entry: OrderLedgerEntry = withPreservedNote(ledger[id], next, now);
+  if (action === "ship") {
+    const note = formatShipNote(
+      typeof body.carrier === "string" ? body.carrier : undefined,
+      typeof body.tracking === "string" ? body.tracking : undefined,
+    );
+    if (note) entry = { status: next, decided_at: now, note };
+  }
+  ledger[id] = entry;
+
   const orders = mergeOrders(ledger, demos);
   const order = orders.find((o) => o.id === id);
   const issues = computeIssues(new Date(), orders);
