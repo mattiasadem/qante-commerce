@@ -137,7 +137,7 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
 
   return (
     <>
-      <div className="chips scroll" role="tablist" aria-label="Stok filtresi">
+      <div className="filter-rail chips scroll" role="tablist" aria-label="Stok filtresi">
         {STOCK_FILTERS.map((f) => (
           <button key={f.id} className={`chip ${filter === f.id ? "on" : ""}`} type="button" aria-pressed={filter === f.id} onClick={() => setFilter(f.id)}>
             {f.label} {counts[f.id] ?? 0}
@@ -145,7 +145,7 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
         ))}
       </div>
       {(restockIds.length || discountIds.length) ? (
-        <div className="actions" style={{ margin: "12px 0 16px", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <div className="bulk-bar approve-bar-sticky" role="toolbar">
           {restockIds.length ? (
             <button
               className="btn btn-primary"
@@ -170,12 +170,12 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
         </div>
       ) : null}
       {flash ? (
-        <p className="muted" style={{ marginBottom: 12 }}>
+        <p className="muted">
           <span className="banner-demo">{flash}</span>{" "}
           <Link href="/merchant/bekleyen">Bekleyen&apos;e git</Link>
         </p>
       ) : (
-        <p className="muted" style={{ marginTop: -4, marginBottom: 16 }}>
+        <p className="muted">
           Filtre chipleri küme seçer · Yenile stok · İndirim fiyat · yerel kuyruk · Onayla ikas&apos;a gitmez
         </p>
       )}
