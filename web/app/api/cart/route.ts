@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       created_at,
       status: "paid",
       note: (() => {
-        const buyer = typeof body.note === "string" ? body.note.trim().slice(0, 240) : "";
+        const buyer = typeof body.note === "string" ? body.note.trim().slice(0, 400) : "";
         return buyer
           ? `Alıcı notu: ${buyer} · ikas checkout simüle · yerel defter`
           : "ikas checkout simüle · yerel defter · Siparişler'e düşer";

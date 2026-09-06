@@ -2,6 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Cart } from "@/lib/core";
 import { clearCoupon } from "@/components/ui-coupon";
+import { clearAllVariants, clearLineVariant } from "@/components/ui-variant";
 
 const empty: Cart = { items: [], subtotal: 0, currency: "TRY" };
 export type DemoOrder = { order_id: string; items: Cart["items"]; subtotal: number; currency: string; created_at: string };
@@ -41,8 +42,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } catch { /* ignore */ }
   }, [pop]);
   const update = useCallback(async (productId: string, qty: number) => { setCart(await cartCall({ action: "update", productId, qty })); }, []);
-  const remove = useCallback(async (productId: string) => { setCart(await cartCall({ action: "remove", productId })); }, []);
-  const clear = useCallback(async () => { setCart(await cartCall({ action: "clear" })); }, []);
+  const remove = useCallback(async (productId: string) => { clearLineVariant(productId); setCart(await cartCall({ action: "remove", productId })); }, []);
+  const clear = useCallback(async () => { clearAllVariants(); setCart(await cartCall({ action: "clear" })); }, []);
   const checkout = useCallback(async (note?: string) => {
     const body: { action: string; note?: string } = { action: "checkout" };
     const trimmed = (note ?? "").trim();
@@ -53,6 +54,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCart({ items: [], subtotal: 0, currency: "TRY" });
     try { sessionStorage.removeItem("qante_checkout_note"); } catch { /* ignore */ }
     try { clearCoupon(); } catch { /* ignore */ }
+    try { clearAllVariants(); } catch { /* ignore */ }
     return data;
   }, []);
   const count = useMemo(() => cart.items.reduce((s, i) => s + i.qty, 0), [cart]);
