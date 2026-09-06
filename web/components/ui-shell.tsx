@@ -59,3 +59,5 @@ export { InsuranceField, formatInsuranceTag, readInsurance, parseInsuranceFromNo
 export { InsuranceSummaryBanner } from "@/components/ui-insurance-summary";
 export { NotifyField, formatNotifyTag, readNotify, parseNotifyFromNote, useNotify } from "@/components/ui-notify";
 export { NotifySummaryBanner } from "@/components/ui-notify-summary";
+export { QuietField, formatQuietTag, readQuiet, parseQuietFromNote, useQuiet } from "@/components/ui-quiet";
+export { QuietSummaryBanner } from "@/components/ui-quiet-summary";
