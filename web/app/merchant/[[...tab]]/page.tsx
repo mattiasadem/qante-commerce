@@ -73,7 +73,7 @@ export default async function MerchantPage({
         <Head title="Özet" lede={`${shortDate(snap.period_start)} — ${shortDate(snap.period_end)} · son ${snap.period_days} gün`} />
         <MetricCards snap={snap} />
         <MiniBars bars={weeklyBars()} />
-        <h2>Dikkat gereken</h2>
+        <h2 className="section-label">Dikkat gereken</h2>
         <AlertList alerts={alerts} issues={issues} />
       </>
     );
