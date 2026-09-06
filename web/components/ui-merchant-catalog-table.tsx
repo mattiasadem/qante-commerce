@@ -116,7 +116,7 @@ export function CatalogTable({ products }: { products: Product[] }) {
 
   return (
     <>
-      <div className="chips scroll" role="tablist" aria-label="Katalog filtresi">
+      <div className="filter-rail chips scroll" role="tablist" aria-label="Katalog filtresi">
         {([
           ["all", "Tümü", products.length],
           ["low", "Düşük stok", products.filter((p) => p.stock > 0 && p.stock <= 5).length],
@@ -129,7 +129,7 @@ export function CatalogTable({ products }: { products: Product[] }) {
         ))}
       </div>
       {discountIds.length ? (
-        <div className="actions" style={{ margin: "12px 0 16px", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <div className="bulk-bar approve-bar-sticky" role="toolbar">
           <button
             className="btn btn-primary"
             type="button"
@@ -158,12 +158,12 @@ export function CatalogTable({ products }: { products: Product[] }) {
         </div>
       ) : null}
       {flash ? (
-        <p className="muted" style={{ marginBottom: 12 }}>
+        <p className="muted">
           <span className="banner-demo">{flash}</span>{" "}
           <Link href="/merchant/bekleyen">Bekleyen&apos;e git</Link>
         </p>
       ) : (
-        <p className="muted" style={{ marginTop: -4, marginBottom: 16 }}>
+        <p className="muted">
           Filtre chipleri küme seçer · Toplu indirim / Toplu düzelt / Toplu yenile / Düzelt / İndirim / Yenile yerel kuyruğa yazar · Onayla ikas&apos;a gitmez
         </p>
       )}
@@ -175,29 +175,31 @@ export function CatalogTable({ products }: { products: Product[] }) {
               const q = qualityScore(p);
               return (
                 <tr key={p.id}>
-                  <td><img src={p.image} alt="" width={36} height={45} style={{ width: 36, height: 45, objectFit: "cover", borderRadius: 6 }} /></td>
+                  <td><img src={p.image} alt="" width={32} height={40} style={{ width: 32, height: 40, objectFit: "cover", borderRadius: 4, border: "1px solid var(--hairline)" }} /></td>
                   <td>{p.name}<div className="faint">{p.category}</div></td>
                   <td className="faint">{p.sku}</td>
                   <td>{p.stock}</td>
                   <td>{money(p.price)}</td>
                   <td><span className="score">{q}<i><b style={{ width: `${q}%` }} /></i></span></td>
-                  <td style={{ whiteSpace: "nowrap" }}>
-                    <button className="btn btn-primary" type="button" disabled={busy === `${p.id}:listing` || busy === "bulk"} onClick={() => void stageChange(p, "listing")}>
-                      {busy === `${p.id}:listing` ? "…" : "Düzelt"}
-                    </button>{" "}
-                    <button className="btn" type="button" disabled={busy === `${p.id}:price` || busy === "bulk"} onClick={() => void stageChange(p, "price")}>
-                      {busy === `${p.id}:price` ? "…" : "İndirim"}
-                    </button>{" "}
-                    <button className="btn" type="button" disabled={busy === `${p.id}:stock` || busy === "bulk"} onClick={() => void stageChange(p, "stock")} title={`öneri ${suggestRestockQty(p.stock)}`}>
-                      {busy === `${p.id}:stock` ? "…" : "Yenile"}
-                    </button>{" "}
-                    <Link className="btn" href={`/merchant/sohbet?q=${encodeURIComponent(p.name + " başlığını düzelt")}`}>Sor</Link>
+                  <td>
+                    <div className="row-actions">
+                      <button className="btn btn-primary btn-sm" type="button" disabled={busy === `${p.id}:listing` || busy === "bulk"} onClick={() => void stageChange(p, "listing")}>
+                        {busy === `${p.id}:listing` ? "…" : "Düzelt"}
+                      </button>
+                      <button className="btn btn-sm" type="button" disabled={busy === `${p.id}:price` || busy === "bulk"} onClick={() => void stageChange(p, "price")}>
+                        {busy === `${p.id}:price` ? "…" : "İndirim"}
+                      </button>
+                      <button className="btn btn-sm" type="button" disabled={busy === `${p.id}:stock` || busy === "bulk"} onClick={() => void stageChange(p, "stock")} title={`öneri ${suggestRestockQty(p.stock)}`}>
+                        {busy === `${p.id}:stock` ? "…" : "Yenile"}
+                      </button>
+                      <Link className="btn btn-sm" href={`/merchant/sohbet?q=${encodeURIComponent(p.name + " başlığını düzelt")}`}>Sor</Link>
+                    </div>
                   </td>
                 </tr>
               );
             })}
             {rows.length === 0 ? (
-              <tr><td colSpan={7} className="faint" style={{ padding: 16 }}>Bu filtrede ürün yok.</td></tr>
+              <tr><td colSpan={7} className="faint pad-sm">Bu filtrede ürün yok.</td></tr>
             ) : null}
           </tbody>
         </table>
