@@ -6,6 +6,7 @@ import { RETURN_DAYS, SHIP_FREE, money } from "@/lib/core";
 import { CheckoutNote, LineList, OrderNoteField, PayButton, ShipBar, ShopFooter, useAsk, useCart, ClearCartButton, SaveAllForLaterButton } from "@/components/ui-shell";
 import { CouponField, CouponTotals, isFreeShip, useCoupon } from "@/components/ui-coupon";
 import { AddButton, BuyNowButton, FavoriteButton, NotifyRestockButton, ProductCard, ShareButton, isLowStock, pushRecent } from "@/components/ui-shop-core";
+import { CompareButton } from "@/components/ui-compare";
 
 export function AskAboutProduct({ product }: { product: Product }) {
   const { requestAsk } = useAsk();
@@ -94,6 +95,7 @@ export function PdpView({ product, related }: { product: Product; related: Produ
             <BuyNowButton productId={product.id} qty={qty} />
             <FavoriteButton productId={product.id} />
             <ShareButton productId={product.id} />
+            <CompareButton product={product} />
           </div>
         ) : (
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", margin: "12px 0 4px" }}>
@@ -101,6 +103,7 @@ export function PdpView({ product, related }: { product: Product; related: Produ
             <NotifyRestockButton product={product} />
             <FavoriteButton productId={product.id} />
             <ShareButton productId={product.id} />
+            <CompareButton product={product} />
           </div>
         )}
         <AskAboutProduct product={product} />
