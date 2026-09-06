@@ -17,6 +17,7 @@ import {
 } from "@/components/ui-coupon";
 import { DeliveryField, formatDeliveryTag } from "@/components/ui-delivery";
 import { CompareTray } from "@/components/ui-compare";
+import { clearAllVariants, formatVariantsTag } from "@/components/ui-variant";
 
 const FAV_KEY = "qante_favorites";
 function useFavCount() {
@@ -110,9 +111,14 @@ export function PayButton() {
       if (del) {
         note = note ? `${note} ${del}` : del;
       }
+      const vtag = formatVariantsTag(cart.items.map((l) => l.product_id));
+      if (vtag) {
+        note = note ? `${note} ${vtag}` : vtag;
+      }
       const order = await checkout(note);
       setBusy(false);
       if (!order) return;
+      clearAllVariants();
       setCartOpen(false);
       router.push(`/siparis?id=${encodeURIComponent(order.order_id)}`);
     }}>{busy ? "yazılıyor" : labelPay ? `Ödemeye geç · ${labelPay}` : "Ödemeye geç"}</button>
@@ -126,7 +132,7 @@ export function ClearCartButton({ className = "btn" }: { className?: string }) {
   return (
     <button className={className} type="button" disabled={busy} onClick={async () => {
       setBusy(true);
-      try { await clear(); } finally { setBusy(false); }
+      try { clearAllVariants(); await clear(); } finally { setBusy(false); }
     }}>{busy ? "…" : "Sepeti boşalt"}</button>
   );
 }
