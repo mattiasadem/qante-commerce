@@ -79,7 +79,7 @@ export function ChangePreviewCard({
           <button className="btn btn-primary" type="button" disabled={busy !== null} onClick={() => void act("approve")}>
             {busy === "approve" ? "yazılıyor…" : "Onayla"}
           </button>
-          <button className="btn" type="button" disabled={busy !== null} onClick={() => setRejectOpen(true)}>
+          <button className="btn btn-danger" type="button" disabled={busy !== null} onClick={() => setRejectOpen(true)}>
             Reddet
           </button>
           <span className="faint">Onaylanmadan hiçbir şey uygulanmaz.</span>
@@ -95,7 +95,7 @@ export function ChangePreviewCard({
             <h2>Red nedeni</h2>
             <textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="neden reddedildi" aria-label="Red nedeni" />
             <div className="actions">
-              <button className="btn btn-primary" type="button" disabled={!reason.trim() || busy !== null} onClick={() => void act("discard", reason.trim())}>
+              <button className="btn btn-danger" type="button" disabled={!reason.trim() || busy !== null} onClick={() => void act("discard", reason.trim())}>
                 Reddet
               </button>
               <button className="btn" type="button" onClick={() => setRejectOpen(false)}>Vazgeç</button>
