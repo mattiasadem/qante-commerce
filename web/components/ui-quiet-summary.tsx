@@ -3,7 +3,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { parseQuietFromNote } from "@/components/ui-quiet";
 
-/** Shows Zili çalma \u00b7 \u2026 from order note on /siparis. */
+/** Shows Zili çalma · … from order note on /siparis. */
 export function QuietSummaryBanner() {
   const params = useSearchParams();
   const id = params.get("id") ?? "";
@@ -22,7 +22,7 @@ export function QuietSummaryBanner() {
   if (!label) return null;
   return (
     <p className="muted" data-cta="quiet-summary" style={{ marginTop: 6, marginBottom: 0 }}>
-      Zili çalma \u00b7 {label}
+      Zili çalma · {label}
     </p>
   );
 }

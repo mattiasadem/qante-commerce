@@ -135,8 +135,8 @@ export function QuietField() {
       </div>
       <p className="faint" style={{ marginTop: 6 }}>
         {info.mode
-          ? `Seçilen \u00b7 ${LABELS[info.mode]} \u00b7 sessiz teslimat \u00b7 demo \u00b7 checkout notuna yazılır \u00b7 ikas'a gitmez`
-          : "İsteğe bağlı \u00b7 Zili çalma / Sessiz bırak / Kapıya not \u00b7 demo \u00b7 ikas'a gitmez"}
+          ? `Seçilen · ${LABELS[info.mode]} · sessiz teslimat · demo · checkout notuna yazılır · ikas'a gitmez`
+          : "İsteğe bağlı · Zili çalma / Sessiz bırak / Kapıya not · demo · ikas'a gitmez"}
       </p>
     </div>
   );
