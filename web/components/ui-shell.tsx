@@ -21,3 +21,4 @@ export {
   MerchantShell,
 } from "@/components/ui-shell-chrome";
 export { CouponField, CouponTotals, useCoupon } from "@/components/ui-coupon";
+export { DeliveryField, formatDeliveryTag, readDelivery } from "@/components/ui-delivery";
