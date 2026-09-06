@@ -37,7 +37,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const checkout = useCallback(async (note?: string) => {
     const body: { action: string; note?: string } = { action: "checkout" };
     const trimmed = (note ?? "").trim();
-    if (trimmed) body.note = trimmed.slice(0, 240);
+    if (trimmed) body.note = trimmed.slice(0, 400);
     const res = await fetch("/api/cart", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const data = await res.json() as DemoOrder & { error?: string };
     if (data.error || !data.order_id) return null;
