@@ -21,6 +21,7 @@ import { ShipSlotField, formatShipSlotTag } from "@/components/ui-ship-slot";
 import { InvoiceField, formatInvoiceTag } from "@/components/ui-invoice";
 import { ContactField, formatContactTag } from "@/components/ui-contact";
 import { ShipInstrField, formatShipInstrTag } from "@/components/ui-ship-instr";
+import { ShipDayField, formatShipDayTag } from "@/components/ui-ship-day";
 import { clearAllVariants, formatVariantsTag } from "@/components/ui-variant";
 import {
   ShipBar,
@@ -64,7 +65,7 @@ export function EmptyBag({ onClose }: { onClose?: () => void }) {
   );
 }
 
-/** PayButton with [odeme:…] + [saat:…] + [fatura:…] + [iletisim:…] + [talimat:…] note tags. */
+/** PayButton with [odeme:…] + [saat:…] + [gun:…] + [fatura:…] + [iletisim:…] + [talimat:…] note tags. */
 export function PayButton() {
   const { cart, checkout } = useCart();
   const { setCartOpen } = useAsk();
@@ -98,6 +99,8 @@ export function PayButton() {
       if (iletisim) note = note ? `${note} ${iletisim}` : iletisim;
       const talimat = formatShipInstrTag();
       if (talimat) note = note ? `${note} ${talimat}` : talimat;
+      const gun = formatShipDayTag();
+      if (gun) note = note ? `${note} ${gun}` : gun;
       const vtag = formatVariantsTag(cart.items.map((l) => l.product_id));
       if (vtag) note = note ? `${note} ${vtag}` : vtag;
       const order = await checkout(note);
@@ -128,6 +131,7 @@ export {
   InvoiceField,
   ContactField,
   ShipInstrField,
+  ShipDayField,
   ShipBar,
   CheckoutNote,
   ClearCartButton,
