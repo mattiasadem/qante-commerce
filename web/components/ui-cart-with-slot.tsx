@@ -24,6 +24,7 @@ import {
   ShipSlotField,
   InvoiceField,
   ContactField,
+  ShipInstrField,
   CouponField,
   OrderNoteField,
   ShipBar,
@@ -51,6 +52,7 @@ export function CartDrawer() {
           <Link className="btn" href="/sepet" onClick={() => setCartOpen(false)} style={{ display: "block", textAlign: "center", marginBottom: 8 }}>Sepete git</Link>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}><SaveAllForLaterButton className="btn" /><ClearCartButton className="btn" /></div>
           <DeliveryField />
+          <ShipInstrField />
           <GiftField />
           <PaymentField />
           <ShipSlotField />
@@ -148,6 +150,7 @@ export function CartPageView() {
             <ClearCartButton />
           </div>
           <DeliveryField />
+          <ShipInstrField />
           <GiftField />
           <PaymentField />
           <ShipSlotField />

@@ -4,6 +4,7 @@ import { PaymentSummaryBanner } from "@/components/ui-payment-summary";
 import { ShipSlotSummaryBanner } from "@/components/ui-ship-slot-summary";
 import { InvoiceSummaryBanner } from "@/components/ui-invoice-summary";
 import { ContactSummaryBanner } from "@/components/ui-contact-summary";
+import { ShipInstrSummaryBanner } from "@/components/ui-ship-instr-summary";
 export default function OrderPage() {
   return (
     <div className="shop">
@@ -13,6 +14,7 @@ export default function OrderPage() {
           <ShipSlotSummaryBanner />
           <InvoiceSummaryBanner />
           <ContactSummaryBanner />
+          <ShipInstrSummaryBanner />
         </div>
         <OrderConfirm />
       </Suspense>

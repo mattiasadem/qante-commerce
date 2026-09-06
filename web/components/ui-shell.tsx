@@ -35,3 +35,5 @@ export { InvoiceField, formatInvoiceTag, readInvoice, parseInvoiceFromNote } fro
 export { InvoiceSummaryBanner } from "@/components/ui-invoice-summary";
 export { ContactField, formatContactTag, readContact, parseContactFromNote } from "@/components/ui-contact";
 export { ContactSummaryBanner } from "@/components/ui-contact-summary";
+export { ShipInstrField, formatShipInstrTag, readShipInstr, parseShipInstrFromNote } from "@/components/ui-ship-instr";
+export { ShipInstrSummaryBanner } from "@/components/ui-ship-instr-summary";
