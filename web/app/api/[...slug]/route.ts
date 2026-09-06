@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { formatShipNote } from "@/lib/ship-track";
 import { BRAND, applyOrderAction, buildListingStage, buildPriceStage, buildStockStage, demoTurn, getProduct, getProducts, mergeOrders, mergeStaged, logoSvg, merchantTurn, computeAlerts, computeIssues, computeSnapshot, weeklyBars, type LedgerEntry, type Order, type OrderLedgerEntry, type StagedChange } from "@/lib/core";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +27,7 @@ function parseExtras(raw?: string): StagedChange[] {
   if (!raw) return [];
   try {
     const d = JSON.parse(raw) as StagedChange[];
-    return Array.isArray(d) ? d.filter((c) => c && c.id && c.kind && c.product_id) : [];
+    return Array.isArray(d) ? d.filter((c) => c && c.id && c.product_id && c.kind) : [];
   } catch { return []; }
 }
 
@@ -83,7 +84,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
         };
         if (!want || want === order.order_id) {
           const desk = all.find((o) => o.id === order.order_id);
-          return NextResponse.json({ ...order, status: desk?.status ?? order.status ?? "paid" });
+          return NextResponse.json({
+            ...order,
+            status: desk?.status ?? order.status ?? "paid",
+            ship_note: desk?.ship_note ?? (order as { ship_note?: string }).ship_note,
+          });
         }
       } catch { /* fall through to seed */ }
     }
@@ -101,6 +106,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
           created_at: o.created_at,
           note: "seed sipariş · yerel defter · Siparişler'e düşer",
           status: o.status,
+          ship_note: o.ship_note,
         });
       }
     }
@@ -311,7 +317,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     return setCookies(res, [{ name: EXTRA, value: JSON.stringify(extras) }]);
   }
   if (slug === "merchant/orders") {
-    const body = (await req.json()) as { id?: string; action?: string };
+    const body = (await req.json()) as { id?: string; action?: string; carrier?: string; tracking?: string };
     const id = body.id ?? "";
     const action = body.action ?? "";
     const ledger = parseOrderLedger(cookie(req, ORDER_LEDGER));
@@ -320,7 +326,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     if (!current) return NextResponse.json({ error: "not found" }, { status: 404 });
     const next = applyOrderAction(current.status, action);
     if (!next) return NextResponse.json({ error: "bad action" }, { status: 400 });
-    ledger[id] = { status: next, decided_at: new Date().toISOString() };
+    const decided_at = new Date().toISOString();
+    const prev = ledger[id];
+    let entry: OrderLedgerEntry = prev?.note ? { status: next, decided_at, note: prev.note } : { status: next, decided_at };
+    if (action === "ship") {
+      const note = formatShipNote(
+        typeof body.carrier === "string" ? body.carrier : undefined,
+        typeof body.tracking === "string" ? body.tracking : undefined,
+      );
+      if (note) entry = { status: next, decided_at, note };
+    }
+    ledger[id] = entry;
     const orders = mergeOrders(ledger, demos);
     const order = orders.find((o) => o.id === id);
     const issues = computeIssues(new Date(), orders);
