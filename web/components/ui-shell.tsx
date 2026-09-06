@@ -55,3 +55,5 @@ export { RecipientField, formatRecipientTag, readRecipient, parseRecipientFromNo
 export { RecipientSummaryBanner } from "@/components/ui-recipient-summary";
 export { DoormanField, formatDoormanTag, readDoorman, parseDoormanFromNote } from "@/components/ui-doorman";
 export { DoormanSummaryBanner } from "@/components/ui-doorman-summary";
+export { InsuranceField, formatInsuranceTag, readInsurance, parseInsuranceFromNote, useInsurance } from "@/components/ui-insurance";
+export { InsuranceSummaryBanner } from "@/components/ui-insurance-summary";
