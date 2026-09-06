@@ -30,7 +30,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => { void refresh(); }, [refresh]);
   const applyCart = useCallback((next: Cart) => { setCart(next); pop(); }, [pop]);
-  const add = useCallback(async (productId: string, qty = 1) => { setCart(await cartCall({ action: "add", productId, qty })); pop(); }, [pop]);
+  const add = useCallback(async (productId: string, qty = 1) => {
+    const n = Math.max(1, qty);
+    setCart(await cartCall({ action: "add", productId, qty: n }));
+    pop();
+    try {
+      window.dispatchEvent(new CustomEvent("qante-cart-toast", {
+        detail: { text: n > 1 ? `Sepete eklendi · ${n}` : "Sepete eklendi" },
+      }));
+    } catch { /* ignore */ }
+  }, [pop]);
   const update = useCallback(async (productId: string, qty: number) => { setCart(await cartCall({ action: "update", productId, qty })); }, []);
   const remove = useCallback(async (productId: string) => { setCart(await cartCall({ action: "remove", productId })); }, []);
   const clear = useCallback(async () => { setCart(await cartCall({ action: "clear" })); }, []);
