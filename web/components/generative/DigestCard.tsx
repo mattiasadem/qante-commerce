@@ -21,10 +21,10 @@ export function DigestCard({
 }) {
   const items = payload.items ?? [];
   return (
-    <section className="gen-card ac-reveal" data-component="digest">
+    <section className="gen-card gen-digest-card ac-reveal" data-component="digest">
       <div className="gen-card-head">
         <h3 className="gen-title">{payload.title ?? "Dikkat"}</h3>
-        <span className="faint">{items.length} kayıt</span>
+        <span className="tag accent">{items.length}</span>
       </div>
       <ul className="gen-digest">
         {items.map((item, i) => {
@@ -37,12 +37,12 @@ export function DigestCard({
               </div>
               <span className={`tag ${meta.tone}`}>{meta.label}</span>
               {onAsk && item.kind !== "pending_change" ? (
-                <button className="chip" type="button" onClick={() => onAsk(item.headline)}>
+                <button className="btn" type="button" onClick={() => onAsk(item.headline)}>
                   Sor
                 </button>
               ) : null}
               {item.kind === "pending_change" ? (
-                <a className="chip" href="/merchant/bekleyen">Bekleyen</a>
+                <a className="btn" href="/merchant/bekleyen">Bekleyen</a>
               ) : null}
             </li>
           );

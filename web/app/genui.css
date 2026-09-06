@@ -54,3 +54,10 @@
 
 .gen-compare-col .btn{width:100%;margin-top:auto}
 .gen-compare-col .tag{align-self:flex-start}
+
+/* Merchant GenUI density */
+.gen-digest-card .gen-card-head{margin-bottom:4px;padding-bottom:10px;border-bottom:.5px solid var(--hairline)}
+.gen-digest-card .gen-title{letter-spacing:-.015em}
+.gen-change-card{padding:14px}
+.gen-change-card .approve-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.gen-change-card .diff .col{font-variant-numeric:tabular-nums}
