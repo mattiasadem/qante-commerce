@@ -14,6 +14,7 @@ import {
   orderProgress,
 } from "@/lib/core";
 import { ShopFooter, useCart } from "@/components/ui-shell";
+import { shipNoteLabel } from "@/components/ui-ship-track";
 
 type Row = {
   order_id: string;
@@ -21,6 +22,7 @@ type Row = {
   status: string;
   total: number;
   item_count: number;
+  ship_note?: string;
   items: { product_id: string; name: string; qty: number }[];
 };
 
@@ -290,6 +292,11 @@ export function MyOrdersView() {
                           </span>
                         ))}
                       </div>
+                      {o.ship_note ? (
+                        <div className="faint" style={{ marginTop: 6 }} data-cta="my-orders-ship">
+                          Kargo · {shipNoteLabel(o.ship_note) ?? o.ship_note}
+                        </div>
+                      ) : null}
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <strong>{money(o.total)}</strong>
