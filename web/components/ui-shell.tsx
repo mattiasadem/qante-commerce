@@ -47,3 +47,5 @@ export { ShipModeField, formatShipModeTag, readShipMode, parseShipModeFromNote, 
 export { ShipModeSummaryBanner } from "@/components/ui-ship-mode-summary";
 export { ShipSpeedField, formatShipSpeedTag, readShipSpeed, parseShipSpeedFromNote, useShipSpeed } from "@/components/ui-ship-speed";
 export { ShipSpeedSummaryBanner } from "@/components/ui-ship-speed-summary";
+export { TipField, formatTipTag, readTip, parseTipFromNote, useTip } from "@/components/ui-tip";
+export { TipSummaryBanner } from "@/components/ui-tip-summary";
