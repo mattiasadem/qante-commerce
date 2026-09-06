@@ -30,6 +30,7 @@ import {
   TaksitField,
   ShipModeField,
   ShipSpeedField,
+  TipField,
   useShipMode,
   CouponField,
   OrderNoteField,
@@ -61,6 +62,7 @@ export function CartDrawer() {
           <DeliveryField />
           <ShipModeField />
           <ShipSpeedField />
+          <TipField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
@@ -165,6 +167,7 @@ export function CartPageView() {
           <DeliveryField />
           <ShipModeField />
           <ShipSpeedField />
+          <TipField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
