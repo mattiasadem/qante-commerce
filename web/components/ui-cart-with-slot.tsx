@@ -28,6 +28,8 @@ import {
   ShipDayField,
   ShipCarrierField,
   TaksitField,
+  ShipModeField,
+  useShipMode,
   CouponField,
   OrderNoteField,
   ShipBar,
@@ -41,7 +43,8 @@ export function CartDrawer() {
   const { cart } = useCart();
   const { cartOpen, setCartOpen } = useAsk();
   const { coupon } = useCoupon();
-  const freeShip = isFreeShip(cart.subtotal, coupon);
+  const shipMode = useShipMode();
+  const freeShip = isFreeShip(cart.subtotal, coupon) || shipMode.mode === "gelal";
   return (
     <>
       <div className="drawer-backdrop" hidden={!cartOpen} onClick={() => setCartOpen(false)} data-component="CartDrawer" />
@@ -55,6 +58,7 @@ export function CartDrawer() {
           <Link className="btn" href="/sepet" onClick={() => setCartOpen(false)} style={{ display: "block", textAlign: "center", marginBottom: 8 }}>Sepete git</Link>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}><SaveAllForLaterButton className="btn" /><ClearCartButton className="btn" /></div>
           <DeliveryField />
+          <ShipModeField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
@@ -131,7 +135,8 @@ export function ShopFrame({ children }: { children: ReactNode }) {
 export function CartPageView() {
   const { cart } = useCart();
   const { coupon } = useCoupon();
-  const freeShip = isFreeShip(cart.subtotal, coupon);
+  const shipMode = useShipMode();
+  const freeShip = isFreeShip(cart.subtotal, coupon) || shipMode.mode === "gelal";
   return (
     <div className="grid-wrap" style={{ maxWidth: 720 }}>
       <h1>Sepet</h1>
@@ -156,6 +161,7 @@ export function CartPageView() {
             <ClearCartButton />
           </div>
           <DeliveryField />
+          <ShipModeField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
