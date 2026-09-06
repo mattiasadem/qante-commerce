@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import { AskProvider, CartProvider, ShopFrame } from "@/components/ui-shell";
 import "./globals.css";
 import "./genui.css";
+import "./merchant.css";
 const inter = Inter({ subsets: ["latin", "latin-ext"], weight: ["400", "500"], variable: "--font-inter", display: "swap" });
 export const metadata: Metadata = { title: "Qante", description: "Qante mağaza ve operatör demosu" };
 export default function RootLayout({ children }: { children: ReactNode }) {
