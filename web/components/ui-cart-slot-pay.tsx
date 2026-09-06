@@ -29,6 +29,7 @@ import { ShipSpeedField, formatShipSpeedTag } from "@/components/ui-ship-speed";
 import { TipField, formatTipTag } from "@/components/ui-tip";
 import { EcoField, formatEcoTag } from "@/components/ui-eco";
 import { RecipientField, formatRecipientTag } from "@/components/ui-recipient";
+import { DoormanField, formatDoormanTag } from "@/components/ui-doorman";
 import { clearAllVariants, formatVariantsTag } from "@/components/ui-variant";
 import {
   ShipBar,
@@ -72,7 +73,7 @@ export function EmptyBag({ onClose }: { onClose?: () => void }) {
   );
 }
 
-/** PayButton with [odeme:…] + [taksit:…] + [saat:…] + [gun:…] + [firma:…] + [sekil:…] + [hiz:…] + [bahsis:…] + [eko:…] + [alici:…] + [fatura:…] + [iletisim:…] + [talimat:…] note tags. */
+/** PayButton with [odeme:…] + [taksit:…] + [saat:…] + [gun:…] + [firma:…] + [sekil:…] + [hiz:…] + [bahsis:…] + [eko:…] + [alici:…] + [kapici:…] + [fatura:…] + [iletisim:…] + [talimat:…] note tags. */
 export function PayButton() {
   const { cart, checkout } = useCart();
   const { setCartOpen } = useAsk();
@@ -120,6 +121,8 @@ export function PayButton() {
       if (eko) note = note ? `${note} ${eko}` : eko;
       const alici = formatRecipientTag();
       if (alici) note = note ? `${note} ${alici}` : alici;
+      const kapici = formatDoormanTag();
+      if (kapici) note = note ? `${note} ${kapici}` : kapici;
       const taksit = formatTaksitTag();
       if (taksit) note = note ? `${note} ${taksit}` : taksit;
       const vtag = formatVariantsTag(cart.items.map((l) => l.product_id));
@@ -160,6 +163,7 @@ export {
   TipField,
   EcoField,
   RecipientField,
+  DoormanField,
   isPickup,
   useShipMode,
   ShipBar,
