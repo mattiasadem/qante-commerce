@@ -23,3 +23,4 @@ export {
 export { CouponField, CouponTotals, useCoupon } from "@/components/ui-coupon";
 export { DeliveryField, formatDeliveryTag, readDelivery } from "@/components/ui-delivery";
 export { CartToastHost, flashCartToast } from "@/components/ui-cart-toast";
+export { GiftField, formatGiftTag, readGift } from "@/components/ui-gift";
