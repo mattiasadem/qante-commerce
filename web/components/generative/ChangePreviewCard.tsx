@@ -40,7 +40,7 @@ export function ChangePreviewCard({
   }
 
   return (
-    <section className="gen-card change ac-reveal" data-component="change_preview">
+    <section className="gen-card gen-change-card change ac-reveal" data-component="change_preview">
       <div className="change-head">
         <div>
           <strong>{payload.headline ?? KIND_LABEL[change.kind]}</strong>
