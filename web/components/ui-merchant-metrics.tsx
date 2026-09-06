@@ -23,7 +23,7 @@ export function MiniBars({ bars }: { bars: WeeklyBar[] }) {
   const max = Math.max(1, ...bars.map((b) => b.value));
   return (
     <div className="bars-card">
-      <div className="faint" style={{ marginBottom: 10 }}>Haftalık ciro</div>
+      <div className="section-label">Haftalık ciro</div>
       <div className="bars">
         {bars.map((b, i) => <div key={i} className={`bar ${i === bars.length - 1 ? "last" : ""}`} style={{ height: `${Math.max(6, Math.round((b.value / max) * 100))}%` }} title={money(b.value)} />)}
       </div>
@@ -227,17 +227,17 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
   return (
     <>
       {flash ? (
-        <p className="muted" style={{ marginBottom: 12 }}>
+        <p className="muted">
           <span className="banner-demo">{flash}</span>{" "}
           <Link href={flashHref}>{flashHref.includes("bekleyen") ? "Bekleyen'e git" : "Siparişler"}</Link>
         </p>
       ) : (
-        <p className="muted" style={{ marginBottom: 12 }}>
+        <p className="muted">
           Toplu yenile/indirim Bekleyen&apos;e · Toplu kargo/ödeme/iade yerel defter · ikas&apos;a gitmez
         </p>
       )}
       {hasBulk ? (
-        <div className="actions" style={{ marginBottom: 16, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <div className="bulk-bar approve-bar-sticky" role="toolbar">
           {restockIds.length > 0 ? (
             <button className="btn btn-primary" type="button" disabled={busy === "bulk"} onClick={() => void stageRestockAll()}>
               {busy === "bulk" ? "…" : `Toplu yenile (${restockIds.length})`}
