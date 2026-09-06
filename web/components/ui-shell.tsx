@@ -69,3 +69,5 @@ export { PhotoField, formatPhotoTag, readPhoto, parsePhotoFromNote, usePhoto } f
 export { PhotoSummaryBanner } from "@/components/ui-photo-summary";
 export { FragileField, formatFragileTag, readFragile, parseFragileFromNote, useFragile } from "@/components/ui-fragile";
 export { FragileSummaryBanner } from "@/components/ui-fragile-summary";
+export { MontajField, formatMontajTag, readMontaj, parseMontajFromNote, useMontaj } from "@/components/ui-montaj";
+export { MontajSummaryBanner } from "@/components/ui-montaj-summary";

@@ -21,6 +21,7 @@ import { CallSummaryBanner } from "@/components/ui-call-summary";
 import { ReturnSummaryBanner } from "@/components/ui-return-summary";
 import { PhotoSummaryBanner } from "@/components/ui-photo-summary";
 import { FragileSummaryBanner } from "@/components/ui-fragile-summary";
+import { MontajSummaryBanner } from "@/components/ui-montaj-summary";
 export default function OrderPage() {
   return (
     <div className="shop">
@@ -47,6 +48,7 @@ export default function OrderPage() {
           <ReturnSummaryBanner />
           <PhotoSummaryBanner />
           <FragileSummaryBanner />
+          <MontajSummaryBanner />
         </div>
         <OrderConfirm />
       </Suspense>
