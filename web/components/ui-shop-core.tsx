@@ -6,6 +6,7 @@ import type { Product } from "@/lib/core";
 import { money } from "@/lib/core";
 import { useAsk, useCart } from "@/components/ui-shell";
 import { CompareButton } from "@/components/ui-compare";
+import { setLineVariant, type LineVariant } from "@/components/ui-variant";
 
 const FAV_KEY = "qante_favorites";
 
@@ -166,18 +167,29 @@ export function useRecentViews() {
   return { ids, clear: clearRecent };
 }
 
-export function AddButton({ productId, disabled, qty = 1 }: { productId: string; disabled?: boolean; qty?: number }) {
+export function AddButton({ productId, disabled, qty = 1, variant }: { productId: string; disabled?: boolean; qty?: number; variant?: LineVariant }) {
   const { add } = useCart();
   const n = Math.max(1, qty);
+  const label = [variant?.color, variant?.size].filter(Boolean).join(" · ");
   return (
-    <button className="btn btn-primary" type="button" disabled={disabled} onClick={() => void add(productId, n)}>
+    <button
+      className="btn btn-primary"
+      type="button"
+      disabled={disabled}
+      data-cta="add-with-variant"
+      title={label || undefined}
+      onClick={() => {
+        if (variant && (variant.size || variant.color)) setLineVariant(productId, variant);
+        void add(productId, n);
+      }}
+    >
       {n > 1 ? `Sepete ekle · ${n}` : "Sepete ekle"}
     </button>
   );
 }
 
 /** PDP buy-now: clear cart, add qty, checkout → /siparis (local ledger). */
-export function BuyNowButton({ productId, disabled, qty = 1 }: { productId: string; disabled?: boolean; qty?: number }) {
+export function BuyNowButton({ productId, disabled, qty = 1, variant }: { productId: string; disabled?: boolean; qty?: number; variant?: LineVariant }) {
   const { clear, add, checkout } = useCart();
   const { setCartOpen } = useAsk();
   const router = useRouter();
@@ -193,6 +205,7 @@ export function BuyNowButton({ productId, disabled, qty = 1 }: { productId: stri
         setBusy(true);
         try {
           await clear();
+          if (variant && (variant.size || variant.color)) setLineVariant(productId, variant);
           await add(productId, n);
           const order = await checkout();
           if (!order) return;
