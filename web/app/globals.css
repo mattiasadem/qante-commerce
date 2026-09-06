@@ -115,7 +115,7 @@ button:disabled{cursor:not-allowed}img{max-width:100%;display:block}
 .shop-foot h4{margin:0 0 6px;font-size:13px;font-weight:500;color:var(--accent)}
 .shop-foot p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
 
-.dock{display:none;position:fixed;left:0;right:0;bottom:0;z-index:30;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(11,11,11,.92);border-top:.5px solid var(--hairline);grid-template-columns:repeat(3,1fr);gap:8px}
+.dock{display:none;position:fixed;left:0;right:0;bottom:0;z-index:30;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(11,11,11,.92);border-top:.5px solid var(--hairline);grid-template-columns:repeat(5,1fr);gap:8px}
 .dock a,.dock button{background:transparent;border:0;color:var(--muted);padding:8px;text-align:center;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:4px}
 .dock .on{color:var(--text)}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:35;height:85dvh;background:var(--bg-elev);border-top:.5px solid var(--hairline);border-radius:16px 16px 0 0;display:flex;flex-direction:column}
@@ -177,7 +177,7 @@ h1{font-size:22px;font-weight:500;margin:0 0 16px}h2{font-size:16px;font-weight:
 @media(max-width:1100px){.featured{grid-template-columns:repeat(2,1fr)}.metrics{grid-template-columns:1fr 1fr}}
 @media(max-width:1023px){
   .shop{grid-template-columns:1fr}.rail{display:none}.dock{display:grid}
-  .product-page{grid-template-columns:1fr;padding-bottom:110px}
+  .product-page{grid-template-columns:1fr;padding-bottom:168px}
   .portal{grid-template-columns:1fr}
   .sidenav{flex-direction:row;flex-wrap:nowrap;overflow:auto;border-right:none;border-bottom:.5px solid var(--hairline);gap:4px}
   .sidenav .note{display:none}.sidenav .mark{padding:4px 10px 4px 0}
