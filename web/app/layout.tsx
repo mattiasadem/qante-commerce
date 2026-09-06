@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AskProvider, CartProvider, CartToastHost, ShopFrame } from "@/components/ui-shell";
 import "./globals.css";
+import "./cart-toast.css";
 import "./genui.css";
 import "./merchant.css";
 import "./merchant-fallbacks.css";
