@@ -11,6 +11,7 @@ import { TaksitSummaryBanner } from "@/components/ui-taksit-summary";
 import { ShipModeSummaryBanner } from "@/components/ui-ship-mode-summary";
 import { ShipSpeedSummaryBanner } from "@/components/ui-ship-speed-summary";
 import { TipSummaryBanner } from "@/components/ui-tip-summary";
+import { EcoSummaryBanner } from "@/components/ui-eco-summary";
 export default function OrderPage() {
   return (
     <div className="shop">
@@ -27,6 +28,7 @@ export default function OrderPage() {
           <ShipModeSummaryBanner />
           <ShipSpeedSummaryBanner />
           <TipSummaryBanner />
+          <EcoSummaryBanner />
         </div>
         <OrderConfirm />
       </Suspense>

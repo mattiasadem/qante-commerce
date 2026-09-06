@@ -49,3 +49,5 @@ export { ShipSpeedField, formatShipSpeedTag, readShipSpeed, parseShipSpeedFromNo
 export { ShipSpeedSummaryBanner } from "@/components/ui-ship-speed-summary";
 export { TipField, formatTipTag, readTip, parseTipFromNote, useTip } from "@/components/ui-tip";
 export { TipSummaryBanner } from "@/components/ui-tip-summary";
+export { EcoField, formatEcoTag, readEco, parseEcoFromNote, useEco } from "@/components/ui-eco";
+export { EcoSummaryBanner } from "@/components/ui-eco-summary";
