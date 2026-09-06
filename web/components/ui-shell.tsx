@@ -51,3 +51,5 @@ export { TipField, formatTipTag, readTip, parseTipFromNote, useTip } from "@/com
 export { TipSummaryBanner } from "@/components/ui-tip-summary";
 export { EcoField, formatEcoTag, readEco, parseEcoFromNote, useEco } from "@/components/ui-eco";
 export { EcoSummaryBanner } from "@/components/ui-eco-summary";
+export { RecipientField, formatRecipientTag, readRecipient, parseRecipientFromNote } from "@/components/ui-recipient";
+export { RecipientSummaryBanner } from "@/components/ui-recipient-summary";
