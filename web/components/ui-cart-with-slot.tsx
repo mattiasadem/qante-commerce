@@ -41,6 +41,7 @@ import {
   ReturnField,
   PhotoField,
   FragileField,
+  MontajField,
   useShipMode,
   CouponField,
   OrderNoteField,
@@ -83,6 +84,7 @@ export function CartDrawer() {
           <ReturnField />
           <PhotoField />
           <FragileField />
+          <MontajField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
@@ -198,6 +200,7 @@ export function CartPageView() {
           <ReturnField />
           <PhotoField />
           <FragileField />
+          <MontajField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
