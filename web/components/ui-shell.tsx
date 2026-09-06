@@ -41,3 +41,5 @@ export { ShipDayField, formatShipDayTag, readShipDay, parseShipDayFromNote } fro
 export { ShipDaySummaryBanner } from "@/components/ui-ship-day-summary";
 export { ShipCarrierField, formatShipCarrierTag, readShipCarrier, parseShipCarrierFromNote } from "@/components/ui-ship-carrier";
 export { ShipCarrierSummaryBanner } from "@/components/ui-ship-carrier-summary";
+export { TaksitField, formatTaksitTag, readTaksit, parseTaksitFromNote } from "@/components/ui-taksit";
+export { TaksitSummaryBanner } from "@/components/ui-taksit-summary";
