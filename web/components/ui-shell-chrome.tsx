@@ -220,24 +220,59 @@ export function ShopFooter() {
   );
 }
 
-const NAV = [
+const NAV_OPS = [
   { href: "/merchant", label: "Özet" },
   { href: "/merchant/sohbet", label: "Sohbet" },
   { href: "/merchant/bekleyen", label: "Bekleyen" },
-  { href: "/merchant/katalog", label: "Katalog" },
-  { href: "/merchant/stok", label: "Stok" },
   { href: "/merchant/siparisler", label: "Siparişler" },
 ];
+const NAV_CATALOG = [
+  { href: "/merchant/katalog", label: "Katalog" },
+  { href: "/merchant/stok", label: "Stok" },
+];
+const TITLE: Record<string, string> = {
+  "/merchant": "Özet",
+  "/merchant/sohbet": "Sohbet",
+  "/merchant/bekleyen": "Bekleyen",
+  "/merchant/katalog": "Katalog",
+  "/merchant/stok": "Stok",
+  "/merchant/siparisler": "Siparişler",
+};
 export function MerchantShell({ children, current }: { children: ReactNode; current: string }) {
+  const title = TITLE[current] ?? "Operatör";
   return (
-    <div className="portal">
+    <div className="portal" data-component="MerchantShell">
       <nav className="sidenav" aria-label="Operatör">
-        <div className="mark"><Logo size={22} />QANTE</div>
-        {NAV.map((i) => <Link key={i.href} href={i.href} className={i.href === current ? "active" : ""}>{i.label}</Link>)}
-        <Link href="/" className="faint" style={{ marginTop: 18 }}>Vitrine dön</Link>
-        <p className="note">Nötr panel · seed veri · onay yerel deftere yazar</p>
+        <div className="mark"><Logo size={20} /><span>QANTE</span></div>
+        <div className="nav-group">Operasyon</div>
+        {NAV_OPS.map((i) => (
+          <Link key={i.href} href={i.href} className={i.href === current ? "active" : ""} aria-current={i.href === current ? "page" : undefined}>
+            {i.label}
+          </Link>
+        ))}
+        <div className="nav-group">Envanter</div>
+        {NAV_CATALOG.map((i) => (
+          <Link key={i.href} href={i.href} className={i.href === current ? "active" : ""} aria-current={i.href === current ? "page" : undefined}>
+            {i.label}
+          </Link>
+        ))}
+        <div className="nav-foot">
+          <Link href="/" className="faint">← Vitrine dön</Link>
+          <p className="note">Seed veri · onay yerel deftere yazar · ikas kapalı</p>
+        </div>
       </nav>
-      <div className="main">{children}</div>
+      <div className="ops-frame">
+        <header className="ops-topbar">
+          <div className="crumb">
+            <span>Operatör</span>
+            <span aria-hidden="true">/</span>
+            <strong>{title}</strong>
+          </div>
+          <div className="spacer" />
+          <span className="pill">DEMO · yerel defter</span>
+        </header>
+        <div className="main">{children}</div>
+      </div>
     </div>
   );
 }
