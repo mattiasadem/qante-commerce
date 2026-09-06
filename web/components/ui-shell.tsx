@@ -67,3 +67,5 @@ export { ReturnField, formatReturnTag, readReturn, parseReturnFromNote, useRetur
 export { ReturnSummaryBanner } from "@/components/ui-return-summary";
 export { PhotoField, formatPhotoTag, readPhoto, parsePhotoFromNote, usePhoto } from "@/components/ui-photo";
 export { PhotoSummaryBanner } from "@/components/ui-photo-summary";
+export { FragileField, formatFragileTag, readFragile, parseFragileFromNote, useFragile } from "@/components/ui-fragile";
+export { FragileSummaryBanner } from "@/components/ui-fragile-summary";
