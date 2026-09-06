@@ -34,6 +34,7 @@ import {
   EcoField,
   RecipientField,
   DoormanField,
+  InsuranceField,
   useShipMode,
   CouponField,
   OrderNoteField,
@@ -69,6 +70,7 @@ export function CartDrawer() {
           <EcoField />
           <RecipientField />
           <DoormanField />
+          <InsuranceField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
@@ -177,6 +179,7 @@ export function CartPageView() {
           <EcoField />
           <RecipientField />
           <DoormanField />
+          <InsuranceField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
