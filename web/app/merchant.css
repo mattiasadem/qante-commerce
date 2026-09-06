@@ -237,3 +237,23 @@
   .portal .list-row{grid-template-columns:1fr auto;gap:8px}
   .portal .list-row .btn,.portal .list-row .tag{grid-row:auto}
 }
+
+/* Wired hooks: ops-chat, filter-rail, approve-bar-sticky, denser table/Bekleyen */
+.btn-danger{background:var(--danger,#e25b4a);color:#fff;border-color:transparent;font-weight:600}
+.btn-danger:hover:not(:disabled){background:#ef6a58;color:#fff}
+.btn-danger:disabled{opacity:.4}
+.btn-sm{padding:5px 9px;font-size:12px;border-radius:7px}
+.portal .btn-danger{box-shadow:0 1px 0 rgba(255,255,255,.08) inset}
+.portal .list-row.ops-row{grid-template-columns:minmax(0,1.35fr) auto minmax(150px,auto)}
+.portal .list-row .row-actions,.portal table.data .row-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.portal .ops-change{padding:14px 16px;margin-bottom:8px}
+.portal .ops-change .change-head strong{font-weight:600;letter-spacing:-.01em}
+.portal .ops-chat .chat-banner{margin:0;padding:10px 14px;border-bottom:.5px solid var(--hairline);font-size:12.5px;line-height:1.4}
+.portal .filter-rail{margin:0 0 12px}
+.portal .bulk-bar.approve-bar-sticky{position:sticky;top:calc(var(--ops-top,52px));z-index:12;margin-bottom:12px}
+.portal table.data th{padding:8px 10px}
+.portal table.data td{padding:8px 10px}
+.portal .main > .muted{margin-top:0!important}
+
+.portal .pad-sm{padding:10px 12px}
+.portal .section-label{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8b92a5);margin:0 0 8px}
