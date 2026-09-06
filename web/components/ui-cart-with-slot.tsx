@@ -36,6 +36,7 @@ import {
   DoormanField,
   InsuranceField,
   NotifyField,
+  QuietField,
   useShipMode,
   CouponField,
   OrderNoteField,
@@ -73,6 +74,7 @@ export function CartDrawer() {
           <DoormanField />
           <InsuranceField />
           <NotifyField />
+          <QuietField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
@@ -183,6 +185,7 @@ export function CartPageView() {
           <DoormanField />
           <InsuranceField />
           <NotifyField />
+          <QuietField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
