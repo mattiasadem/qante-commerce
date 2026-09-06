@@ -15,6 +15,7 @@ import {
   readCoupon,
   useCoupon,
 } from "@/components/ui-coupon";
+import { CompareTray } from "@/components/ui-compare";
 
 const FAV_KEY = "qante_favorites";
 function useFavCount() {
@@ -190,6 +191,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       <CartDrawer />
+      <CompareTray />
       {children}
       <nav className="dock" aria-label="Mobil">
         <Link href="/" className={path === "/" && !favOn ? "on" : ""}>Mağaza</Link>
