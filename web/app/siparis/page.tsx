@@ -19,6 +19,7 @@ import { NotifySummaryBanner } from "@/components/ui-notify-summary";
 import { QuietSummaryBanner } from "@/components/ui-quiet-summary";
 import { CallSummaryBanner } from "@/components/ui-call-summary";
 import { ReturnSummaryBanner } from "@/components/ui-return-summary";
+import { PhotoSummaryBanner } from "@/components/ui-photo-summary";
 export default function OrderPage() {
   return (
     <div className="shop">
@@ -43,6 +44,7 @@ export default function OrderPage() {
           <QuietSummaryBanner />
           <CallSummaryBanner />
           <ReturnSummaryBanner />
+          <PhotoSummaryBanner />
         </div>
         <OrderConfirm />
       </Suspense>
