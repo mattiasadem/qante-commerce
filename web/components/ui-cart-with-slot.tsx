@@ -38,6 +38,7 @@ import {
   NotifyField,
   QuietField,
   CallField,
+  ReturnField,
   useShipMode,
   CouponField,
   OrderNoteField,
@@ -77,6 +78,7 @@ export function CartDrawer() {
           <NotifyField />
           <QuietField />
           <CallField />
+          <ReturnField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
@@ -189,6 +191,7 @@ export function CartPageView() {
           <NotifyField />
           <QuietField />
           <CallField />
+          <ReturnField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
