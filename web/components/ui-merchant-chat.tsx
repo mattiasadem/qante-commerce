@@ -78,20 +78,20 @@ export function MerchantChat({ prefill }: { prefill?: string }) {
   }, [prefill]);
 
   return (
-    <div className="card" style={{ padding: 0, maxWidth: 760, overflow: "hidden" }} data-component="MerchantChat">
+    <div className="ops-chat" data-component="MerchantChat">
       {flash ? (
-        <p className="muted" style={{ margin: "12px 16px 0" }}>
+        <p className="muted chat-banner">
           <span className="banner-demo">{flash}</span>{" "}
           <Link href={flash.includes("yerel defter") && !flash.includes("Bekleyen") ? "/merchant/siparisler" : "/merchant/bekleyen"}>
             {flash.includes("yerel defter") && !flash.includes("Bekleyen") ? "Siparişler" : "Bekleyen'e git"}
           </Link>
         </p>
       ) : (
-        <p className="muted" style={{ margin: "12px 16px 0" }}>
+        <p className="muted chat-banner">
           Digest + change_preview · CTAlar yerel Bekleyen veya Siparişler defterine yazar · ikas&apos;a gitmez
         </p>
       )}
-      <div className="rail-log" style={{ minHeight: 320 }}>
+      <div className="rail-log">
         {messages.length === 0 ? (
           <>
             <div className="turn">Haftalık özet, stok veya bekleyen. Kartlar akışla gelir.</div>
@@ -106,13 +106,13 @@ export function MerchantChat({ prefill }: { prefill?: string }) {
               <>
                 {m.text ? <div className="turn">{m.text}</div> : null}
                 {m.slots.map((slot) => (
-                  <div key={slot.stream_id} style={{ marginTop: 10 }}>
+                  <div key={slot.stream_id} style={{ marginTop: 8 }}>
                     <GenerativeBlock slot={slot} onAsk={(t) => void submit(t)} />
                   </div>
                 ))}
                 {m.pending ? <ActivityLine label={activity || MERCHANT_FALLBACK} /> : null}
                 {(m.actions as ChatAction[] | undefined)?.length ? (
-                  <div className="actions" style={{ marginTop: 10, flexWrap: "wrap", gap: 8 }}>
+                  <div className="actions" style={{ marginTop: 8 }}>
                     {(m.actions as ChatAction[]).map((a) => {
                       const key = a.kind === "order"
                         ? `order:${a.order_id}:${a.order_action}`
