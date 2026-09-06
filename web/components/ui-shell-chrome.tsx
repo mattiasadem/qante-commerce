@@ -16,6 +16,7 @@ import {
   useCoupon,
 } from "@/components/ui-coupon";
 import { DeliveryField, formatDeliveryTag } from "@/components/ui-delivery";
+import { GiftField, formatGiftTag } from "@/components/ui-gift";
 import { CompareTray } from "@/components/ui-compare";
 import { clearAllVariants, formatVariantsTag } from "@/components/ui-variant";
 
@@ -111,6 +112,10 @@ export function PayButton() {
       if (del) {
         note = note ? `${note} ${del}` : del;
       }
+      const gift = formatGiftTag();
+      if (gift) {
+        note = note ? `${note} ${gift}` : gift;
+      }
       const vtag = formatVariantsTag(cart.items.map((l) => l.product_id));
       if (vtag) {
         note = note ? `${note} ${vtag}` : vtag;
@@ -155,6 +160,7 @@ export function CartDrawer() {
           <Link className="btn" href="/sepet" onClick={() => setCartOpen(false)} style={{ display: "block", textAlign: "center", marginBottom: 8 }}>Sepete git</Link>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}><SaveAllForLaterButton className="btn" /><ClearCartButton className="btn" /></div>
           <DeliveryField />
+          <GiftField />
           <CouponField />
           <OrderNoteField />
           <PayButton />
