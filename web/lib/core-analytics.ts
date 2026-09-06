@@ -12,7 +12,7 @@ export function mergeOrders(ledger: Record<string, OrderLedgerEntry> = {}, extra
   return [...byId.values()]
     .map((o) => {
       const e = ledger[o.id];
-      return e ? { ...o, status: e.status } : o;
+      return e ? { ...o, status: e.status, ship_note: e.note || o.ship_note } : o;
     })
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 }

@@ -41,6 +41,7 @@ export async function GET(req: Request) {
     created_at: o.created_at,
     status: o.status,
     total: o.total,
+    ship_note: o.ship_note,
     item_count: o.items.reduce((s, l) => s + l.qty, 0),
     items: o.items.slice(0, 4).map((l) => ({
       product_id: l.product_id,
