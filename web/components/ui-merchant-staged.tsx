@@ -175,10 +175,10 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
 
   return (
     <>
-      <p className="muted" style={{ marginTop: -8, marginBottom: 12 }}>
+      <p className="muted" style={{ marginBottom: 12 }}>
         <span className="banner-demo">DEMO kuyruk · Onayla / Toplu onayla / Toplu reddet / Tekrar kuyruğa al yerel deftere yazar, ikas’a gitmez</span>
       </p>
-      <div className="chips scroll" role="tablist" aria-label="Bekleyen tür filtresi" style={{ marginBottom: 12 }}>
+      <div className="filter-rail chips scroll" role="tablist" aria-label="Bekleyen tür filtresi">
         {KIND_FILTERS.map((f) => (
           <button
             key={f.id}
@@ -197,7 +197,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
         </p>
       ) : null}
       {filteredPending.length > 0 ? (
-        <div className="actions" style={{ marginBottom: 16, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <div className="bulk-bar approve-bar-sticky" role="toolbar">
           <button
             className="btn btn-primary"
             type="button"
@@ -207,7 +207,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
             {busy === "bulk" ? "…" : `Toplu onayla (${filteredPending.length})`}
           </button>
           <button
-            className="btn"
+            className="btn btn-danger"
             type="button"
             disabled={busy === "bulk" || busy === "bulk-hist"}
             onClick={() => { setRejectBulk(true); setRejectId(null); setReason(""); }}
@@ -225,7 +225,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
         </div>
       ) : null}
       {filteredPending.map((c) => (
-        <article className="change" key={c.id}>
+        <article className="change ops-change" key={c.id}>
           <div className="change-head">
             <div>
               <strong>{KIND_LABEL[c.kind]}</strong>
@@ -244,16 +244,17 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
             {c.guardrails.map((g) => <span key={g.id} className={`tag ${g.ok ? "ok" : "danger"}`}>{g.label} {g.ok ? "uygun" : "cap dışı"}</span>)}
           </div>
           {c.status === "staged" ? (
-            <div className="actions">
+            <div className="actions approve-bar">
               <button className="btn btn-primary" type="button" disabled={busy === c.id || busy === "bulk" || busy === "bulk-hist"} onClick={() => approve(c.id)}>Onayla</button>
-              <button className="btn" type="button" disabled={busy === "bulk" || busy === "bulk-hist"} onClick={() => { setRejectId(c.id); setReason(""); }}>Reddet</button>
+              <button className="btn btn-danger" type="button" disabled={busy === "bulk" || busy === "bulk-hist"} onClick={() => { setRejectId(c.id); setReason(""); }}>Reddet</button>
+              <span className="faint">Onaylanmadan uygulanmaz</span>
             </div>
           ) : null}
         </article>
       ))}
       {history.length ? <h2 style={{ marginTop: 28 }}>Geçmiş</h2> : null}
       {history.length ? (
-        <div className="chips scroll" role="tablist" aria-label="Geçmiş durum filtresi" style={{ marginBottom: 12 }}>
+        <div className="filter-rail chips scroll" role="tablist" aria-label="Geçmiş durum filtresi">
           {HISTORY_FILTERS.map((f) => (
             <button
               key={f.id}
@@ -268,7 +269,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
         </div>
       ) : null}
       {filteredHistory.length > 0 ? (
-        <div className="actions" style={{ marginBottom: 16, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <div className="bulk-bar approve-bar-sticky" role="toolbar">
           <button
             className="btn"
             type="button"
@@ -288,7 +289,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
         </div>
       ) : null}
       {filteredHistory.map((c) => (
-        <article className="change" key={`h-${c.id}`}>
+        <article className="change ops-change" key={`h-${c.id}`}>
           <div className="change-head">
             <div>
               <strong>{KIND_LABEL[c.kind]}</strong>
@@ -318,7 +319,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
             <h2>{rejectBulk ? `Toplu red · ${filteredPending.length} değişiklik` : "Red nedeni"}</h2>
             <textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="neden reddedildi" aria-label="Red nedeni" />
             <div className="actions">
-              <button className="btn btn-primary" type="button" disabled={!reason.trim() || busy === "bulk"} onClick={reject}>
+              <button className="btn btn-danger" type="button" disabled={!reason.trim() || busy === "bulk"} onClick={reject}>
                 {rejectBulk ? `Toplu reddet (${filteredPending.length})` : "Reddet"}
               </button>
               <button className="btn" type="button" onClick={() => { setRejectId(null); setRejectBulk(false); }}>Vazgeç</button>
