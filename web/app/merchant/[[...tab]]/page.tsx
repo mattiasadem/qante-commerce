@@ -6,6 +6,15 @@ import { computeAlerts, computeIssues, computeSnapshot, getOrders, getProducts, 
 
 export const dynamic = "force-dynamic";
 
+function Head({ title, lede }: { title: string; lede: string }) {
+  return (
+    <header className="ops-head">
+      <h1>{title}</h1>
+      <p className="lede">{lede}</p>
+    </header>
+  );
+}
+
 export default async function MerchantPage({
   params,
   searchParams,
@@ -22,23 +31,49 @@ export default async function MerchantPage({
 
   let body: ReactNode;
   if (tab === "sohbet") {
-    body = <><h1>Sohbet</h1><p className="muted" style={{ marginTop: -8, marginBottom: 16 }}>Starter chipleri · Yenile/Düzelt/İndirim yerel Bekleyen kuyruğuna yazar · Onayla ikas'a gitmez</p><MerchantChat prefill={q} /></>;
+    body = (
+      <>
+        <Head title="Sohbet" lede="Özet, stok ve bekleyen için starter'lar. Yenile / Düzelt / İndirim yerel kuyruğa yazar; Onayla ikas'a gitmez." />
+        <MerchantChat prefill={q} />
+      </>
+    );
   } else if (tab === "bekleyen") {
-    body = <><h1>Bekleyen</h1><p className="muted" style={{ marginTop: -8, marginBottom: 16 }}>Tür chipleri · Toplu onayla yerel deftere yazar · ikas'a gitmez</p><StagedQueue initial={getStaged()} /></>;
+    body = (
+      <>
+        <Head title="Bekleyen" lede="Onay kuyruğu. Toplu onayla yerel deftere yazar; canlı ikas yazımı kapalı." />
+        <StagedQueue initial={getStaged()} />
+      </>
+    );
   } else if (tab === "katalog") {
-    body = <><h1>Katalog</h1><p className="muted" style={{ marginTop: -8, marginBottom: 16 }}>12 ürün · filtre chipleri · Düzelt yerel Bekleyen kuyruğuna yazar · Sor sohbete gider</p><CatalogTable products={getProducts()} /></>;
+    body = (
+      <>
+        <Head title="Katalog" lede="12 ürün. Filtre + toplu aksiyonlar yerel Bekleyen kuyruğuna yazar." />
+        <CatalogTable products={getProducts()} />
+      </>
+    );
   } else if (tab === "stok") {
-    body = <><h1>Stok</h1><p className="muted" style={{ marginTop: -8, marginBottom: 16 }}>Filtre chipleri küme seçer · Toplu yenile yerel Bekleyen kuyruğuna yazar · Onayla ikas&apos;a gitmez</p><StockView alerts={alerts} /></>;
+    body = (
+      <>
+        <Head title="Stok" lede="Uyarı kümesi. Toplu yenile yerel kuyruğa yazar; Onayla ikas'a gitmez." />
+        <StockView alerts={alerts} />
+      </>
+    );
   } else if (tab === "siparisler") {
-    body = <><h1>Siparişler</h1><p className="muted" style={{ marginTop: -8, marginBottom: 16 }}>Mağaza checkout + seed · Kargola yerel deftere yazar · Sor sohbete gider</p><Suspense fallback={<p className="muted">siparişler…</p>}><OrdersView orders={getOrders()} issues={issues} /></Suspense></>;
+    body = (
+      <>
+        <Head title="Siparişler" lede="Mağaza checkout + seed. Kargola ve toplu aksiyonlar yerel deftere yazar." />
+        <Suspense fallback={<p className="muted">siparişler…</p>}>
+          <OrdersView orders={getOrders()} issues={issues} />
+        </Suspense>
+      </>
+    );
   } else {
     body = (
       <>
-        <h1>Özet</h1>
-        <p className="muted" style={{ marginTop: -8, marginBottom: 18 }}>{shortDate(snap.period_start)} — {shortDate(snap.period_end)}</p>
+        <Head title="Özet" lede={`${shortDate(snap.period_start)} — ${shortDate(snap.period_end)} · son ${snap.period_days} gün`} />
         <MetricCards snap={snap} />
         <MiniBars bars={weeklyBars()} />
-        <h2 style={{ marginTop: 28 }}>Dikkat gereken</h2>
+        <h2>Dikkat gereken</h2>
         <AlertList alerts={alerts} issues={issues} />
       </>
     );
