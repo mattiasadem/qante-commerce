@@ -29,6 +29,7 @@ import {
   ShipCarrierField,
   TaksitField,
   ShipModeField,
+  ShipSpeedField,
   useShipMode,
   CouponField,
   OrderNoteField,
@@ -59,6 +60,7 @@ export function CartDrawer() {
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}><SaveAllForLaterButton className="btn" /><ClearCartButton className="btn" /></div>
           <DeliveryField />
           <ShipModeField />
+          <ShipSpeedField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
@@ -162,6 +164,7 @@ export function CartPageView() {
           </div>
           <DeliveryField />
           <ShipModeField />
+          <ShipSpeedField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
