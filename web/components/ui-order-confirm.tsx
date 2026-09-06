@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { STATUS_LABEL, canCancelOrder, canConfirmPayment, canConfirmReceived, canReorder, canRequestReturn, canWithdrawReturn, money, orderProgress } from "@/lib/core";
 import { parseDeliveryFromNote } from "@/components/ui-delivery";
+import { parseVariantsFromNote } from "@/components/ui-variant";
 import { ShipBar, ShopFooter, useCart } from "@/components/ui-shell";
 
 type DemoOrderView = {
@@ -216,15 +217,19 @@ export function OrderConfirm() {
             ))}
           </div>
           <div className="list" style={{ marginTop: 18 }}>
-            {order.items.map((l) => (
+            {order.items.map((l) => {
+              const vLabel = parseVariantsFromNote(order.note)[l.product_id];
+              return (
               <div className="list-row" key={l.product_id}>
                 <div>
                   <Link href={`/urun/${l.product_id}`}>{l.name}</Link>
+                  {vLabel ? <div className="faint" data-cta="order-variant">{vLabel}</div> : null}
                   <div className="faint">{l.qty} adet · {money(l.price)}</div>
                 </div>
                 <strong>{money(l.line_total)}</strong>
               </div>
-            ))}
+            );
+            })}
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 16, alignItems: "center" }}>
             <span className="muted">Toplam</span>
@@ -238,7 +243,7 @@ export function OrderConfirm() {
             <ShipBar subtotal={order.subtotal} />
           )}
           <div className="actions" style={{ marginTop: 22, display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <Link href="/" className={canConfirmReceived(status) || canConfirmPayment(status) ? "btn" : "btn btn-primary"}>Mağazaya dön</Link>
+            <Link href="/" className={canConfirmReceived(status) || canConfirmPayment(status) ? "btn" : "btn btn-primary">Mağazaya dön</Link>
             <Link href="/siparislerim" className="btn" data-cta="my-orders">Siparişlerim</Link>
             <Link href={`/merchant/siparisler?focus=${encodeURIComponent(order.order_id)}`} className="btn">Operatörde gör</Link>
             {canConfirmPayment(status) ? (
