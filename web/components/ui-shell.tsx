@@ -45,3 +45,5 @@ export { TaksitField, formatTaksitTag, readTaksit, parseTaksitFromNote } from "@
 export { TaksitSummaryBanner } from "@/components/ui-taksit-summary";
 export { ShipModeField, formatShipModeTag, readShipMode, parseShipModeFromNote, isPickup, useShipMode } from "@/components/ui-ship-mode";
 export { ShipModeSummaryBanner } from "@/components/ui-ship-mode-summary";
+export { ShipSpeedField, formatShipSpeedTag, readShipSpeed, parseShipSpeedFromNote, useShipSpeed } from "@/components/ui-ship-speed";
+export { ShipSpeedSummaryBanner } from "@/components/ui-ship-speed-summary";
