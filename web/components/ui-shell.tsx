@@ -37,3 +37,5 @@ export { ContactField, formatContactTag, readContact, parseContactFromNote } fro
 export { ContactSummaryBanner } from "@/components/ui-contact-summary";
 export { ShipInstrField, formatShipInstrTag, readShipInstr, parseShipInstrFromNote } from "@/components/ui-ship-instr";
 export { ShipInstrSummaryBanner } from "@/components/ui-ship-instr-summary";
+export { ShipDayField, formatShipDayTag, readShipDay, parseShipDayFromNote } from "@/components/ui-ship-day";
+export { ShipDaySummaryBanner } from "@/components/ui-ship-day-summary";
