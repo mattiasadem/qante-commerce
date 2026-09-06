@@ -25,6 +25,7 @@ import { ShipDayField, formatShipDayTag } from "@/components/ui-ship-day";
 import { ShipCarrierField, formatShipCarrierTag } from "@/components/ui-ship-carrier";
 import { TaksitField, formatTaksitTag } from "@/components/ui-taksit";
 import { ShipModeField, formatShipModeTag, isPickup, useShipMode } from "@/components/ui-ship-mode";
+import { ShipSpeedField, formatShipSpeedTag } from "@/components/ui-ship-speed";
 import { clearAllVariants, formatVariantsTag } from "@/components/ui-variant";
 import {
   ShipBar,
@@ -68,7 +69,7 @@ export function EmptyBag({ onClose }: { onClose?: () => void }) {
   );
 }
 
-/** PayButton with [odeme:…] + [taksit:…] + [saat:…] + [gun:…] + [firma:…] + [sekil:…] + [fatura:…] + [iletisim:…] + [talimat:…] note tags. */
+/** PayButton with [odeme:…] + [taksit:…] + [saat:…] + [gun:…] + [firma:…] + [sekil:…] + [hiz:…] + [fatura:…] + [iletisim:…] + [talimat:…] note tags. */
 export function PayButton() {
   const { cart, checkout } = useCart();
   const { setCartOpen } = useAsk();
@@ -108,6 +109,8 @@ export function PayButton() {
       if (firma) note = note ? `${note} ${firma}` : firma;
       const sekil = formatShipModeTag();
       if (sekil) note = note ? `${note} ${sekil}` : sekil;
+      const hiz = formatShipSpeedTag();
+      if (hiz) note = note ? `${note} ${hiz}` : hiz;
       const taksit = formatTaksitTag();
       if (taksit) note = note ? `${note} ${taksit}` : taksit;
       const vtag = formatVariantsTag(cart.items.map((l) => l.product_id));
@@ -144,6 +147,7 @@ export {
   ShipCarrierField,
   TaksitField,
   ShipModeField,
+  ShipSpeedField,
   isPickup,
   useShipMode,
   ShipBar,
