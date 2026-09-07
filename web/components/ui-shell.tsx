@@ -82,3 +82,5 @@ export { ImzaField, formatImzaTag, readImza, parseImzaFromNote, useImza } from "
 export { ImzaSummaryBanner } from "@/components/ui-imza-summary";
 export { PaketmatikField, formatPaketmatikTag, readPaketmatik, parsePaketmatikFromNote, usePaketmatik } from "@/components/ui-paketmatik";
 export { PaketmatikSummaryBanner } from "@/components/ui-paketmatik-summary";
+export { ErisimField, formatErisimTag, readErisim, parseErisimFromNote, useErisim } from "@/components/ui-erisim";
+export { ErisimSummaryBanner } from "@/components/ui-erisim-summary";

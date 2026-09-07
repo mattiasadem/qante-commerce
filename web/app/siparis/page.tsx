@@ -28,6 +28,7 @@ import { DestekSummaryBanner } from "@/components/ui-destek-summary";
 import { AmbalajSummaryBanner } from "@/components/ui-ambalaj-summary";
 import { ImzaSummaryBanner } from "@/components/ui-imza-summary";
 import { PaketmatikSummaryBanner } from "@/components/ui-paketmatik-summary";
+import { ErisimSummaryBanner } from "@/components/ui-erisim-summary";
 export default function OrderPage() {
   return (
     <div className="shop">
@@ -61,6 +62,7 @@ export default function OrderPage() {
           <AmbalajSummaryBanner />
           <ImzaSummaryBanner />
           <PaketmatikSummaryBanner />
+          <ErisimSummaryBanner />
         </div>
         <OrderConfirm />
       </Suspense>
