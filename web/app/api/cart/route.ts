@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getProduct, type Order } from "@/lib/core";
+import { compactBuyerNote } from "@/lib/buyer-prefs";
 
 export const dynamic = "force-dynamic";
 
@@ -66,12 +67,17 @@ export async function POST(req: Request) {
           : "ikas checkout simüle · yerel defter · Siparişler'e düşer";
       })(),
     };
+    const buyerCompact = (() => {
+      const buyer = typeof body.note === "string" ? body.note.trim().slice(0, 400) : "";
+      return buyer ? compactBuyerNote(buyer) : undefined;
+    })();
     const deskOrder: Order = {
       id: order_id,
       created_at,
       status: "paid",
       total: cart.subtotal,
       items: cart.items.map((l) => ({ product_id: l.product_id, qty: l.qty, price: l.product?.price ?? 0 })),
+      ...(buyerCompact ? { buyer_note: buyerCompact } : {}),
     };
     const demoOrders = [deskOrder, ...parseDemoOrders(cookie(req, DEMO_ORDERS)).filter((o) => o.id !== order_id)].slice(0, 24);
     const res = NextResponse.json(order);
