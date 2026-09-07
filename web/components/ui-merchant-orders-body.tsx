@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Issue, Order } from "@/lib/core";
 import { STATUS_LABEL, canCancelOrder, isStoreCheckoutOrder } from "@/lib/core";
 import { Logo } from "@/components/ui-shell";
-import { ORDER_FILTERS, PREF_FILTERS, orderHasPref, orderMatchesQuery } from "@/components/ui-merchant-orders-filters";
+import { ORDER_FILTERS, ORDER_SORTS, PREF_FILTERS, compareOrdersBySort, orderHasPref, orderMatchesQuery, type OrderSortId } from "@/components/ui-merchant-orders-filters";
 import { OrderRow } from "@/components/ui-merchant-orders-row";
 
 export function OrdersView({ orders: initialOrders, issues: initialIssues }: { orders: Order[]; issues: Issue[] }) {
@@ -21,6 +21,9 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
   const [pref, setPref] = useState<string | null>(prefParam || null);
   const qParam = (params.get("q") ?? "").trim();
   const [q, setQ] = useState(qParam);
+  const sortParam = (params.get("sort") ?? "").trim().toLowerCase();
+  const initialSort: OrderSortId = (ORDER_SORTS.some((s) => s.id === sortParam) ? sortParam : "newest") as OrderSortId;
+  const [sort, setSort] = useState<OrderSortId>(initialSort);
 
   useEffect(() => {
     if (focus) {
@@ -37,6 +40,10 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
   useEffect(() => {
     if (qParam) setQ(qParam);
   }, [qParam]);
+
+  useEffect(() => {
+    if (ORDER_SORTS.some((s) => s.id === sortParam)) setSort(sortParam as OrderSortId);
+  }, [sortParam]);
 
   useEffect(() => {
     void fetch("/api/merchant/orders", { cache: "no-store" })
@@ -136,9 +143,9 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
       const ao = openIds.has(a.id) || isStoreCheckoutOrder(a.id) ? 0 : 1;
       const bo = openIds.has(b.id) || isStoreCheckoutOrder(b.id) ? 0 : 1;
       if (ao !== bo) return ao - bo;
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      return compareOrdersBySort(a, b, sort);
     });
-  }, [statusRows, pref, q, openIds, highlight]);
+  }, [statusRows, pref, q, openIds, highlight, sort]);
   const shippable = useMemo(() => rows.filter((o) => o.status === "paid"), [rows]);
   const fulfillable = useMemo(() => rows.filter((o) => o.status === "shipped"), [rows]);
   const closableReturns = useMemo(() => rows.filter((o) => o.status === "return_requested"), [rows]);
@@ -203,6 +210,21 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
           </button>
         ) : null}
         <span className="faint">{q.trim() ? `${rows.length} sonuç` : "durum + tercih üstünde arar"}</span>
+      </div>
+      <div className="filter-rail chips scroll" role="tablist" aria-label="Sıralama" data-cta="orders-sort-rail" style={{ marginTop: 8 }}>
+        {ORDER_SORTS.map((s) => (
+          <button
+            key={s.id}
+            className={`chip ${sort === s.id ? "on" : ""}`}
+            type="button"
+            aria-pressed={sort === s.id}
+            data-cta="orders-sort"
+            data-sort={s.id}
+            onClick={() => setSort(s.id)}
+          >
+            {s.label}
+          </button>
+        ))}
       </div>
       {flash ? (
         <p className="muted">
