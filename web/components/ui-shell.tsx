@@ -25,7 +25,8 @@ export {
 export { CouponField, CouponTotals, useCoupon } from "@/components/ui-coupon";
 export { DeliveryField, formatDeliveryTag, readDelivery } from "@/components/ui-delivery";
 export { CartToastHost, flashCartToast } from "@/components/ui-cart-toast";
-export { GiftField, formatGiftTag, readGift } from "@/components/ui-gift";
+export { GiftField, formatGiftTag, readGift, parseGiftFromNote } from "@/components/ui-gift";
+export { GiftSummaryBanner } from "@/components/ui-gift-summary";
 export { PaymentField, formatPaymentTag, readPayment, parsePaymentFromNote } from "@/components/ui-payment";
 export { CartPageView } from "@/components/ui-payment-shell";
 export { PaymentSummaryBanner } from "@/components/ui-payment-summary";

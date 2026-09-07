@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { AssistantRail, AssistantSheet, OrderConfirm } from "@/components/ui-shop";
 import { PaymentSummaryBanner } from "@/components/ui-payment-summary";
+import { GiftSummaryBanner } from "@/components/ui-gift-summary";
 import { ShipSlotSummaryBanner } from "@/components/ui-ship-slot-summary";
 import { InvoiceSummaryBanner } from "@/components/ui-invoice-summary";
 import { ContactSummaryBanner } from "@/components/ui-contact-summary";
@@ -30,6 +31,7 @@ export default function OrderPage() {
       <Suspense fallback={<div className="grid-wrap"><p className="muted">sipariş</p></div>}>
         <div className="grid-wrap" style={{ maxWidth: 720, marginBottom: -8 }}>
           <PaymentSummaryBanner />
+          <GiftSummaryBanner />
           <ShipSlotSummaryBanner />
           <InvoiceSummaryBanner />
           <ContactSummaryBanner />
