@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Issue, Order } from "@/lib/core";
 import { STATUS_LABEL, canCancelOrder, isStoreCheckoutOrder } from "@/lib/core";
 import { Logo } from "@/components/ui-shell";
-import { ORDER_FILTERS, PREF_FILTERS, orderHasPref } from "@/components/ui-merchant-orders-filters";
+import { ORDER_FILTERS, PREF_FILTERS, orderHasPref, orderMatchesQuery } from "@/components/ui-merchant-orders-filters";
 import { OrderRow } from "@/components/ui-merchant-orders-row";
 
 export function OrdersView({ orders: initialOrders, issues: initialIssues }: { orders: Order[]; issues: Issue[] }) {
@@ -19,6 +19,8 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
   const [shipDraft, setShipDraft] = useState<Record<string, { carrier: string; tracking: string }>>({});
   const prefParam = (params.get("pref") ?? "").trim().toLowerCase();
   const [pref, setPref] = useState<string | null>(prefParam || null);
+  const qParam = (params.get("q") ?? "").trim();
+  const [q, setQ] = useState(qParam);
 
   useEffect(() => {
     if (focus) {
@@ -31,6 +33,10 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
   useEffect(() => {
     if (prefParam) setPref(prefParam);
   }, [prefParam]);
+
+  useEffect(() => {
+    if (qParam) setQ(qParam);
+  }, [qParam]);
 
   useEffect(() => {
     void fetch("/api/merchant/orders", { cache: "no-store" })
@@ -120,7 +126,9 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
   }, [statusRows]);
   const visiblePrefs = useMemo(() => PREF_FILTERS.filter((p) => (prefCounts[p.id] ?? 0) > 0 || pref === p.id), [prefCounts, pref]);
   const rows = useMemo(() => {
-    const list = pref ? statusRows.filter((o) => orderHasPref(o, pref)) : statusRows;
+    const list = (pref ? statusRows.filter((o) => orderHasPref(o, pref)) : statusRows).filter((o) =>
+      orderMatchesQuery(o, q),
+    );
     return [...list].sort((a, b) => {
       const ah = highlight && a.id === highlight ? 0 : 1;
       const bh = highlight && b.id === highlight ? 0 : 1;
@@ -130,7 +138,7 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
       if (ao !== bo) return ao - bo;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
-  }, [statusRows, pref, openIds, highlight]);
+  }, [statusRows, pref, q, openIds, highlight]);
   const shippable = useMemo(() => rows.filter((o) => o.status === "paid"), [rows]);
   const fulfillable = useMemo(() => rows.filter((o) => o.status === "shipped"), [rows]);
   const closableReturns = useMemo(() => rows.filter((o) => o.status === "return_requested"), [rows]);
@@ -178,6 +186,24 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
           ))}
         </div>
       ) : null}
+      <div className="ops-search" data-cta="orders-search" style={{ marginTop: 10, marginBottom: 4, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <input
+          className="input"
+          type="search"
+          value={q}
+          onChange={(e) => setQ(e.target.value.slice(0, 80))}
+          placeholder="Ara · sipariş no, ürün, not, sku…"
+          aria-label="Sipariş ara"
+          data-cta="orders-search-input"
+          style={{ flex: "1 1 220px", maxWidth: 420 }}
+        />
+        {q.trim() ? (
+          <button className="btn btn-sm" type="button" data-cta="orders-search-clear" onClick={() => setQ("")}>
+            Temizle
+          </button>
+        ) : null}
+        <span className="faint">{q.trim() ? `${rows.length} sonuç` : "durum + tercih üstünde arar"}</span>
+      </div>
       {flash ? (
         <p className="muted">
           <span className="banner-demo">{flash}</span>
@@ -246,7 +272,7 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
         <div className="empty">
           <Logo size={32} />
           <h3>Kayıt yok</h3>
-          <p>Bu durum/tercih filtresinde seed sipariş yok.</p>
+          <p>{q.trim() ? "Arama + filtre birleşiminde kayıt yok." : "Bu durum/tercih filtresinde seed sipariş yok."}</p>
         </div>
       ) : (
         <div className="list">
