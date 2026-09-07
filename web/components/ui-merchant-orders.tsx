@@ -1,1 +1,2 @@
-LOAD_FROM_/tmp/mcp_push_args.json
+"use client";
+export { OrdersView } from "@/components/ui-merchant-orders-body";
