@@ -47,6 +47,7 @@ import {
   AmbalajField,
   ImzaField,
   PaketmatikField,
+  ErisimField,
   useShipMode,
   CouponField,
   OrderNoteField,
@@ -95,6 +96,7 @@ export function CartDrawer() {
           <AmbalajField />
           <ImzaField />
           <PaketmatikField />
+          <ErisimField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
@@ -216,6 +218,7 @@ export function CartPageView() {
           <AmbalajField />
           <ImzaField />
           <PaketmatikField />
+          <ErisimField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
