@@ -42,6 +42,7 @@ import { WarrantyField, formatWarrantyTag } from "@/components/ui-warranty";
 import { DestekField, formatDestekTag } from "@/components/ui-destek";
 import { AmbalajField, formatAmbalajTag } from "@/components/ui-ambalaj";
 import { ImzaField, formatImzaTag } from "@/components/ui-imza";
+import { PaketmatikField, formatPaketmatikTag } from "@/components/ui-paketmatik";
 import { clearAllVariants, formatVariantsTag } from "@/components/ui-variant";
 import {
   ShipBar,
@@ -85,7 +86,7 @@ export function EmptyBag({ onClose }: { onClose?: () => void }) {
   );
 }
 
-/** PayButton with [odeme:…] + [taksit:…] + [saat:…] + [gun:…] + [firma:…] + [sekil:…] + [hiz:…] + [bahsis:…] + [eko:…] + [alici:…] + [kapici:…] + [sigorta:…] + [bildirim:…] + [zil:…] + [ara:…] + [iade:…] + [foto:…] + [kirilgan:…] + [montaj:…] + [garanti:…] + [destek:…] + [ambalaj:…] + [imza:…] + [fatura:…] + [iletisim:…] + [talimat:…] note tags. */
+/** PayButton with [odeme:…] + [taksit:…] + [saat:…] + [gun:…] + [firma:…] + [sekil:…] + [hiz:…] + [bahsis:…] + [eko:…] + [alici:…] + [kapici:…] + [sigorta:…] + [bildirim:…] + [zil:…] + [ara:…] + [iade:…] + [foto:…] + [kirilgan:…] + [montaj:…] + [garanti:…] + [destek:…] + [ambalaj:…] + [imza:…] + [paketmatik:…] + [fatura:…] + [iletisim:…] + [talimat:…] note tags. */
 export function PayButton() {
   const { cart, checkout } = useCart();
   const { setCartOpen } = useAsk();
@@ -159,6 +160,8 @@ export function PayButton() {
       if (ambalaj) note = note ? `${note} ${ambalaj}` : ambalaj;
       const imza = formatImzaTag();
       if (imza) note = note ? `${note} ${imza}` : imza;
+      const paketmatik = formatPaketmatikTag();
+      if (paketmatik) note = note ? `${note} ${paketmatik}` : paketmatik;
       const taksit = formatTaksitTag();
       if (taksit) note = note ? `${note} ${taksit}` : taksit;
       const vtag = formatVariantsTag(cart.items.map((l) => l.product_id));
@@ -212,6 +215,7 @@ export {
   DestekField,
   AmbalajField,
   ImzaField,
+  PaketmatikField,
   isPickup,
   useShipMode,
   ShipBar,
