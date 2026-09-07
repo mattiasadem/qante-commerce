@@ -39,6 +39,7 @@ import { PhotoField, formatPhotoTag } from "@/components/ui-photo";
 import { FragileField, formatFragileTag } from "@/components/ui-fragile";
 import { MontajField, formatMontajTag } from "@/components/ui-montaj";
 import { WarrantyField, formatWarrantyTag } from "@/components/ui-warranty";
+import { DestekField, formatDestekTag } from "@/components/ui-destek";
 import { clearAllVariants, formatVariantsTag } from "@/components/ui-variant";
 import {
   ShipBar,
@@ -82,7 +83,7 @@ export function EmptyBag({ onClose }: { onClose?: () => void }) {
   );
 }
 
-/** PayButton with [odeme:…] + [taksit:…] + [saat:…] + [gun:…] + [firma:…] + [sekil:…] + [hiz:…] + [bahsis:…] + [eko:…] + [alici:…] + [kapici:…] + [sigorta:…] + [bildirim:…] + [zil:…] + [ara:…] + [iade:…] + [foto:…] + [kirilgan:…] + [montaj:…] + [garanti:…] + [fatura:…] + [iletisim:…] + [talimat:…] note tags. */
+/** PayButton with [odeme:…] + [taksit:…] + [saat:…] + [gun:…] + [firma:…] + [sekil:…] + [hiz:…] + [bahsis:…] + [eko:…] + [alici:…] + [kapici:…] + [sigorta:…] + [bildirim:…] + [zil:…] + [ara:…] + [iade:…] + [foto:…] + [kirilgan:…] + [montaj:…] + [garanti:…] + [destek:…] + [fatura:…] + [iletisim:…] + [talimat:…] note tags. */
 export function PayButton() {
   const { cart, checkout } = useCart();
   const { setCartOpen } = useAsk();
@@ -150,6 +151,8 @@ export function PayButton() {
       if (montaj) note = note ? `${note} ${montaj}` : montaj;
       const garanti = formatWarrantyTag();
       if (garanti) note = note ? `${note} ${garanti}` : garanti;
+      const destek = formatDestekTag();
+      if (destek) note = note ? `${note} ${destek}` : destek;
       const taksit = formatTaksitTag();
       if (taksit) note = note ? `${note} ${taksit}` : taksit;
       const vtag = formatVariantsTag(cart.items.map((l) => l.product_id));
@@ -200,6 +203,7 @@ export {
   FragileField,
   MontajField,
   WarrantyField,
+  DestekField,
   isPickup,
   useShipMode,
   ShipBar,
