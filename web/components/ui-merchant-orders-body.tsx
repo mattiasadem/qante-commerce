@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Issue, Order } from "@/lib/core";
 import { STATUS_LABEL, canCancelOrder, isStoreCheckoutOrder } from "@/lib/core";
 import { Logo } from "@/components/ui-shell";
-import { ORDER_FILTERS } from "@/components/ui-merchant-orders-filters";
+import { ORDER_FILTERS, PREF_FILTERS, orderHasPref } from "@/components/ui-merchant-orders-filters";
 import { OrderRow } from "@/components/ui-merchant-orders-row";
 
 export function OrdersView({ orders: initialOrders, issues: initialIssues }: { orders: Order[]; issues: Issue[] }) {
@@ -17,6 +17,8 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
   const [flash, setFlash] = useState<string | null>(null);
   const [highlight, setHighlight] = useState(focus);
   const [shipDraft, setShipDraft] = useState<Record<string, { carrier: string; tracking: string }>>({});
+  const prefParam = (params.get("pref") ?? "").trim().toLowerCase();
+  const [pref, setPref] = useState<string | null>(prefParam || null);
 
   useEffect(() => {
     if (focus) {
@@ -25,6 +27,10 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
       setFlash(`${focus} · mağaza checkout · yerel defter`);
     }
   }, [focus]);
+
+  useEffect(() => {
+    if (prefParam) setPref(prefParam);
+  }, [prefParam]);
 
   useEffect(() => {
     void fetch("/api/merchant/orders", { cache: "no-store" })
@@ -106,8 +112,15 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
     return c;
   }, [orders, openIds]);
   const match = ORDER_FILTERS.find((f) => f.id === filter) ?? ORDER_FILTERS[0];
+  const statusRows = useMemo(() => orders.filter((o) => match.match(o, openIds)), [orders, match, openIds]);
+  const prefCounts = useMemo(() => {
+    const c: Record<string, number> = {};
+    for (const p of PREF_FILTERS) c[p.id] = statusRows.filter((o) => orderHasPref(o, p.id)).length;
+    return c;
+  }, [statusRows]);
+  const visiblePrefs = useMemo(() => PREF_FILTERS.filter((p) => (prefCounts[p.id] ?? 0) > 0 || pref === p.id), [prefCounts, pref]);
   const rows = useMemo(() => {
-    const list = orders.filter((o) => match.match(o, openIds));
+    const list = pref ? statusRows.filter((o) => orderHasPref(o, pref)) : statusRows;
     return [...list].sort((a, b) => {
       const ah = highlight && a.id === highlight ? 0 : 1;
       const bh = highlight && b.id === highlight ? 0 : 1;
@@ -117,7 +130,7 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
       if (ao !== bo) return ao - bo;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
-  }, [orders, match, openIds, highlight]);
+  }, [statusRows, pref, openIds, highlight]);
   const shippable = useMemo(() => rows.filter((o) => o.status === "paid"), [rows]);
   const fulfillable = useMemo(() => rows.filter((o) => o.status === "shipped"), [rows]);
   const closableReturns = useMemo(() => rows.filter((o) => o.status === "return_requested"), [rows]);
@@ -139,6 +152,32 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
           </button>
         ))}
       </div>
+      {visiblePrefs.length > 0 ? (
+        <div className="filter-rail chips scroll" role="tablist" aria-label="Tercih filtresi" data-cta="pref-filter-rail" style={{ marginTop: 8 }}>
+          <button
+            className={`chip ${pref === null ? "on" : ""}`}
+            type="button"
+            aria-pressed={pref === null}
+            data-cta="pref-filter-all"
+            onClick={() => setPref(null)}
+          >
+            Tercih · hepsi
+          </button>
+          {visiblePrefs.map((p) => (
+            <button
+              key={p.id}
+              className={`chip ${pref === p.id ? "on" : ""}`}
+              type="button"
+              aria-pressed={pref === p.id}
+              data-cta="pref-filter"
+              data-pref={p.id}
+              onClick={() => setPref((cur) => (cur === p.id ? null : p.id))}
+            >
+              {p.label} {prefCounts[p.id] ?? 0}
+            </button>
+          ))}
+        </div>
+      ) : null}
       {flash ? (
         <p className="muted">
           <span className="banner-demo">{flash}</span>
@@ -207,7 +246,7 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
         <div className="empty">
           <Logo size={32} />
           <h3>Kayıt yok</h3>
-          <p>Bu filtrede seed sipariş yok.</p>
+          <p>Bu durum/tercih filtresinde seed sipariş yok.</p>
         </div>
       ) : (
         <div className="list">
@@ -222,6 +261,8 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
               shipDraft={shipDraft}
               setShipDraft={setShipDraft}
               onAct={act}
+              pref={pref}
+              onPrefSelect={(key) => setPref((cur) => (cur === key ? null : key))}
             />
           ))}
         </div>

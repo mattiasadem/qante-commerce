@@ -17,6 +17,8 @@ export function OrderRow({
   shipDraft,
   setShipDraft,
   onAct,
+  pref,
+  onPrefSelect,
 }: {
   o: Order;
   issue?: Issue;
@@ -26,6 +28,8 @@ export function OrderRow({
   shipDraft: ShipDraft;
   setShipDraft: (fn: (d: ShipDraft) => ShipDraft) => void;
   onAct: (orderId: string, action: string) => void;
+  pref?: string | null;
+  onPrefSelect?: (key: string) => void;
 }) {
   const cta = nextOrderAction(o.status);
   return (
@@ -43,7 +47,7 @@ export function OrderRow({
             Kargo · {shipNoteLabel(o.ship_note) ?? o.ship_note}
           </div>
         ) : null}
-        <BuyerPrefChips note={o.buyer_note} />
+        <BuyerPrefChips note={o.buyer_note} activeKey={pref} onSelectKey={onPrefSelect} />
         {o.status === "paid" && cta?.action === "ship" ? (
           <div style={{ marginTop: 8 }} data-cta="ship-track-fields">
             <div className="chips" style={{ flexWrap: "wrap" }} aria-label="Kargo firması">
