@@ -9,6 +9,7 @@ export function compactBuyerNote(raw: string): string | undefined {
 
 export const KEY_LABEL: Record<string, string> = {
   ambalaj: "Ambalaj",
+  imza: "İmza",
   hediye: "Hediye",
   odeme: "Ödeme",
   saat: "Saat",
@@ -41,6 +42,7 @@ export const KEY_LABEL: Record<string, string> = {
 
 export const VALUE_LABEL: Record<string, Record<string, string>> = {
   ambalaj: { standart: "Standart", premium: "Premium", minimal: "Minimal" },
+  imza: { gerekli: "Gerekli", kimlik: "Kimlik", gerekmez: "İmzasız" },
   destek: { standart: "Standart", oncelikli: "Öncelikli", vip: "VIP" },
   garanti: { standart: "Standart", yil1: "1 yıl", yil2: "2 yıl" },
   montaj: { temel: "Temel", tam: "Tam", uzman: "Uzman" },

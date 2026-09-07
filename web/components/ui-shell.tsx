@@ -78,3 +78,5 @@ export { DestekField, formatDestekTag, readDestek, parseDestekFromNote, useDeste
 export { DestekSummaryBanner } from "@/components/ui-destek-summary";
 export { AmbalajField, formatAmbalajTag, readAmbalaj, parseAmbalajFromNote, useAmbalaj } from "@/components/ui-ambalaj";
 export { AmbalajSummaryBanner } from "@/components/ui-ambalaj-summary";
+export { ImzaField, formatImzaTag, readImza, parseImzaFromNote, useImza } from "@/components/ui-imza";
+export { ImzaSummaryBanner } from "@/components/ui-imza-summary";
