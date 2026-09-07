@@ -7,6 +7,18 @@ export const ORDERS: Order[] = OR.split("\n").map((l) => {
   return { id, created_at, status, total: +t, items: its.split(",").map((x) => { const [product_id, qty, price] = x.split(":"); return { product_id, qty: +qty, price: +price }; }) };
 });
 
+/** Demo buyer prefs on open seed rows so merchant chips are visible without a fresh checkout. */
+const SEED_BUYER_PREFS: Record<string, string> = {
+  ord_0830: "[ambalaj:premium] [hediye] [bahsis:40]",
+  ord_0901: "[garanti:yil1] [destek:oncelikli]",
+  ord_0904: "[kirilgan:cift] [montaj:tam]",
+  ord_0906: "[ambalaj:minimal] [eko:minimal] [zil:sessiz]",
+};
+for (const o of ORDERS) {
+  const n = SEED_BUYER_PREFS[o.id];
+  if (n) o.buyer_note = n;
+}
+
 export const getProducts = () => PRODUCTS;
 export const getProduct = (id: string) => PRODUCTS.find((p) => p.id === id);
 export const getOrders = () => ORDERS;
