@@ -49,3 +49,22 @@ export function lineSummary(o: Order) {
     return `${name} ×${it.qty}`;
   }).join(" · ");
 }
+
+/** Case-insensitive match on id, line items, buyer/ship notes, sku. */
+export function orderMatchesQuery(o: Order, q: string): boolean {
+  const needle = q.trim().toLowerCase();
+  if (!needle) return true;
+  if (o.id.toLowerCase().includes(needle)) return true;
+  if ((o.buyer_note ?? "").toLowerCase().includes(needle)) return true;
+  if ((o.ship_note ?? "").toLowerCase().includes(needle)) return true;
+  if (String(o.total).includes(needle)) return true;
+  if (lineSummary(o).toLowerCase().includes(needle)) return true;
+  for (const it of o.items) {
+    if (it.product_id.toLowerCase().includes(needle)) return true;
+    const p = getProduct(it.product_id);
+    if (p?.name.toLowerCase().includes(needle)) return true;
+    if (p?.sku?.toLowerCase().includes(needle)) return true;
+    if (p?.category?.toLowerCase().includes(needle)) return true;
+  }
+  return false;
+}
