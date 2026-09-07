@@ -43,6 +43,7 @@ import {
   FragileField,
   MontajField,
   WarrantyField,
+  DestekField,
   useShipMode,
   CouponField,
   OrderNoteField,
@@ -87,6 +88,7 @@ export function CartDrawer() {
           <FragileField />
           <MontajField />
           <WarrantyField />
+          <DestekField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
@@ -204,6 +206,7 @@ export function CartPageView() {
           <FragileField />
           <MontajField />
           <WarrantyField />
+          <DestekField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
