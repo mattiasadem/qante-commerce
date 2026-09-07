@@ -19,6 +19,39 @@ const HISTORY_FILTERS: { id: HistoryFilter; label: string }[] = [
   { id: "discarded", label: "Reddedildi" },
 ];
 
+export type StagedSortId = "newest" | "oldest" | "name" | "kind";
+
+export const STAGED_SORTS: { id: StagedSortId; label: string }[] = [
+  { id: "newest", label: "En yeni" },
+  { id: "oldest", label: "En eski" },
+  { id: "name", label: "Ürün A→Z" },
+  { id: "kind", label: "Tür" },
+];
+
+const KIND_RANK: Record<string, number> = { price: 0, stock: 1, listing: 2 };
+
+export function compareChangesBySort(a: StagedChange, b: StagedChange, sort: StagedSortId): number {
+  if (sort === "oldest") {
+    const d = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    if (d !== 0) return d;
+    return a.product_name.localeCompare(b.product_name, "tr");
+  }
+  if (sort === "name") {
+    const d = a.product_name.localeCompare(b.product_name, "tr");
+    if (d !== 0) return d;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  }
+  if (sort === "kind") {
+    const d = (KIND_RANK[a.kind] ?? 9) - (KIND_RANK[b.kind] ?? 9);
+    if (d !== 0) return d;
+    return a.product_name.localeCompare(b.product_name, "tr");
+  }
+  // newest (default)
+  const d = new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  if (d !== 0) return d;
+  return a.product_name.localeCompare(b.product_name, "tr");
+}
+
 /** Case-insensitive match on id, product, reason, staged_by, before/after, decision note. */
 export function changeMatchesQuery(c: StagedChange, q: string): boolean {
   const needle = q.trim().toLowerCase();
@@ -48,6 +81,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
   const [kind, setKind] = useState<KindFilter>("all");
   const [hist, setHist] = useState<HistoryFilter>("all");
   const [q, setQ] = useState("");
+  const [sort, setSort] = useState<StagedSortId>("newest");
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [rejectBulk, setRejectBulk] = useState(false);
   const [reason, setReason] = useState("");
@@ -61,15 +95,15 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
   }, []);
 
   const pending = useMemo(() => items.filter((c) => c.status === "staged"), [items]);
-  const filteredPending = useMemo(
-    () => pending.filter((c) => (kind === "all" || c.kind === kind) && changeMatchesQuery(c, q)),
-    [pending, kind, q],
-  );
+  const filteredPending = useMemo(() => {
+    const rows = pending.filter((c) => (kind === "all" || c.kind === kind) && changeMatchesQuery(c, q));
+    return [...rows].sort((a, b) => compareChangesBySort(a, b, sort));
+  }, [pending, kind, q, sort]);
   const history = useMemo(() => items.filter((c) => c.status !== "staged"), [items]);
-  const filteredHistory = useMemo(
-    () => history.filter((c) => (hist === "all" || c.status === hist) && changeMatchesQuery(c, q)),
-    [history, hist, q],
-  );
+  const filteredHistory = useMemo(() => {
+    const rows = history.filter((c) => (hist === "all" || c.status === hist) && changeMatchesQuery(c, q));
+    return [...rows].sort((a, b) => compareChangesBySort(a, b, sort));
+  }, [history, hist, q, sort]);
   const kindCounts = useMemo(() => {
     const c: Record<KindFilter, number> = { all: pending.length, price: 0, stock: 0, listing: 0 };
     for (const x of pending) {
@@ -233,6 +267,21 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
           </button>
         ) : null}
         <span className="faint">{q.trim() ? `${filteredPending.length} bekleyen · ${filteredHistory.length} geçmiş` : "tür + geçmiş üstünde arar"}</span>
+      </div>
+      <div className="filter-rail chips scroll" role="tablist" aria-label="Sıralama" data-cta="staged-sort-rail" style={{ marginTop: 8, marginBottom: 12 }}>
+        {STAGED_SORTS.map((s) => (
+          <button
+            key={s.id}
+            className={`chip ${sort === s.id ? "on" : ""}`}
+            type="button"
+            aria-pressed={sort === s.id}
+            data-cta="staged-sort"
+            data-sort={s.id}
+            onClick={() => setSort(s.id)}
+          >
+            {s.label}
+          </button>
+        ))}
       </div>
       {flash ? (
         <p className="muted" style={{ marginBottom: 12 }}>
