@@ -4,19 +4,31 @@ import { useMemo, useState } from "react";
 import type { Product, StagedChange } from "@/lib/core";
 import { money, qualityScore, suggestPriceCut, suggestRestockQty } from "@/lib/core";
 
+/** Case-insensitive match on name, sku, category, id. */
+export function productMatchesQuery(p: Product, q: string): boolean {
+  const needle = q.trim().toLowerCase();
+  if (!needle) return true;
+  if (p.id.toLowerCase().includes(needle)) return true;
+  if (p.name.toLowerCase().includes(needle)) return true;
+  if ((p.sku ?? "").toLowerCase().includes(needle)) return true;
+  if ((p.category ?? "").toLowerCase().includes(needle)) return true;
+  return false;
+}
+
 export function CatalogTable({ products }: { products: Product[] }) {
   const [filter, setFilter] = useState<"all" | "low" | "out" | "weak">("all");
+  const [q, setQ] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
   const rows = useMemo(() => {
     return products.filter((p) => {
-      const q = qualityScore(p);
-      if (filter === "low") return p.stock > 0 && p.stock <= 5;
-      if (filter === "out") return p.stock <= 0;
-      if (filter === "weak") return q < 70;
-      return true;
+      const score = qualityScore(p);
+      if (filter === "low" && !(p.stock > 0 && p.stock <= 5)) return false;
+      if (filter === "out" && !(p.stock <= 0)) return false;
+      if (filter === "weak" && !(score < 70)) return false;
+      return productMatchesQuery(p, q);
     });
-  }, [products, filter]);
+  }, [products, filter, q]);
 
   const discountIds = useMemo(() => rows.slice(0, 12).map((p) => p.id), [rows]);
 
@@ -128,6 +140,24 @@ export function CatalogTable({ products }: { products: Product[] }) {
           </button>
         ))}
       </div>
+      <div className="ops-search" data-cta="catalog-search" style={{ marginTop: 10, marginBottom: 12, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <input
+          className="input"
+          type="search"
+          value={q}
+          onChange={(e) => setQ(e.target.value.slice(0, 80))}
+          placeholder="Ara · ürün, SKU, kategori…"
+          aria-label="Katalog ara"
+          data-cta="catalog-search-input"
+          style={{ flex: "1 1 220px", maxWidth: 420 }}
+        />
+        {q.trim() ? (
+          <button className="btn btn-sm" type="button" data-cta="catalog-search-clear" onClick={() => setQ("")}>
+            Temizle
+          </button>
+        ) : null}
+        <span className="faint">{q.trim() ? `${rows.length} ürün` : "filtre üstünde arar"}</span>
+      </div>
       {discountIds.length ? (
         <div className="bulk-bar approve-bar-sticky" role="toolbar">
           <button
@@ -164,7 +194,7 @@ export function CatalogTable({ products }: { products: Product[] }) {
         </p>
       ) : (
         <p className="muted">
-          Filtre chipleri küme seçer · Toplu indirim / Toplu düzelt / Toplu yenile / Düzelt / İndirim / Yenile yerel kuyruğa yazar · Onayla ikas&apos;a gitmez
+          Ara + filtre · Toplu indirim / Toplu düzelt / Toplu yenile / Düzelt / İndirim / Yenile yerel kuyruğa yazar · Onayla ikas&apos;a gitmez
         </p>
       )}
       <div className="table-wrap">
@@ -172,7 +202,7 @@ export function CatalogTable({ products }: { products: Product[] }) {
           <thead><tr><th></th><th>Ürün</th><th>SKU</th><th>Stok</th><th>Fiyat</th><th>Kalite</th><th></th></tr></thead>
           <tbody>
             {rows.map((p) => {
-              const q = qualityScore(p);
+              const score = qualityScore(p);
               return (
                 <tr key={p.id}>
                   <td><img src={p.image} alt="" width={32} height={40} style={{ width: 32, height: 40, objectFit: "cover", borderRadius: 4, border: "1px solid var(--hairline)" }} /></td>
@@ -180,7 +210,7 @@ export function CatalogTable({ products }: { products: Product[] }) {
                   <td className="faint">{p.sku}</td>
                   <td>{p.stock}</td>
                   <td>{money(p.price)}</td>
-                  <td><span className="score">{q}<i><b style={{ width: `${q}%` }} /></i></span></td>
+                  <td><span className="score">{score}<i><b style={{ width: `${score}%` }} /></i></span></td>
                   <td>
                     <div className="row-actions">
                       <button className="btn btn-primary btn-sm" type="button" disabled={busy === `${p.id}:listing` || busy === "bulk"} onClick={() => void stageChange(p, "listing")}>
@@ -199,7 +229,7 @@ export function CatalogTable({ products }: { products: Product[] }) {
               );
             })}
             {rows.length === 0 ? (
-              <tr><td colSpan={7} className="faint pad-sm">Bu filtrede ürün yok.</td></tr>
+              <tr><td colSpan={7} className="faint pad-sm">{q.trim() ? "Aramada ürün yok." : "Bu filtrede ürün yok."}</td></tr>
             ) : null}
           </tbody>
         </table>
