@@ -69,7 +69,7 @@ export function useDestek(): DestekInfo {
 /** Compact tag for order note (fits checkout note budget). */
 export function formatDestekTag(info: DestekInfo = readDestek()): string | null {
   if (!info.mode) return null;
-  return `[destek:${info.mode}` + `]` + `;
+  return "[destek:" + info.mode + "]";
 }
 
 export function parseDestekFromNote(note?: string): { mode: DestekMode; label: string } | null {
@@ -123,10 +123,10 @@ export function DestekField() {
         {MODES.map((m) => (
           <button
             key={m}
-            className={`chip ${info.mode === m ? "on" : ""}`}
+            className={"chip " + (info.mode === m ? "on" : "")}
             type="button"
             aria-pressed={info.mode === m}
-            data-cta={`destek-${m}`}
+            data-cta={"destek-" + m}
             onClick={() => pick(m)}
           >
             {SHORT[m]}
@@ -135,7 +135,7 @@ export function DestekField() {
       </div>
       <p className="faint" style={{ marginTop: 6 }}>
         {info.mode
-          ? `Seçilen · ${LABELS[info.mode]} · destek notu · demo · checkout notuna yazılır · ikas'a gitmez`
+          ? "Seçilen · " + LABELS[info.mode] + " · destek notu · demo · checkout notuna yazılır · ikas'a gitmez"
           : "İsteğe bağlı · Standart / Öncelikli / VIP · demo · ikas'a gitmez"}
       </p>
     </div>
