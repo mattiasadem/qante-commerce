@@ -45,6 +45,7 @@ import {
   WarrantyField,
   DestekField,
   AmbalajField,
+  ImzaField,
   useShipMode,
   CouponField,
   OrderNoteField,
@@ -91,6 +92,7 @@ export function CartDrawer() {
           <WarrantyField />
           <DestekField />
           <AmbalajField />
+          <ImzaField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
@@ -210,6 +212,7 @@ export function CartPageView() {
           <WarrantyField />
           <DestekField />
           <AmbalajField />
+          <ImzaField />
           <ShipInstrField />
           <GiftField />
           <PaymentField />
