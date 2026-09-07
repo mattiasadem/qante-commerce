@@ -76,3 +76,5 @@ export { WarrantyField, formatWarrantyTag, readWarranty, parseWarrantyFromNote, 
 export { WarrantySummaryBanner } from "@/components/ui-warranty-summary";
 export { DestekField, formatDestekTag, readDestek, parseDestekFromNote, useDestek } from "@/components/ui-destek";
 export { DestekSummaryBanner } from "@/components/ui-destek-summary";
+export { AmbalajField, formatAmbalajTag, readAmbalaj, parseAmbalajFromNote, useAmbalaj } from "@/components/ui-ambalaj";
+export { AmbalajSummaryBanner } from "@/components/ui-ambalaj-summary";

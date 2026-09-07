@@ -25,6 +25,7 @@ import { FragileSummaryBanner } from "@/components/ui-fragile-summary";
 import { MontajSummaryBanner } from "@/components/ui-montaj-summary";
 import { WarrantySummaryBanner } from "@/components/ui-warranty-summary";
 import { DestekSummaryBanner } from "@/components/ui-destek-summary";
+import { AmbalajSummaryBanner } from "@/components/ui-ambalaj-summary";
 export default function OrderPage() {
   return (
     <div className="shop">
@@ -55,6 +56,7 @@ export default function OrderPage() {
           <MontajSummaryBanner />
           <WarrantySummaryBanner />
           <DestekSummaryBanner />
+          <AmbalajSummaryBanner />
         </div>
         <OrderConfirm />
       </Suspense>
