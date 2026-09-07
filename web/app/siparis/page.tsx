@@ -30,6 +30,7 @@ import { ImzaSummaryBanner } from "@/components/ui-imza-summary";
 import { PaketmatikSummaryBanner } from "@/components/ui-paketmatik-summary";
 import { ErisimSummaryBanner } from "@/components/ui-erisim-summary";
 import { KomsuSummaryBanner } from "@/components/ui-komsu-summary";
+import { GizliSummaryBanner } from "@/components/ui-gizli-summary";
 export default function OrderPage() {
   return (
     <div className="shop">
@@ -65,6 +66,7 @@ export default function OrderPage() {
           <PaketmatikSummaryBanner />
           <ErisimSummaryBanner />
           <KomsuSummaryBanner />
+          <GizliSummaryBanner />
         </div>
         <OrderConfirm />
       </Suspense>
