@@ -43,6 +43,7 @@ import { DestekField, formatDestekTag } from "@/components/ui-destek";
 import { AmbalajField, formatAmbalajTag } from "@/components/ui-ambalaj";
 import { ImzaField, formatImzaTag } from "@/components/ui-imza";
 import { PaketmatikField, formatPaketmatikTag } from "@/components/ui-paketmatik";
+import { ErisimField, formatErisimTag } from "@/components/ui-erisim";
 import { clearAllVariants, formatVariantsTag } from "@/components/ui-variant";
 import {
   ShipBar,
@@ -86,7 +87,7 @@ export function EmptyBag({ onClose }: { onClose?: () => void }) {
   );
 }
 
-/** PayButton with [odeme:…] + [taksit:…] + [saat:…] + [gun:…] + [firma:…] + [sekil:…] + [hiz:…] + [bahsis:…] + [eko:…] + [alici:…] + [kapici:…] + [sigorta:…] + [bildirim:…] + [zil:…] + [ara:…] + [iade:…] + [foto:…] + [kirilgan:…] + [montaj:…] + [garanti:…] + [destek:…] + [ambalaj:…] + [imza:…] + [paketmatik:…] + [fatura:…] + [iletisim:…] + [talimat:…] note tags. */
+/** PayButton with [odeme:…] + [taksit:…] + [saat:…] + [gun:…] + [firma:…] + [sekil:…] + [hiz:…] + [bahsis:…] + [eko:…] + [alici:…] + [kapici:…] + [sigorta:…] + [bildirim:…] + [zil:…] + [ara:…] + [iade:…] + [foto:…] + [kirilgan:…] + [montaj:…] + [garanti:…] + [destek:…] + [ambalaj:…] + [imza:…] + [paketmatik:…] + [erisim:…] + [fatura:…] + [iletisim:…] + [talimat:…] note tags. */
 export function PayButton() {
   const { cart, checkout } = useCart();
   const { setCartOpen } = useAsk();
@@ -162,6 +163,8 @@ export function PayButton() {
       if (imza) note = note ? `${note} ${imza}` : imza;
       const paketmatik = formatPaketmatikTag();
       if (paketmatik) note = note ? `${note} ${paketmatik}` : paketmatik;
+      const erisim = formatErisimTag();
+      if (erisim) note = note ? `${note} ${erisim}` : erisim;
       const taksit = formatTaksitTag();
       if (taksit) note = note ? `${note} ${taksit}` : taksit;
       const vtag = formatVariantsTag(cart.items.map((l) => l.product_id));
@@ -216,6 +219,7 @@ export {
   AmbalajField,
   ImzaField,
   PaketmatikField,
+  ErisimField,
   isPickup,
   useShipMode,
   ShipBar,
