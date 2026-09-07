@@ -86,3 +86,5 @@ export { ErisimField, formatErisimTag, readErisim, parseErisimFromNote, useErisi
 export { ErisimSummaryBanner } from "@/components/ui-erisim-summary";
 export { KomsuField, formatKomsuTag, readKomsu, parseKomsuFromNote, useKomsu } from "@/components/ui-komsu";
 export { KomsuSummaryBanner } from "@/components/ui-komsu-summary";
+export { GizliField, formatGizliTag, readGizli, parseGizliFromNote, useGizli } from "@/components/ui-gizli";
+export { GizliSummaryBanner } from "@/components/ui-gizli-summary";
