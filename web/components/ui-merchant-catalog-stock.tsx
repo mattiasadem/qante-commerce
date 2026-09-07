@@ -11,8 +11,65 @@ const STOCK_FILTERS: { id: string; label: string; match: (a: Alert) => boolean }
   { id: "slow_mover", label: "Yavaş", match: (a) => a.kind === "slow_mover" },
 ];
 
+/** Case-insensitive match on product name, id, message, kind. */
+export function alertMatchesQuery(a: Alert, q: string): boolean {
+  const needle = q.trim().toLowerCase();
+  if (!needle) return true;
+  if (a.product_id.toLowerCase().includes(needle)) return true;
+  if (a.product_name.toLowerCase().includes(needle)) return true;
+  if ((a.message ?? "").toLowerCase().includes(needle)) return true;
+  if (a.kind.toLowerCase().includes(needle)) return true;
+  const kindAliases =
+    a.kind === "out_of_stock" ? "tükendi tukendi" :
+    a.kind === "low_stock" ? "düşük dusuk" :
+    a.kind === "slow_mover" ? "yavaş yavas" : "";
+  if (needle.length >= 3 && kindAliases.includes(needle)) return true;
+  return false;
+}
+
+export type StockSortId = "urgency" | "stock_asc" | "name" | "cover_asc";
+
+export const STOCK_SORTS: { id: StockSortId; label: string }[] = [
+  { id: "urgency", label: "Öncelik" },
+  { id: "stock_asc", label: "Stok ↑" },
+  { id: "name", label: "Ad A→Z" },
+  { id: "cover_asc", label: "Cover ↑" },
+];
+
+function urgencyRank(kind: string): number {
+  if (kind === "out_of_stock") return 0;
+  if (kind === "low_stock") return 1;
+  if (kind === "slow_mover") return 2;
+  return 9;
+}
+
+export function compareAlertsBySort(a: Alert, b: Alert, sort: StockSortId): number {
+  if (sort === "stock_asc") {
+    const d = a.stock - b.stock;
+    if (d !== 0) return d;
+    return a.product_name.localeCompare(b.product_name, "tr");
+  }
+  if (sort === "cover_asc") {
+    const ac = a.days_cover ?? 9999;
+    const bc = b.days_cover ?? 9999;
+    const d = ac - bc;
+    if (d !== 0) return d;
+    return a.product_name.localeCompare(b.product_name, "tr");
+  }
+  if (sort === "name") {
+    return a.product_name.localeCompare(b.product_name, "tr");
+  }
+  const d = urgencyRank(a.kind) - urgencyRank(b.kind);
+  if (d !== 0) return d;
+  const sd = a.stock - b.stock;
+  if (sd !== 0) return sd;
+  return a.product_name.localeCompare(b.product_name, "tr");
+}
+
 export function StockView({ alerts }: { alerts: Alert[] }) {
   const [filter, setFilter] = useState("all");
+  const [q, setQ] = useState("");
+  const [sort, setSort] = useState<StockSortId>("urgency");
   const [busy, setBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
   const counts = useMemo(() => {
@@ -21,7 +78,10 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
     return c;
   }, [alerts]);
   const match = STOCK_FILTERS.find((f) => f.id === filter) ?? STOCK_FILTERS[0];
-  const rows = useMemo(() => alerts.filter((a) => match.match(a)), [alerts, match]);
+  const rows = useMemo(() => {
+    const filtered = alerts.filter((a) => match.match(a) && alertMatchesQuery(a, q));
+    return [...filtered].sort((a, b) => compareAlertsBySort(a, b, sort));
+  }, [alerts, match, q, sort]);
 
   const restockIds = useMemo(() => {
     const seen = new Set<string>();
@@ -144,6 +204,39 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
           </button>
         ))}
       </div>
+      <div className="ops-search" data-cta="stock-search" style={{ marginTop: 10, marginBottom: 12, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <input
+          className="input"
+          type="search"
+          value={q}
+          onChange={(e) => setQ(e.target.value.slice(0, 80))}
+          placeholder="Ara · ürün, uyarı, mesaj…"
+          aria-label="Stok ara"
+          data-cta="stock-search-input"
+          style={{ flex: "1 1 220px", maxWidth: 420 }}
+        />
+        {q.trim() ? (
+          <button className="btn btn-sm" type="button" data-cta="stock-search-clear" onClick={() => setQ("")}>
+            Temizle
+          </button>
+        ) : null}
+        <span className="faint">{q.trim() ? `${rows.length} uyarı` : "filtre üstünde arar"}</span>
+      </div>
+      <div className="filter-rail chips scroll" role="tablist" aria-label="Sıralama" data-cta="stock-sort-rail" style={{ marginTop: 8, marginBottom: 12 }}>
+        {STOCK_SORTS.map((s) => (
+          <button
+            key={s.id}
+            className={`chip ${sort === s.id ? "on" : ""}`}
+            type="button"
+            aria-pressed={sort === s.id}
+            data-cta="stock-sort"
+            data-sort={s.id}
+            onClick={() => setSort(s.id)}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
       {(restockIds.length || discountIds.length) ? (
         <div className="bulk-bar approve-bar-sticky" role="toolbar">
           {restockIds.length ? (
@@ -176,7 +269,7 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
         </p>
       ) : (
         <p className="muted">
-          Filtre chipleri küme seçer · Yenile stok · İndirim fiyat · yerel kuyruk · Onayla ikas&apos;a gitmez
+          Ara + sırala + filtre · Yenile stok · İndirim fiyat · yerel kuyruk · Onayla ikas&apos;a gitmez
         </p>
       )}
       <div className="list">
@@ -212,7 +305,11 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
             </div>
           );
         })}
-        {rows.length === 0 ? <div className="list-row"><span className="muted">Bu filtrede uyarı yok.</span></div> : null}
+        {rows.length === 0 ? (
+          <div className="list-row">
+            <span className="muted">{q.trim() ? "Aramada uyarı yok." : "Bu filtrede uyarı yok."}</span>
+          </div>
+        ) : null}
       </div>
     </>
   );
