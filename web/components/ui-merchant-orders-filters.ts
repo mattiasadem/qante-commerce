@@ -68,3 +68,30 @@ export function orderMatchesQuery(o: Order, q: string): boolean {
   }
   return false;
 }
+
+export type OrderSortId = "newest" | "oldest" | "total_desc" | "total_asc";
+
+export const ORDER_SORTS: { id: OrderSortId; label: string }[] = [
+  { id: "newest", label: "En yeni" },
+  { id: "oldest", label: "En eski" },
+  { id: "total_desc", label: "Tutar \u2193" },
+  { id: "total_asc", label: "Tutar \u2191" },
+];
+
+/** Secondary sort after highlight/open priority. */
+export function compareOrdersBySort(a: Order, b: Order, sort: OrderSortId): number {
+  if (sort === "oldest") {
+    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+  }
+  if (sort === "total_desc") {
+    const d = (b.total ?? 0) - (a.total ?? 0);
+    if (d !== 0) return d;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  }
+  if (sort === "total_asc") {
+    const d = (a.total ?? 0) - (b.total ?? 0);
+    if (d !== 0) return d;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  }
+  return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+}
