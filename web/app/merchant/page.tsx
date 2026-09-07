@@ -1,7 +1,6 @@
-import { AlertList } from "@/components/AlertList";
+import { AlertList, MetricCards, MiniBars } from "@/components/ui-merchant";
 import { MerchantShell } from "@/components/MerchantShell";
-import { MetricCards } from "@/components/MetricCards";
-import { computeAlerts, computeIssues, computeSnapshot } from "@/lib/merchant";
+import { computeAlerts, computeIssues, computeSnapshot, shortDate, weeklyBars } from "@/lib/core";
 
 export const dynamic = "force-dynamic";
 
@@ -11,12 +10,15 @@ export default function MerchantHome() {
   const issues = computeIssues();
   return (
     <MerchantShell current="/merchant">
-      <h1>Özet</h1>
-      <p className="muted" style={{ marginTop: -8, marginBottom: 18 }}>
-        {snap.period_start} — {snap.period_end}
-      </p>
+      <header className="ops-head">
+        <h1>Özet</h1>
+        <p className="lede">
+          {shortDate(snap.period_start)} — {shortDate(snap.period_end)} · son {snap.period_days} gün
+        </p>
+      </header>
       <MetricCards snap={snap} />
-      <h2 style={{ marginTop: 28 }}>Dikkat gereken</h2>
+      <MiniBars bars={weeklyBars()} />
+      <h2 className="section-label">Dikkat gereken</h2>
       <AlertList alerts={alerts} issues={issues} />
     </MerchantShell>
   );

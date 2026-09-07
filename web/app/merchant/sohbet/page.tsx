@@ -1,5 +1,5 @@
 import { MerchantShell } from "@/components/MerchantShell";
-import { MerchantChat } from "@/components/MerchantChat";
+import { MerchantChat } from "@/components/ui-merchant";
 
 export default async function SohbetPage({
   searchParams,
@@ -9,7 +9,12 @@ export default async function SohbetPage({
   const { q } = await searchParams;
   return (
     <MerchantShell current="/merchant/sohbet">
-      <h1>Sohbet</h1>
+      <header className="ops-head">
+        <h1>Sohbet</h1>
+        <p className="lede">
+          Özet, stok ve bekleyen için starter&apos;lar. Yenile / Düzelt / İndirim yerel kuyruğa yazar; Onayla ikas&apos;a gitmez.
+        </p>
+      </header>
       <MerchantChat prefill={q} />
     </MerchantShell>
   );
