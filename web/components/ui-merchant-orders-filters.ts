@@ -74,8 +74,8 @@ export type OrderSortId = "newest" | "oldest" | "total_desc" | "total_asc";
 export const ORDER_SORTS: { id: OrderSortId; label: string }[] = [
   { id: "newest", label: "En yeni" },
   { id: "oldest", label: "En eski" },
-  { id: "total_desc", label: "Tutar \u2193" },
-  { id: "total_asc", label: "Tutar \u2191" },
+  { id: "total_desc", label: "Tutar ↓" },
+  { id: "total_asc", label: "Tutar ↑" },
 ];
 
 /** Secondary sort after highlight/open priority. */
