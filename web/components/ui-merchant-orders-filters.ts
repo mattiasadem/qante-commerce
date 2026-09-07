@@ -1,4 +1,4 @@
-import type { Issue, Order } from "@/lib/core";
+import type { Order } from "@/lib/core";
 import { getProduct, isStoreCheckoutOrder } from "@/lib/core";
 
 export const ORDER_FILTERS: { id: string; label: string; match: (o: Order, open: Set<string>) => boolean }[] = [
@@ -12,6 +12,28 @@ export const ORDER_FILTERS: { id: string; label: string; match: (o: Order, open:
   { id: "fulfilled", label: "Teslim", match: (o) => o.status === "fulfilled" },
   { id: "cancelled", label: "İptal", match: (o) => o.status === "cancelled" },
 ];
+
+/** Checkout preference keys operators can filter by on Siparişler. */
+export const PREF_FILTERS: { id: string; label: string }[] = [
+  { id: "gizli", label: "Gizlilik" },
+  { id: "komsu", label: "Komşu" },
+  { id: "taksit", label: "Taksit" },
+  { id: "hediye", label: "Hediye" },
+  { id: "ambalaj", label: "Ambalaj" },
+  { id: "saat", label: "Saat" },
+  { id: "erisim", label: "Erişim" },
+  { id: "eko", label: "Eko" },
+  { id: "garanti", label: "Garanti" },
+  { id: "firma", label: "Firma" },
+];
+
+/** True when buyer_note has `[key]` or `[key:…]`. */
+export function orderHasPref(o: Order, key: string): boolean {
+  const note = (o.buyer_note ?? "").trim();
+  if (!note || !key) return false;
+  const re = new RegExp(`\\[${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?::|\\])`, "i");
+  return re.test(note);
+}
 
 export function statusTone(status: string, isOpen: boolean) {
   if (isOpen || status === "return_requested" || status === "pending_payment") return "danger";

@@ -4,8 +4,16 @@ import { parseBuyerPrefChips } from "@/lib/buyer-prefs";
 
 export { compactBuyerNote, parseBuyerPrefChips } from "@/lib/buyer-prefs";
 
-/** Merchant Siparişler row: chips for checkout preference tags. */
-export function BuyerPrefChips({ note }: { note?: string }) {
+/** Merchant Siparişler row: chips for checkout preference tags (click filters). */
+export function BuyerPrefChips({
+  note,
+  onSelectKey,
+  activeKey,
+}: {
+  note?: string;
+  onSelectKey?: (key: string) => void;
+  activeKey?: string | null;
+}) {
   const chips = parseBuyerPrefChips(note);
   if (!chips.length) {
     const plain = (note ?? "").trim();
@@ -24,11 +32,32 @@ export function BuyerPrefChips({ note }: { note?: string }) {
       aria-label="Alıcı tercihleri"
       style={{ marginTop: 6, flexWrap: "wrap", gap: 6 }}
     >
-      {chips.map((c) => (
-        <span key={c.key + ":" + c.label} className="tag accent" role="listitem" style={{ fontWeight: 500 }}>
-          {c.label}
-        </span>
-      ))}
+      {chips.map((c) => {
+        const on = activeKey === c.key;
+        if (onSelectKey) {
+          return (
+            <button
+              key={c.key + ":" + c.label}
+              type="button"
+              className={`tag accent ${on ? "on" : ""}`}
+              role="listitem"
+              data-cta="filter-pref-chip"
+              data-pref={c.key}
+              aria-pressed={on}
+              title={`${c.label} filtrele`}
+              style={{ fontWeight: 500, cursor: "pointer", border: "none" }}
+              onClick={() => onSelectKey(c.key)}
+            >
+              {c.label}
+            </button>
+          );
+        }
+        return (
+          <span key={c.key + ":" + c.label} className="tag accent" role="listitem" style={{ fontWeight: 500 }}>
+            {c.label}
+          </span>
+        );
+      })}
     </div>
   );
 }
