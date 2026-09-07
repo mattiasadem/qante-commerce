@@ -19,10 +19,35 @@ const HISTORY_FILTERS: { id: HistoryFilter; label: string }[] = [
   { id: "discarded", label: "Reddedildi" },
 ];
 
+/** Case-insensitive match on id, product, reason, staged_by, before/after, decision note. */
+export function changeMatchesQuery(c: StagedChange, q: string): boolean {
+  const needle = q.trim().toLowerCase();
+  if (!needle) return true;
+  if (c.id.toLowerCase().includes(needle)) return true;
+  if (c.product_id.toLowerCase().includes(needle)) return true;
+  if (c.product_name.toLowerCase().includes(needle)) return true;
+  if (c.staged_by.toLowerCase().includes(needle)) return true;
+  if (c.reason.toLowerCase().includes(needle)) return true;
+  if ((c.decision_note ?? "").toLowerCase().includes(needle)) return true;
+  if ((KIND_LABEL[c.kind] ?? c.kind).toLowerCase().includes(needle)) return true;
+  if (c.kind.toLowerCase().includes(needle)) return true;
+  for (const [k, v] of Object.entries(c.before)) {
+    if (k.toLowerCase().includes(needle) || String(v).toLowerCase().includes(needle)) return true;
+  }
+  for (const [k, v] of Object.entries(c.after)) {
+    if (k.toLowerCase().includes(needle) || String(v).toLowerCase().includes(needle)) return true;
+  }
+  for (const g of c.guardrails) {
+    if (g.label.toLowerCase().includes(needle) || g.id.toLowerCase().includes(needle)) return true;
+  }
+  return false;
+}
+
 export function StagedQueue({ initial }: { initial: StagedChange[] }) {
   const [items, setItems] = useState(initial);
   const [kind, setKind] = useState<KindFilter>("all");
   const [hist, setHist] = useState<HistoryFilter>("all");
+  const [q, setQ] = useState("");
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [rejectBulk, setRejectBulk] = useState(false);
   const [reason, setReason] = useState("");
@@ -37,13 +62,13 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
 
   const pending = useMemo(() => items.filter((c) => c.status === "staged"), [items]);
   const filteredPending = useMemo(
-    () => (kind === "all" ? pending : pending.filter((c) => c.kind === kind)),
-    [pending, kind],
+    () => pending.filter((c) => (kind === "all" || c.kind === kind) && changeMatchesQuery(c, q)),
+    [pending, kind, q],
   );
   const history = useMemo(() => items.filter((c) => c.status !== "staged"), [items]);
   const filteredHistory = useMemo(
-    () => (hist === "all" ? history : history.filter((c) => c.status === hist)),
-    [history, hist],
+    () => history.filter((c) => (hist === "all" || c.status === hist) && changeMatchesQuery(c, q)),
+    [history, hist, q],
   );
   const kindCounts = useMemo(() => {
     const c: Record<KindFilter, number> = { all: pending.length, price: 0, stock: 0, listing: 0 };
@@ -191,6 +216,24 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
           </button>
         ))}
       </div>
+      <div className="ops-search" data-cta="staged-search" style={{ marginTop: 10, marginBottom: 12, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <input
+          className="input"
+          type="search"
+          value={q}
+          onChange={(e) => setQ(e.target.value.slice(0, 80))}
+          placeholder="Ara · ürün, neden, kim, fiyat/stok…"
+          aria-label="Bekleyen ara"
+          data-cta="staged-search-input"
+          style={{ flex: "1 1 220px", maxWidth: 420 }}
+        />
+        {q.trim() ? (
+          <button className="btn btn-sm" type="button" data-cta="staged-search-clear" onClick={() => setQ("")}>
+            Temizle
+          </button>
+        ) : null}
+        <span className="faint">{q.trim() ? `${filteredPending.length} bekleyen · ${filteredHistory.length} geçmiş` : "tür + geçmiş üstünde arar"}</span>
+      </div>
       {flash ? (
         <p className="muted" style={{ marginBottom: 12 }}>
           <span className="banner-demo">{flash}</span>
@@ -220,8 +263,8 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
       {filteredPending.length === 0 ? (
         <div className="empty">
           <div className="mark" />
-          <h3>{pending.length === 0 ? "Bekleyen yok" : "Bu filtrede bekleyen yok"}</h3>
-          <p>{pending.length === 0 ? "Onay ve redler geçmişte. Canlı ikas yazılmadı." : "Başka bir tür seç veya katalogdan yeni öneri ekle."}</p>
+          <h3>{pending.length === 0 ? "Bekleyen yok" : q.trim() ? "Aramada bekleyen yok" : "Bu filtrede bekleyen yok"}</h3>
+          <p>{pending.length === 0 ? "Onay ve redler geçmişte. Canlı ikas yazılmadı." : q.trim() ? "Arama + tür birleşiminde kayıt yok." : "Başka bir tür seç veya katalogdan yeni öneri ekle."}</p>
         </div>
       ) : null}
       {filteredPending.map((c) => (
@@ -284,8 +327,8 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
       {history.length && filteredHistory.length === 0 ? (
         <div className="empty">
           <div className="mark" />
-          <h3>Bu filtrede geçmiş yok</h3>
-          <p>Uygulandı veya Reddedildi seç, ya da Tümü.</p>
+          <h3>{q.trim() ? "Aramada geçmiş yok" : "Bu filtrede geçmiş yok"}</h3>
+          <p>{q.trim() ? "Arama + durum birleşiminde kayıt yok." : "Uygulandı veya Reddedildi seç, ya da Tümü."}</p>
         </div>
       ) : null}
       {filteredHistory.map((c) => (
