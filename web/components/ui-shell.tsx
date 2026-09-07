@@ -84,3 +84,5 @@ export { PaketmatikField, formatPaketmatikTag, readPaketmatik, parsePaketmatikFr
 export { PaketmatikSummaryBanner } from "@/components/ui-paketmatik-summary";
 export { ErisimField, formatErisimTag, readErisim, parseErisimFromNote, useErisim } from "@/components/ui-erisim";
 export { ErisimSummaryBanner } from "@/components/ui-erisim-summary";
+export { KomsuField, formatKomsuTag, readKomsu, parseKomsuFromNote, useKomsu } from "@/components/ui-komsu";
+export { KomsuSummaryBanner } from "@/components/ui-komsu-summary";
