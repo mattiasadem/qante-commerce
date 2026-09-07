@@ -1,1 +1,1 @@
-LOAD_FROM_/workspace/_MCP_PUSH_ARGS.json
+LOAD_FROM_/tmp/mcp_push_args.json
