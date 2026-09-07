@@ -23,6 +23,7 @@ import { PhotoSummaryBanner } from "@/components/ui-photo-summary";
 import { FragileSummaryBanner } from "@/components/ui-fragile-summary";
 import { MontajSummaryBanner } from "@/components/ui-montaj-summary";
 import { WarrantySummaryBanner } from "@/components/ui-warranty-summary";
+import { DestekSummaryBanner } from "@/components/ui-destek-summary";
 export default function OrderPage() {
   return (
     <div className="shop">
@@ -51,6 +52,7 @@ export default function OrderPage() {
           <FragileSummaryBanner />
           <MontajSummaryBanner />
           <WarrantySummaryBanner />
+          <DestekSummaryBanner />
         </div>
         <OrderConfirm />
       </Suspense>

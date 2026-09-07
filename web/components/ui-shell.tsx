@@ -73,3 +73,5 @@ export { MontajField, formatMontajTag, readMontaj, parseMontajFromNote, useMonta
 export { MontajSummaryBanner } from "@/components/ui-montaj-summary";
 export { WarrantyField, formatWarrantyTag, readWarranty, parseWarrantyFromNote, useWarranty } from "@/components/ui-warranty";
 export { WarrantySummaryBanner } from "@/components/ui-warranty-summary";
+export { DestekField, formatDestekTag, readDestek, parseDestekFromNote, useDestek } from "@/components/ui-destek";
+export { DestekSummaryBanner } from "@/components/ui-destek-summary";
