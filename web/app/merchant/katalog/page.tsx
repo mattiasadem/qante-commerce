@@ -11,7 +11,7 @@ export default function KatalogPage() {
       <header className="ops-head">
         <h1>Katalog</h1>
         <p className="lede">
-          12 ürün. Filtre + URL (filter/cat/q/sort) + toplu aksiyonlar yerel Bekleyen kuyruğuna yazar.
+          12 ürün. Filtre + URL yazma (filter/cat/q/sort) + Linki kopyala · toplu aksiyonlar yerel Bekleyen kuyruğuna yazar.
         </p>
       </header>
       <Suspense fallback={<p className="muted">katalog…</p>}>
