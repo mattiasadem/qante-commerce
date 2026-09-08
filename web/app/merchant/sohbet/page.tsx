@@ -12,7 +12,7 @@ export default async function SohbetPage({
       <header className="ops-head">
         <h1>Sohbet</h1>
         <p className="lede">
-          Özet, stok ve bekleyen için starter&apos;lar. Yenile / Düzelt / İndirim yerel kuyruğa yazar; Onayla ikas&apos;a gitmez.
+          Özet, stok ve bekleyen için starter&apos;lar. URL (?q=) paylaşılabilir; Yenile / Düzelt / İndirim yerel kuyruğa yazar; Onayla ikas&apos;a gitmez.
         </p>
       </header>
       <MerchantChat prefill={q} />
