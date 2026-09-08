@@ -11,12 +11,17 @@ const STOCK_FILTERS: { id: string; label: string; match: (a: Alert) => boolean }
   { id: "slow_mover", label: "Yavaş", match: (a) => a.kind === "slow_mover" },
 ];
 
-/** Case-insensitive match on product name, id, message, kind. */
+function alertCategory(a: Alert): string {
+  return (getProduct(a.product_id)?.category ?? "").trim();
+}
+
+/** Case-insensitive match on product name, id, category, message, kind. */
 export function alertMatchesQuery(a: Alert, q: string): boolean {
   const needle = q.trim().toLowerCase();
   if (!needle) return true;
   if (a.product_id.toLowerCase().includes(needle)) return true;
   if (a.product_name.toLowerCase().includes(needle)) return true;
+  if (alertCategory(a).toLowerCase().includes(needle)) return true;
   if ((a.message ?? "").toLowerCase().includes(needle)) return true;
   if (a.kind.toLowerCase().includes(needle)) return true;
   const kindAliases =
@@ -68,6 +73,7 @@ export function compareAlertsBySort(a: Alert, b: Alert, sort: StockSortId): numb
 
 export function StockView({ alerts }: { alerts: Alert[] }) {
   const [filter, setFilter] = useState("all");
+  const [cat, setCat] = useState("");
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<StockSortId>("urgency");
   const [busy, setBusy] = useState<string | null>(null);
@@ -78,10 +84,23 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
     return c;
   }, [alerts]);
   const match = STOCK_FILTERS.find((f) => f.id === filter) ?? STOCK_FILTERS[0];
+  const statusRows = useMemo(() => alerts.filter((a) => match.match(a)), [alerts, match]);
+  const categories = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const a of statusRows) {
+      const c = alertCategory(a);
+      if (!c) continue;
+      map.set(c, (map.get(c) ?? 0) + 1);
+    }
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0], "tr"));
+  }, [statusRows]);
   const rows = useMemo(() => {
-    const filtered = alerts.filter((a) => match.match(a) && alertMatchesQuery(a, q));
+    const filtered = statusRows.filter((a) => {
+      if (cat && alertCategory(a) !== cat) return false;
+      return alertMatchesQuery(a, q);
+    });
     return [...filtered].sort((a, b) => compareAlertsBySort(a, b, sort));
-  }, [alerts, match, q, sort]);
+  }, [statusRows, cat, q, sort]);
 
   const restockIds = useMemo(() => {
     const seen = new Set<string>();
@@ -204,13 +223,40 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
           </button>
         ))}
       </div>
+      {categories.length ? (
+        <div className="filter-rail chips scroll" role="tablist" aria-label="Kategori" data-cta="stock-category-rail" style={{ marginTop: 8 }}>
+          <button
+            className={`chip ${cat === "" ? "on" : ""}`}
+            type="button"
+            aria-pressed={cat === ""}
+            data-cta="stock-category"
+            data-cat=""
+            onClick={() => setCat("")}
+          >
+            Tüm kategoriler
+          </button>
+          {categories.map(([name, n]) => (
+            <button
+              key={name}
+              className={`chip ${cat === name ? "on" : ""}`}
+              type="button"
+              aria-pressed={cat === name}
+              data-cta="stock-category"
+              data-cat={name}
+              onClick={() => setCat(cat === name ? "" : name)}
+            >
+              {name} · {n}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <div className="ops-search" data-cta="stock-search" style={{ marginTop: 10, marginBottom: 12, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
         <input
           className="input"
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value.slice(0, 80))}
-          placeholder="Ara · ürün, uyarı, mesaj…"
+          placeholder="Ara · ürün, kategori, uyarı…"
           aria-label="Stok ara"
           data-cta="stock-search-input"
           style={{ flex: "1 1 220px", maxWidth: 420 }}
@@ -220,7 +266,7 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
             Temizle
           </button>
         ) : null}
-        <span className="faint">{q.trim() ? `${rows.length} uyarı` : "filtre üstünde arar"}</span>
+        <span className="faint">{q.trim() || cat ? `${rows.length} uyarı` : "durum + kategori üstünde arar"}</span>
       </div>
       <div className="filter-rail chips scroll" role="tablist" aria-label="Sıralama" data-cta="stock-sort-rail" style={{ marginTop: 8, marginBottom: 12 }}>
         {STOCK_SORTS.map((s) => (
@@ -269,7 +315,7 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
         </p>
       ) : (
         <p className="muted">
-          Ara + sırala + filtre · Yenile stok · İndirim fiyat · yerel kuyruk · Onayla ikas&apos;a gitmez
+          Ara + kategori + sırala · Yenile stok · İndirim fiyat · yerel kuyruk · Onayla ikas&apos;a gitmez
         </p>
       )}
       <div className="list">
@@ -284,7 +330,7 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
               <div>
                 <div>{a.product_name}</div>
                 <div className="faint">
-                  stok {a.stock} · cover {a.days_cover ?? "—"} gün
+                  {alertCategory(a) ? `${alertCategory(a)} · ` : ""}stok {a.stock} · cover {a.days_cover ?? "—"} gün
                   {a.days_without_sale != null ? ` · ${a.days_without_sale} gündür satış yok` : ""}
                   {" · "}{faintHint}
                 </div>
@@ -307,7 +353,7 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
         })}
         {rows.length === 0 ? (
           <div className="list-row">
-            <span className="muted">{q.trim() ? "Aramada uyarı yok." : "Bu filtrede uyarı yok."}</span>
+            <span className="muted">{q.trim() || cat ? "Arama + kategori birleşiminde uyarı yok." : "Bu filtrede uyarı yok."}</span>
           </div>
         ) : null}
       </div>
