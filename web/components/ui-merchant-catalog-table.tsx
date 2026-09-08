@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { Product, StagedChange } from "@/lib/core";
 import { money, qualityScore, suggestPriceCut, suggestRestockQty } from "@/lib/core";
@@ -48,8 +48,20 @@ export type CatalogFilterId = "all" | "low" | "out" | "weak";
 
 const CATALOG_FILTERS: CatalogFilterId[] = ["all", "low", "out", "weak"];
 
+function qstr(filter: CatalogFilterId, cat: string, q: string, sort: CatalogSortId) {
+  const sp = new URLSearchParams();
+  if (filter !== "all") sp.set("filter", filter);
+  if (cat.trim()) sp.set("cat", cat.trim());
+  const qq = q.trim().slice(0, 80);
+  if (qq) sp.set("q", qq);
+  if (sort !== "name") sp.set("sort", sort);
+  return sp.toString();
+}
+
 export function CatalogTable({ products }: { products: Product[] }) {
   const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname() || "/merchant/katalog";
   const filterParam = (params.get("filter") ?? params.get("stock") ?? "").trim().toLowerCase();
   const catParam = (params.get("cat") ?? "").trim();
   const qParam = (params.get("q") ?? "").trim();
@@ -63,19 +75,48 @@ export function CatalogTable({ products }: { products: Product[] }) {
   const [sort, setSort] = useState<CatalogSortId>(initialSort);
   const [busy, setBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (CATALOG_FILTERS.includes(filterParam as CatalogFilterId)) setFilter(filterParam as CatalogFilterId);
+    else if (!filterParam) setFilter("all");
   }, [filterParam]);
   useEffect(() => {
-    if (catParam) setCat(catParam);
+    setCat(catParam);
   }, [catParam]);
   useEffect(() => {
-    if (qParam) setQ(qParam);
+    setQ(qParam);
   }, [qParam]);
   useEffect(() => {
     if (CATALOG_SORTS.some((s) => s.id === sortParam)) setSort(sortParam as CatalogSortId);
+    else if (!sortParam) setSort("name");
   }, [sortParam]);
+
+  useEffect(() => {
+    const next = qstr(filter, cat, q, sort);
+    const cur = qstr(
+      (CATALOG_FILTERS.includes(filterParam as CatalogFilterId) ? filterParam : "all") as CatalogFilterId,
+      catParam,
+      qParam,
+      (CATALOG_SORTS.some((s) => s.id === sortParam) ? sortParam : "name") as CatalogSortId,
+    );
+    if (next === cur) return;
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  }, [filter, cat, q, sort, filterParam, catParam, qParam, sortParam, pathname, router]);
+
+  async function copyLink() {
+    const qs = qstr(filter, cat, q, sort);
+    const path = qs ? `${pathname}?${qs}` : pathname;
+    const href = typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
+    try {
+      await navigator.clipboard.writeText(href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* ignore */
+    }
+  }
+
   const categories = useMemo(() => {
     const map = new Map<string, number>();
     for (const p of products) {
@@ -150,7 +191,6 @@ export function CatalogTable({ products }: { products: Product[] }) {
     }
   }
 
-
   async function stageListingAll() {
     if (!discountIds.length) return;
     setBusy("bulk");
@@ -193,9 +233,7 @@ export function CatalogTable({ products }: { products: Product[] }) {
     }
   }
 
-  const urlFiltersOn = Boolean(
-    (filterParam && filterParam !== "all") || catParam || qParam || (sortParam && sortParam !== "name"),
-  );
+  const urlOn = Boolean((filter && filter !== "all") || cat.trim() || q.trim() || (sort && sort !== "name"));
 
   return (
     <div data-cta="catalog-deeplink">
@@ -308,7 +346,11 @@ export function CatalogTable({ products }: { products: Product[] }) {
       ) : (
         <p className="muted">
           Ara + kategori + sırala + filtre · Toplu indirim / Toplu düzelt / Toplu yenile / Düzelt / İndirim / Yenile yerel kuyruğa yazar · Onayla ikas&apos;a gitmez
-          {urlFiltersOn ? " · URL filtreleri açık" : ""}
+          {urlOn ? " · URL filtreleri açık" : ""}
+          {" · "}
+          <button className="chip" type="button" data-cta="catalog-copy-link" onClick={() => void copyLink()}>
+            {copied ? "Kopyalandı" : "Linki kopyala"}
+          </button>
         </p>
       )}
       <div className="table-wrap">
