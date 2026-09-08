@@ -41,7 +41,7 @@ export default async function MerchantPage({
   } else if (tab === "bekleyen") {
     body = (
       <>
-        <Head title="Bekleyen" lede="Onay kuyruğu. URL (kind/cat/q/sort/hist) + Toplu onayla yerel deftere yazar; canlı ikas yazımı kapalı." />
+        <Head title="Bekleyen" lede="Onay kuyruğu. URL yazar (kind/cat/q/sort/hist) + Linki kopyala · Toplu onayla yerel deftere yazar; canlı ikas yazımı kapalı." />
         <Suspense fallback={<p className="muted">bekleyen…</p>}>
           <StagedQueue initial={getStaged()} />
         </Suspense>
@@ -59,7 +59,7 @@ export default async function MerchantPage({
   } else if (tab === "stok") {
     body = (
       <>
-        <Head title="Stok" lede="Uyarı kümesi. URL (filter/cat/q/sort) + Toplu yenile/indirim yerel kuyruğa yazar; Onayla ikas'a gitmez." />
+        <Head title="Stok" lede="Uyarı kümesi. URL yazar (filter/cat/q/sort) + Linki kopyala · Toplu yenile/indirim yerel kuyruğa yazar; Onayla ikas'a gitmez." />
         <Suspense fallback={<p className="muted">stok…</p>}>
           <StockView alerts={alerts} />
         </Suspense>
