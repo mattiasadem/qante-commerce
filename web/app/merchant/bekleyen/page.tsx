@@ -11,7 +11,7 @@ export default function BekleyenPage() {
       <header className="ops-head">
         <h1>Bekleyen</h1>
         <p className="lede">
-          Onay kuyruğu. URL (kind/cat/q/sort/hist) + Toplu onayla yerel deftere yazar; canlı ikas yazımı kapalı.
+          Onay kuyruğu. URL yazar (kind/cat/q/sort/hist) + Linki kopyala · Toplu onayla yerel deftere yazar; canlı ikas yazımı kapalı.
         </p>
       </header>
       <Suspense fallback={<p className="muted">bekleyen…</p>}>
