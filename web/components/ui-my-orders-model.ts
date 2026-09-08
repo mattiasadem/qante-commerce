@@ -1,5 +1,6 @@
 "use client";
 import type { MyOrderSortId } from "@/components/ui-my-orders-sort";
+import { getProduct } from "@/lib/core";
 
 export type Row = {
   order_id: string;
@@ -50,6 +51,26 @@ export function statusTagClass(status: string) {
   if (status === "fulfilled") return "ok";
   if (status === "shipped") return "warn";
   return "ok";
+}
+
+/** Distinct non-empty product categories on a Siparişlerim row. */
+export function myOrderCategories(o: Row): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const it of o.items) {
+    const name = (getProduct(it.product_id)?.category ?? "").trim();
+    if (!name || seen.has(name)) continue;
+    seen.add(name);
+    out.push(name);
+  }
+  return out;
+}
+
+/** True when any line item's product is in the given category. */
+export function myOrderHasCategory(o: Row, cat: string): boolean {
+  const needle = cat.trim();
+  if (!needle) return true;
+  return myOrderCategories(o).includes(needle);
 }
 
 export type { MyOrderSortId };
