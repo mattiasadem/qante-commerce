@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import type { Product, StagedChange } from "@/lib/core";
 import { money, qualityScore, suggestPriceCut, suggestRestockQty } from "@/lib/core";
 
@@ -43,13 +44,38 @@ export function compareProductsBySort(a: Product, b: Product, sort: CatalogSortI
   return a.name.localeCompare(b.name, "tr");
 }
 
+export type CatalogFilterId = "all" | "low" | "out" | "weak";
+
+const CATALOG_FILTERS: CatalogFilterId[] = ["all", "low", "out", "weak"];
+
 export function CatalogTable({ products }: { products: Product[] }) {
-  const [filter, setFilter] = useState<"all" | "low" | "out" | "weak">("all");
-  const [cat, setCat] = useState<string>("");
-  const [q, setQ] = useState("");
-  const [sort, setSort] = useState<CatalogSortId>("name");
+  const params = useSearchParams();
+  const filterParam = (params.get("filter") ?? params.get("stock") ?? "").trim().toLowerCase();
+  const catParam = (params.get("cat") ?? "").trim();
+  const qParam = (params.get("q") ?? "").trim();
+  const sortParam = (params.get("sort") ?? "").trim().toLowerCase();
+  const initialFilter: CatalogFilterId = (CATALOG_FILTERS.includes(filterParam as CatalogFilterId) ? filterParam : "all") as CatalogFilterId;
+  const initialSort: CatalogSortId = (CATALOG_SORTS.some((s) => s.id === sortParam) ? sortParam : "name") as CatalogSortId;
+
+  const [filter, setFilter] = useState<CatalogFilterId>(initialFilter);
+  const [cat, setCat] = useState<string>(catParam);
+  const [q, setQ] = useState(qParam);
+  const [sort, setSort] = useState<CatalogSortId>(initialSort);
   const [busy, setBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (CATALOG_FILTERS.includes(filterParam as CatalogFilterId)) setFilter(filterParam as CatalogFilterId);
+  }, [filterParam]);
+  useEffect(() => {
+    if (catParam) setCat(catParam);
+  }, [catParam]);
+  useEffect(() => {
+    if (qParam) setQ(qParam);
+  }, [qParam]);
+  useEffect(() => {
+    if (CATALOG_SORTS.some((s) => s.id === sortParam)) setSort(sortParam as CatalogSortId);
+  }, [sortParam]);
   const categories = useMemo(() => {
     const map = new Map<string, number>();
     for (const p of products) {
@@ -167,9 +193,13 @@ export function CatalogTable({ products }: { products: Product[] }) {
     }
   }
 
+  const urlFiltersOn = Boolean(
+    (filterParam && filterParam !== "all") || catParam || qParam || (sortParam && sortParam !== "name"),
+  );
+
   return (
-    <>
-      <div className="filter-rail chips scroll" role="tablist" aria-label="Katalog filtresi">
+    <div data-cta="catalog-deeplink">
+      <div className="filter-rail chips scroll" role="tablist" aria-label="Katalog filtresi" data-cta="catalog-filter-rail">
         {([
           ["all", "Tümü", products.length],
           ["low", "Düşük stok", products.filter((p) => p.stock > 0 && p.stock <= 5).length],
@@ -278,6 +308,7 @@ export function CatalogTable({ products }: { products: Product[] }) {
       ) : (
         <p className="muted">
           Ara + kategori + sırala + filtre · Toplu indirim / Toplu düzelt / Toplu yenile / Düzelt / İndirim / Yenile yerel kuyruğa yazar · Onayla ikas&apos;a gitmez
+          {urlFiltersOn ? " · URL filtreleri açık" : ""}
         </p>
       )}
       <div className="table-wrap">
@@ -317,6 +348,6 @@ export function CatalogTable({ products }: { products: Product[] }) {
           </tbody>
         </table>
       </div>
-    </>
+    </div>
   );
 }
