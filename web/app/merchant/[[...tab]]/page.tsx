@@ -47,8 +47,10 @@ export default async function MerchantPage({
   } else if (tab === "katalog") {
     body = (
       <>
-        <Head title="Katalog" lede="12 ürün. Filtre + toplu aksiyonlar yerel Bekleyen kuyruğuna yazar." />
-        <CatalogTable products={getProducts()} />
+        <Head title="Katalog" lede="12 ürün. Filtre + URL (filter/cat/q/sort) + toplu aksiyonlar yerel Bekleyen kuyruğuna yazar." />
+        <Suspense fallback={<p className="muted">katalog…</p>}>
+          <CatalogTable products={getProducts()} />
+        </Suspense>
       </>
     );
   } else if (tab === "stok") {
