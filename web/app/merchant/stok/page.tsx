@@ -11,7 +11,7 @@ export default function StokPage() {
       <header className="ops-head">
         <h1>Stok</h1>
         <p className="lede">
-          Uyarı kümesi. URL (filter/cat/q/sort) + Toplu yenile/indirim yerel kuyruğa yazar; Onayla ikas'a gitmez.
+          Uyarı kümesi. URL yazar (filter/cat/q/sort) + Linki kopyala · Toplu yenile/indirim yerel kuyruğa yazar; Onayla ikas'a gitmez.
         </p>
       </header>
       <Suspense fallback={<p className="muted">stok…</p>}>
