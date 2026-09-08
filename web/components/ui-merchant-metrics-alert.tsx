@@ -5,17 +5,21 @@ import type { Alert, Issue } from "@/lib/core";
 import { getProduct, money, suggestPriceCut, suggestRestockQty } from "@/lib/core";
 import {
   OZET_FILTERS,
+  OZET_SORTS,
   alertCategory,
   alertHasCategory,
   alertKey,
   alertMatchesOzet,
   alertMatchesOzetQuery,
+  compareAlertsBySort,
+  compareIssuesBySort,
   issueAction,
   issueCategories,
   issueHasCategory,
   issueMatchesOzet,
   issueMatchesOzetQuery,
   type OzetFilterId,
+  type OzetSortId,
 } from "@/components/ui-merchant-metrics-filters";
 import { useOzetAlertActions } from "@/components/ui-merchant-metrics-actions";
 
@@ -23,6 +27,7 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
   const [filter, setFilter] = useState<OzetFilterId>("all");
   const [cat, setCat] = useState("");
   const [q, setQ] = useState("");
+  const [sort, setSort] = useState<OzetSortId>("priority");
   const {
     busy, flash, flashHref, visibleAlerts: aliveAlerts, visibleIssues: aliveIssues,
     act, bulkOrders, stageRestock, stagePrice, stageRestockAll, stagePriceAll,
@@ -54,17 +59,19 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
 
   const visibleAlerts = useMemo(
     () =>
-      kindAlerts
+      [...kindAlerts]
         .filter((a) => alertHasCategory(a, cat))
-        .filter((a) => alertMatchesOzetQuery(a, q)),
-    [kindAlerts, cat, q],
+        .filter((a) => alertMatchesOzetQuery(a, q))
+        .sort((a, b) => compareAlertsBySort(a, b, sort)),
+    [kindAlerts, cat, q, sort],
   );
   const visibleIssues = useMemo(
     () =>
-      kindIssues
+      [...kindIssues]
         .filter((i) => issueHasCategory(i, cat))
-        .filter((i) => issueMatchesOzetQuery(i, q)),
-    [kindIssues, cat, q],
+        .filter((i) => issueMatchesOzetQuery(i, q))
+        .sort((a, b) => compareIssuesBySort(a, b, sort)),
+    [kindIssues, cat, q, sort],
   );
 
   const restockIds = useMemo(
@@ -155,6 +162,21 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
           </button>
         ) : null}
         <span className="faint">{q.trim() || cat ? `${visibleAlerts.length + visibleIssues.length} kayıt` : "filtre + kategori üstünde arar"}</span>
+      </div>
+      <div className="filter-rail chips scroll" role="tablist" aria-label="Sıralama" data-cta="ozet-sort-rail" style={{ marginTop: 0, marginBottom: 12 }}>
+        {OZET_SORTS.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            className={`chip ${sort === s.id ? "on" : ""}`}
+            aria-pressed={sort === s.id}
+            data-cta="ozet-sort"
+            data-sort={s.id}
+            onClick={() => setSort(s.id)}
+          >
+            {s.label}
+          </button>
+        ))}
       </div>
       {flash ? (
         <p className="muted">

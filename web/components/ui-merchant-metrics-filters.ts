@@ -105,3 +105,76 @@ export function issueMatchesOzetQuery(i: Issue, q: string): boolean {
           : "";
   return needle.length >= 3 && aliases.includes(needle);
 }
+
+export type OzetSortId = "priority" | "name" | "stock" | "age";
+
+export const OZET_SORTS: { id: OzetSortId; label: string }[] = [
+  { id: "priority", label: "Öncelik" },
+  { id: "name", label: "Ada göre" },
+  { id: "stock", label: "Stok ↑" },
+  { id: "age", label: "En eski" },
+];
+
+function alertSeverity(a: Alert): number {
+  if (a.kind === "out_of_stock") return 0;
+  if (a.kind === "low_stock") return 1;
+  if (a.kind === "slow_mover") return 2;
+  return 3;
+}
+
+function issueSeverity(i: Issue): number {
+  if (i.kind === "unshipped") return 0;
+  if (i.kind === "pending_payment") return 1;
+  if (i.kind === "return_open") return 2;
+  return 3;
+}
+
+/** Sort Özet alerts within the visible list. */
+export function compareAlertsBySort(a: Alert, b: Alert, sort: OzetSortId): number {
+  if (sort === "name") {
+    return a.product_name.localeCompare(b.product_name, "tr") || a.product_id.localeCompare(b.product_id);
+  }
+  if (sort === "stock") {
+    return a.stock - b.stock || a.product_name.localeCompare(b.product_name, "tr");
+  }
+  if (sort === "age") {
+    // higher days_without_sale first; else lower days_cover; nulls last
+    if (a.days_without_sale != null || b.days_without_sale != null) {
+      const da = a.days_without_sale ?? -1;
+      const db = b.days_without_sale ?? -1;
+      if (da !== db) return db - da;
+    } else if (a.days_cover != null || b.days_cover != null) {
+      const ca = a.days_cover ?? 9999;
+      const cb = b.days_cover ?? 9999;
+      if (ca !== cb) return ca - cb;
+    }
+    return alertSeverity(a) - alertSeverity(b) || a.product_name.localeCompare(b.product_name, "tr");
+  }
+  // priority
+  const s = alertSeverity(a) - alertSeverity(b);
+  if (s) return s;
+  if (a.kind === "slow_mover") {
+    const da = a.days_without_sale ?? 0;
+    const db = b.days_without_sale ?? 0;
+    return db - da || a.product_name.localeCompare(b.product_name, "tr");
+  }
+  return a.stock - b.stock || a.product_name.localeCompare(b.product_name, "tr");
+}
+
+/** Sort Özet issues within the visible list. */
+export function compareIssuesBySort(a: Issue, b: Issue, sort: OzetSortId): number {
+  if (sort === "name") {
+    return a.order_id.localeCompare(b.order_id, "tr");
+  }
+  if (sort === "stock") {
+    // no stock on issues — fall back to total desc then id
+    return b.total - a.total || a.order_id.localeCompare(b.order_id, "tr");
+  }
+  if (sort === "age") {
+    return b.age_hours - a.age_hours || a.order_id.localeCompare(b.order_id, "tr");
+  }
+  // priority
+  const s = issueSeverity(a) - issueSeverity(b);
+  if (s) return s;
+  return b.age_hours - a.age_hours || b.total - a.total || a.order_id.localeCompare(b.order_id, "tr");
+}
