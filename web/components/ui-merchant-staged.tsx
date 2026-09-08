@@ -1,5 +1,5 @@
 'use client';
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { StagedChange } from "@/lib/core";
 import { KIND_LABEL, shortDate } from "@/lib/core";
@@ -15,8 +15,21 @@ import {
   changeMatchesQuery,
 } from "@/components/ui-merchant-staged-helpers";
 
+function stagedQstr(kind: KindFilter, hist: HistoryFilter, cat: string, q: string, sort: StagedSortId) {
+  const sp = new URLSearchParams();
+  if (kind !== "all") sp.set("kind", kind);
+  if (hist !== "all") sp.set("hist", hist);
+  if (cat.trim()) sp.set("cat", cat.trim());
+  const qq = q.trim().slice(0, 80);
+  if (qq) sp.set("q", qq);
+  if (sort !== "newest") sp.set("sort", sort);
+  return sp.toString();
+}
+
 export function StagedQueue({ initial }: { initial: StagedChange[] }) {
   const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname() || "/merchant/bekleyen";
   const kindParam = (params.get("kind") ?? params.get("filter") ?? "").trim().toLowerCase();
   const histParam = (params.get("hist") ?? params.get("history") ?? "").trim().toLowerCase();
   const catParam = (params.get("cat") ?? "").trim();
@@ -37,6 +50,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (KIND_FILTERS.some((f) => f.id === kindParam)) setKind(kindParam as KindFilter);
@@ -53,6 +67,32 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
   useEffect(() => {
     if (STAGED_SORTS.some((s) => s.id === sortParam)) setSort(sortParam as StagedSortId);
   }, [sortParam]);
+
+  useEffect(() => {
+    const next = stagedQstr(kind, hist, cat, q, sort);
+    const cur = stagedQstr(
+      (KIND_FILTERS.some((f) => f.id === kindParam) ? kindParam : "all") as KindFilter,
+      (HISTORY_FILTERS.some((f) => f.id === histParam) ? histParam : "all") as HistoryFilter,
+      catParam,
+      qParam,
+      (STAGED_SORTS.some((s) => s.id === sortParam) ? sortParam : "newest") as StagedSortId,
+    );
+    if (next === cur) return;
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  }, [kind, hist, cat, q, sort, kindParam, histParam, catParam, qParam, sortParam, pathname, router]);
+
+  async function copyLink() {
+    const qs = stagedQstr(kind, hist, cat, q, sort);
+    const path = qs ? `${pathname}?${qs}` : pathname;
+    const href = typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
+    try {
+      await navigator.clipboard.writeText(href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* ignore */
+    }
+  }
 
   useEffect(() => {
     void fetch("/api/merchant/staged", { cache: "no-store" }).then((r) => r.json()).then((d: { changes?: StagedChange[] }) => {
@@ -227,9 +267,13 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
   );
 
   return (
-    <div data-cta="staged-deeplink">
+    <div data-cta="staged-url-write">
       <p className="muted" style={{ marginBottom: 12 }}>
         <span className="banner-demo">DEMO kuyruk · Onayla / Toplu onayla / Toplu reddet / Tekrar kuyruğa al yerel deftere yazar, ikas’a gitmez{urlFiltersOn ? " · URL filtreleri açık" : ""}</span>
+        {" · "}
+        <button className="chip" type="button" data-cta="staged-copy-link" onClick={() => void copyLink()}>
+          {copied ? "Kopyalandı" : "Linki kopyala"}
+        </button>
       </p>
       <div className="filter-rail chips scroll" role="tablist" aria-label="Bekleyen tür filtresi">
         {KIND_FILTERS.map((f) => (
