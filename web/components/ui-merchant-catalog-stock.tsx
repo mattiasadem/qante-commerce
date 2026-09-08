@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { Alert, StagedChange } from "@/lib/core";
 import { getProduct, money, suggestPriceCut, suggestRestockQty } from "@/lib/core";
@@ -72,10 +72,22 @@ export function compareAlertsBySort(a: Alert, b: Alert, sort: StockSortId): numb
   return a.product_name.localeCompare(b.product_name, "tr");
 }
 
+function stockQstr(filter: string, cat: string, q: string, sort: StockSortId) {
+  const sp = new URLSearchParams();
+  if (filter !== "all") sp.set("filter", filter);
+  if (cat.trim()) sp.set("cat", cat.trim());
+  const qq = q.trim().slice(0, 80);
+  if (qq) sp.set("q", qq);
+  if (sort !== "urgency") sp.set("sort", sort);
+  return sp.toString();
+}
+
 const STOCK_FILTER_IDS = STOCK_FILTERS.map((f) => f.id);
 
 export function StockView({ alerts }: { alerts: Alert[] }) {
   const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname() || "/merchant/stok";
   const filterParam = (params.get("filter") ?? params.get("kind") ?? params.get("status") ?? "").trim().toLowerCase();
   const catParam = (params.get("cat") ?? "").trim();
   const qParam = (params.get("q") ?? "").trim();
@@ -89,19 +101,46 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
   const [sort, setSort] = useState<StockSortId>(initialSort);
   const [busy, setBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (STOCK_FILTER_IDS.includes(filterParam)) setFilter(filterParam);
+    else if (!filterParam) setFilter("all");
   }, [filterParam]);
   useEffect(() => {
-    if (catParam) setCat(catParam);
+    setCat(catParam);
   }, [catParam]);
   useEffect(() => {
-    if (qParam) setQ(qParam);
+    setQ(qParam);
   }, [qParam]);
   useEffect(() => {
     if (STOCK_SORTS.some((s) => s.id === sortParam)) setSort(sortParam as StockSortId);
+    else if (!sortParam) setSort("urgency");
   }, [sortParam]);
+  useEffect(() => {
+    const next = stockQstr(filter, cat, q, sort);
+    const cur = stockQstr(
+      STOCK_FILTER_IDS.includes(filterParam) ? filterParam : "all",
+      catParam,
+      qParam,
+      (STOCK_SORTS.some((s) => s.id === sortParam) ? sortParam : "urgency") as StockSortId,
+    );
+    if (next === cur) return;
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  }, [filter, cat, q, sort, filterParam, catParam, qParam, sortParam, pathname, router]);
+
+  async function copyLink() {
+    const qs = stockQstr(filter, cat, q, sort);
+    const path = qs ? `${pathname}?${qs}` : pathname;
+    const href = typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
+    try {
+      await navigator.clipboard.writeText(href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* ignore */
+    }
+  }
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
     for (const f of STOCK_FILTERS) c[f.id] = alerts.filter((a) => f.match(a)).length;
@@ -239,7 +278,7 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
   }
 
   return (
-    <>
+    <div data-cta="stock-deeplink">
       <div className="filter-rail chips scroll" role="tablist" aria-label="Stok filtresi">
         {STOCK_FILTERS.map((f) => (
           <button
@@ -348,7 +387,11 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
       ) : (
         <p className="muted">
           Ara + kategori + sırala · Yenile stok · İndirim fiyat · yerel kuyruk · Onayla ikas&apos;a gitmez
-          {(filterParam && filterParam !== "all") || catParam || qParam || (sortParam && sortParam !== "urgency") ? " · URL filtreleri açık" : ""}
+          {(filter !== "all") || cat.trim() || q.trim() || (sort !== "urgency") ? " · URL filtreleri açık" : ""}
+          {" · "}
+          <button className="chip" type="button" data-cta="stock-copy-link" onClick={() => void copyLink()}>
+            {copied ? "Kopyalandı" : "Linki kopyala"}
+          </button>
         </p>
       )}
       <div className="list">
@@ -368,7 +411,7 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
                   {" · "}{faintHint}
                 </div>
               </div>
-              <span className={`tag ${a.kind === "out_of_stock" ? "danger" : "warn"`}>
+              <span className={`tag ${a.kind === "out_of_stock" ? "danger" : "warn"}`}>
                 {a.kind === "out_of_stock" ? "tükendi" : a.kind === "low_stock" ? "düşük" : "yavaş"}
               </span>
               {isSlow ? (
@@ -390,6 +433,6 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
           </div>
         ) : null}
       </div>
-    </>
+    </div>
   );
 }
