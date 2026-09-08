@@ -35,6 +35,26 @@ export function orderHasPref(o: Order, key: string): boolean {
   return re.test(note);
 }
 
+/** Distinct non-empty product categories on an order's lines. */
+export function orderCategories(o: Order): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const it of o.items) {
+    const name = (getProduct(it.product_id)?.category ?? "").trim();
+    if (!name || seen.has(name)) continue;
+    seen.add(name);
+    out.push(name);
+  }
+  return out;
+}
+
+/** True when any line item's product is in the given category. */
+export function orderHasCategory(o: Order, cat: string): boolean {
+  const needle = cat.trim();
+  if (!needle) return true;
+  return orderCategories(o).includes(needle);
+}
+
 export function statusTone(status: string, isOpen: boolean) {
   if (isOpen || status === "return_requested" || status === "pending_payment") return "danger";
   if (status === "paid" || status === "shipped") return "warn";
