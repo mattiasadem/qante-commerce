@@ -5,10 +5,14 @@ import type { Alert, Issue } from "@/lib/core";
 import { getProduct, money, suggestPriceCut, suggestRestockQty } from "@/lib/core";
 import {
   OZET_FILTERS,
+  alertCategory,
+  alertHasCategory,
   alertKey,
   alertMatchesOzet,
   alertMatchesOzetQuery,
   issueAction,
+  issueCategories,
+  issueHasCategory,
   issueMatchesOzet,
   issueMatchesOzetQuery,
   type OzetFilterId,
@@ -17,25 +21,50 @@ import { useOzetAlertActions } from "@/components/ui-merchant-metrics-actions";
 
 export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[] }) {
   const [filter, setFilter] = useState<OzetFilterId>("all");
+  const [cat, setCat] = useState("");
   const [q, setQ] = useState("");
   const {
     busy, flash, flashHref, visibleAlerts: aliveAlerts, visibleIssues: aliveIssues,
     act, bulkOrders, stageRestock, stagePrice, stageRestockAll, stagePriceAll,
   } = useOzetAlertActions(alerts, issues, filter);
 
+  const kindAlerts = useMemo(
+    () => aliveAlerts.filter((a) => alertMatchesOzet(a, filter)),
+    [aliveAlerts, filter],
+  );
+  const kindIssues = useMemo(
+    () => aliveIssues.filter((i) => issueMatchesOzet(i, filter)),
+    [aliveIssues, filter],
+  );
+
+  const categories = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const a of kindAlerts) {
+      const name = alertCategory(a);
+      if (!name) continue;
+      map.set(name, (map.get(name) ?? 0) + 1);
+    }
+    for (const i of kindIssues) {
+      for (const name of issueCategories(i)) {
+        map.set(name, (map.get(name) ?? 0) + 1);
+      }
+    }
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0], "tr"));
+  }, [kindAlerts, kindIssues]);
+
   const visibleAlerts = useMemo(
     () =>
-      aliveAlerts
-        .filter((a) => alertMatchesOzet(a, filter))
+      kindAlerts
+        .filter((a) => alertHasCategory(a, cat))
         .filter((a) => alertMatchesOzetQuery(a, q)),
-    [aliveAlerts, filter, q],
+    [kindAlerts, cat, q],
   );
   const visibleIssues = useMemo(
     () =>
-      aliveIssues
-        .filter((i) => issueMatchesOzet(i, filter))
+      kindIssues
+        .filter((i) => issueHasCategory(i, cat))
         .filter((i) => issueMatchesOzetQuery(i, q)),
-    [aliveIssues, filter, q],
+    [kindIssues, cat, q],
   );
 
   const restockIds = useMemo(
@@ -52,8 +81,8 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
   const hasBulk = restockIds.length > 0 || discountIds.length > 0 || shipIds.length > 0 || payIds.length > 0 || returnIds.length > 0;
 
   const filterCounts = useMemo(() => {
-    const alertsForCount = aliveAlerts.filter((a) => alertMatchesOzetQuery(a, q));
-    const issuesForCount = aliveIssues.filter((i) => issueMatchesOzetQuery(i, q));
+    const alertsForCount = aliveAlerts.filter((a) => alertHasCategory(a, cat)).filter((a) => alertMatchesOzetQuery(a, q));
+    const issuesForCount = aliveIssues.filter((i) => issueHasCategory(i, cat)).filter((i) => issueMatchesOzetQuery(i, q));
     const c: Record<OzetFilterId, number> = {
       all: alertsForCount.length + issuesForCount.length,
       stock: alertsForCount.filter((a) => a.kind === "low_stock" || a.kind === "out_of_stock").length,
@@ -63,7 +92,7 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
       return_open: issuesForCount.filter((i) => i.kind === "return_open").length,
     };
     return c;
-  }, [aliveAlerts, aliveIssues, q]);
+  }, [aliveAlerts, aliveIssues, cat, q]);
 
   return (
     <>
@@ -82,6 +111,33 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
           </button>
         ))}
       </div>
+      {categories.length ? (
+        <div className="filter-rail chips scroll" role="tablist" aria-label="Kategori" data-cta="ozet-category-rail" style={{ marginTop: 0, marginBottom: 12 }}>
+          <button
+            className={`chip ${cat === "" ? "on" : ""}`}
+            type="button"
+            aria-pressed={cat === ""}
+            data-cta="ozet-category"
+            data-cat=""
+            onClick={() => setCat("")}
+          >
+            Tüm kategoriler
+          </button>
+          {categories.map(([name, n]) => (
+            <button
+              key={name}
+              className={`chip ${cat === name ? "on" : ""}`}
+              type="button"
+              aria-pressed={cat === name}
+              data-cta="ozet-category"
+              data-cat={name}
+              onClick={() => setCat(cat === name ? "" : name)}
+            >
+              {name} · {n}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <div className="ops-search" data-cta="ozet-search" style={{ marginTop: 0, marginBottom: 12, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
         <input
           className="input"
@@ -98,7 +154,7 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
             Temizle
           </button>
         ) : null}
-        <span className="faint">{q.trim() ? `${visibleAlerts.length + visibleIssues.length} kayıt` : "filtre üstünde arar"}</span>
+        <span className="faint">{q.trim() || cat ? `${visibleAlerts.length + visibleIssues.length} kayıt` : "filtre + kategori üstünde arar"}</span>
       </div>
       {flash ? (
         <p className="muted">
@@ -145,6 +201,7 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
           const isSlow = a.kind === "slow_mover";
           const busyKey = alertKey(a);
           const product = isSlow ? getProduct(a.product_id) : null;
+          const catLabel = alertCategory(a);
           const faintHint = isSlow
             ? (product ? `öneri ${money(suggestPriceCut(product))}` : "indirim önerisi")
             : `öneri ${suggestRestockQty(a.stock)}`;
@@ -154,6 +211,7 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
                 <div>{a.message}</div>
                 <div className="faint">
                   {a.product_name}
+                  {catLabel ? ` · ${catLabel}` : ""}
                   {a.days_cover != null ? ` · ${a.days_cover} gün cover` : ""}
                   {a.days_without_sale != null ? ` · ${a.days_without_sale} gündür satış yok` : ""}
                   {" · "}{faintHint}
@@ -192,10 +250,10 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
         })}
         {visibleAlerts.length === 0 && visibleIssues.length === 0 ? (
           <div className="list-row">
-            <span className="muted">{q.trim() ? "Aramada dikkat kaydı yok." : "Dikkat gerektiren kayıt yok."}</span>
-            {q.trim() ? (
-              <button className="chip" type="button" data-cta="ozet-search-clear-empty" onClick={() => setQ("")}>
-                Aramayı temizle
+            <span className="muted">{q.trim() || cat ? "Aramada dikkat kaydı yok." : "Dikkat gerektiren kayıt yok."}</span>
+            {q.trim() || cat ? (
+              <button className="chip" type="button" data-cta="ozet-search-clear-empty" onClick={() => { setQ(""); setCat(""); }}>
+                Filtreyi temizle
               </button>
             ) : null}
           </div>
