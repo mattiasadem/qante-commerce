@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { MyOrdersView } from "@/components/ui-my-orders";
 import { AssistantRail, AssistantSheet } from "@/components/GenAssistant";
 
@@ -5,7 +6,9 @@ import { AssistantRail, AssistantSheet } from "@/components/GenAssistant";
 export default function MyOrdersPage() {
   return (
     <div className="shop">
-      <MyOrdersView />
+      <Suspense fallback={<p className="muted">siparişlerim…</p>}>
+        <MyOrdersView />
+      </Suspense>
       <AssistantRail />
       <AssistantSheet />
     </div>

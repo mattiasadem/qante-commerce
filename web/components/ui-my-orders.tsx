@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { STATUS_LABEL } from "@/lib/core";
 import { ShopFooter, useCart } from "@/components/ui-shell";
@@ -18,15 +18,36 @@ import { MyOrderRow } from "@/components/ui-my-orders-row";
 
 export function MyOrdersView() {
   const router = useRouter();
+  const params = useSearchParams();
+  const statusParam = (params.get("status") ?? params.get("filter") ?? "").trim().toLowerCase();
+  const catParam = (params.get("cat") ?? "").trim();
+  const qParam = (params.get("q") ?? "").trim();
+  const sortParam = (params.get("sort") ?? "").trim().toLowerCase();
+  const initialFilter: FilterId = (FILTERS.some((f) => f.id === statusParam) ? statusParam : "all") as FilterId;
+  const initialSort: MyOrderSortId = (MY_ORDER_SORTS.some((s) => s.id === sortParam) ? sortParam : "newest") as MyOrderSortId;
+
   const { add } = useCart();
   const [orders, setOrders] = useState<Row[] | null>(null);
   const [err, setErr] = useState(false);
-  const [filter, setFilter] = useState<FilterId>("all");
-  const [q, setQ] = useState("");
-  const [cat, setCat] = useState("");
-  const [sort, setSort] = useState<MyOrderSortId>("newest");
+  const [filter, setFilter] = useState<FilterId>(initialFilter);
+  const [q, setQ] = useState(qParam);
+  const [cat, setCat] = useState(catParam);
+  const [sort, setSort] = useState<MyOrderSortId>(initialSort);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (FILTERS.some((f) => f.id === statusParam)) setFilter(statusParam as FilterId);
+  }, [statusParam]);
+  useEffect(() => {
+    if (catParam) setCat(catParam);
+  }, [catParam]);
+  useEffect(() => {
+    if (qParam) setQ(qParam);
+  }, [qParam]);
+  useEffect(() => {
+    if (MY_ORDER_SORTS.some((s) => s.id === sortParam)) setSort(sortParam as MyOrderSortId);
+  }, [sortParam]);
 
   const load = useCallback(() => {
     void fetch("/api/orders/mine", { cache: "no-store" })
@@ -87,6 +108,10 @@ export function MyOrdersView() {
     return map;
   }, [orders]);
 
+  const urlFiltersOn = Boolean(
+    (statusParam && statusParam !== "all") || catParam || qParam || (sortParam && sortParam !== "newest"),
+  );
+
   async function reorderRow(o: Row) {
     setBusyId(o.order_id);
     setFlash(null);
@@ -122,12 +147,15 @@ export function MyOrdersView() {
   }
 
   return (
-    <div className="grid-wrap" style={{ maxWidth: 720 }}>
+    <div className="grid-wrap" style={{ maxWidth: 720 }} data-cta="my-orders-deeplink">
       <div className="hero-row">
         <h1>Siparişlerim</h1>
         {orders && orders.length ? <span className="tag ok">{orders.length} demo</span> : null}
       </div>
-      <p className="faint">Bu tarayıcıdaki checkout demoları · yerel defter · ikas&apos;a gitmez</p>
+      <p className="faint">
+        Bu tarayıcıdaki checkout demoları · yerel defter · ikas&apos;a gitmez
+        {urlFiltersOn ? " · URL filtreleri açık" : ""}
+      </p>
       {flash ? (
         <p className="muted" style={{ marginTop: 8 }}>
           <span className="banner-demo">{flash}</span>
