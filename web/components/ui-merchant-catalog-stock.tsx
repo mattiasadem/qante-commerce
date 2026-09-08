@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import type { Alert, StagedChange } from "@/lib/core";
 import { getProduct, money, suggestPriceCut, suggestRestockQty } from "@/lib/core";
 
@@ -71,13 +72,36 @@ export function compareAlertsBySort(a: Alert, b: Alert, sort: StockSortId): numb
   return a.product_name.localeCompare(b.product_name, "tr");
 }
 
+const STOCK_FILTER_IDS = STOCK_FILTERS.map((f) => f.id);
+
 export function StockView({ alerts }: { alerts: Alert[] }) {
-  const [filter, setFilter] = useState("all");
-  const [cat, setCat] = useState("");
-  const [q, setQ] = useState("");
-  const [sort, setSort] = useState<StockSortId>("urgency");
+  const params = useSearchParams();
+  const filterParam = (params.get("filter") ?? params.get("kind") ?? params.get("status") ?? "").trim().toLowerCase();
+  const catParam = (params.get("cat") ?? "").trim();
+  const qParam = (params.get("q") ?? "").trim();
+  const sortParam = (params.get("sort") ?? "").trim().toLowerCase();
+  const initialFilter = STOCK_FILTER_IDS.includes(filterParam) ? filterParam : "all";
+  const initialSort: StockSortId = (STOCK_SORTS.some((s) => s.id === sortParam) ? sortParam : "urgency") as StockSortId;
+
+  const [filter, setFilter] = useState(initialFilter);
+  const [cat, setCat] = useState(catParam);
+  const [q, setQ] = useState(qParam);
+  const [sort, setSort] = useState<StockSortId>(initialSort);
   const [busy, setBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (STOCK_FILTER_IDS.includes(filterParam)) setFilter(filterParam);
+  }, [filterParam]);
+  useEffect(() => {
+    if (catParam) setCat(catParam);
+  }, [catParam]);
+  useEffect(() => {
+    if (qParam) setQ(qParam);
+  }, [qParam]);
+  useEffect(() => {
+    if (STOCK_SORTS.some((s) => s.id === sortParam)) setSort(sortParam as StockSortId);
+  }, [sortParam]);
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
     for (const f of STOCK_FILTERS) c[f.id] = alerts.filter((a) => f.match(a)).length;
@@ -218,7 +242,15 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
     <>
       <div className="filter-rail chips scroll" role="tablist" aria-label="Stok filtresi">
         {STOCK_FILTERS.map((f) => (
-          <button key={f.id} className={`chip ${filter === f.id ? "on" : ""}`} type="button" aria-pressed={filter === f.id} onClick={() => setFilter(f.id)}>
+          <button
+            key={f.id}
+            className={`chip ${filter === f.id ? "on" : ""}`}
+            type="button"
+            aria-pressed={filter === f.id}
+            data-cta="stock-filter"
+            data-filter={f.id}
+            onClick={() => setFilter(f.id)}
+          >
             {f.label} {counts[f.id] ?? 0}
           </button>
         ))}
@@ -316,6 +348,7 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
       ) : (
         <p className="muted">
           Ara + kategori + sırala · Yenile stok · İndirim fiyat · yerel kuyruk · Onayla ikas&apos;a gitmez
+          {(filterParam && filterParam !== "all") || catParam || qParam || (sortParam && sortParam !== "urgency") ? " · URL filtreleri açık" : ""}
         </p>
       )}
       <div className="list">
@@ -335,7 +368,7 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
                   {" · "}{faintHint}
                 </div>
               </div>
-              <span className={`tag ${a.kind === "out_of_stock" ? "danger" : "warn"}`}>
+              <span className={`tag ${a.kind === "out_of_stock" ? "danger" : "warn"`}>
                 {a.kind === "out_of_stock" ? "tükendi" : a.kind === "low_stock" ? "düşük" : "yavaş"}
               </span>
               {isSlow ? (
