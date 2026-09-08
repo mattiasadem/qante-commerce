@@ -5,7 +5,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { STATUS_LABEL } from "@/lib/core";
 import { ShopFooter, useCart } from "@/components/ui-shell";
 import { MY_ORDER_SORTS, compareMyOrdersBySort, type MyOrderSortId } from "@/components/ui-my-orders-sort";
-import { ACTION_FLASH, FILTERS, type FilterId, type LedgerAction, type Row } from "@/components/ui-my-orders-model";
+import {
+  ACTION_FLASH,
+  FILTERS,
+  myOrderCategories,
+  myOrderHasCategory,
+  type FilterId,
+  type LedgerAction,
+  type Row,
+} from "@/components/ui-my-orders-model";
 import { MyOrderRow } from "@/components/ui-my-orders-row";
 
 export function MyOrdersView() {
@@ -15,6 +23,7 @@ export function MyOrdersView() {
   const [err, setErr] = useState(false);
   const [filter, setFilter] = useState<FilterId>("all");
   const [q, setQ] = useState("");
+  const [cat, setCat] = useState("");
   const [sort, setSort] = useState<MyOrderSortId>("newest");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
@@ -41,19 +50,33 @@ export function MyOrdersView() {
     load();
   }, [load]);
 
-  const filtered = useMemo(() => {
+  const statusRows = useMemo(() => {
     if (!orders) return [];
+    if (filter === "all") return orders;
+    return orders.filter((o) => o.status === filter);
+  }, [orders, filter]);
+
+  const categories = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const o of statusRows) {
+      for (const name of myOrderCategories(o)) map.set(name, (map.get(name) ?? 0) + 1);
+    }
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0], "tr"));
+  }, [statusRows]);
+
+  const filtered = useMemo(() => {
     const needle = q.trim().toLocaleLowerCase("tr-TR");
-    const list = orders.filter((o) => {
-      if (filter !== "all" && o.status !== filter) return false;
+    const list = statusRows.filter((o) => {
+      if (!myOrderHasCategory(o, cat)) return false;
       if (!needle) return true;
-      const hay = [o.order_id, STATUS_LABEL[o.status] ?? o.status, ...o.items.map((i) => i.name), ...o.items.map((i) => i.product_id)]
+      const cats = myOrderCategories(o).join(" ");
+      const hay = [o.order_id, STATUS_LABEL[o.status] ?? o.status, cats, ...o.items.map((i) => i.name), ...o.items.map((i) => i.product_id)]
         .join(" ")
         .toLocaleLowerCase("tr-TR");
       return hay.includes(needle);
     });
     return [...list].sort((a, b) => compareMyOrdersBySort(a, b, sort));
-  }, [orders, filter, q, sort]);
+  }, [statusRows, cat, q, sort]);
 
   const counts = useMemo(() => {
     const map: Record<string, number> = { all: orders?.length ?? 0 };
@@ -149,6 +172,33 @@ export function MyOrdersView() {
               );
             })}
           </div>
+          {categories.length ? (
+            <div className="filter-rail chips scroll" role="tablist" aria-label="Kategori" data-cta="my-orders-category-rail" style={{ marginTop: 8, marginBottom: 4 }}>
+              <button
+                className={`chip ${cat === "" ? "on" : ""}`}
+                type="button"
+                aria-pressed={cat === ""}
+                data-cta="my-orders-category"
+                data-cat=""
+                onClick={() => setCat("")}
+              >
+                Tüm kategoriler
+              </button>
+              {categories.map(([name, n]) => (
+                <button
+                  key={name}
+                  className={`chip ${cat === name ? "on" : ""}`}
+                  type="button"
+                  aria-pressed={cat === name}
+                  data-cta="my-orders-category"
+                  data-cat={name}
+                  onClick={() => setCat((cur) => (cur === name ? "" : name))}
+                >
+                  {name} · {n}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <div className="filter-rail chips scroll" role="tablist" aria-label="Sıralama" data-cta="my-orders-sort-rail" style={{ marginTop: 8, marginBottom: 4 }}>
             {MY_ORDER_SORTS.map((s) => (
               <button key={s.id} type="button" className={`chip ${sort === s.id ? "on" : ""}`} aria-pressed={sort === s.id} data-cta="my-orders-sort" data-sort={s.id} onClick={() => setSort(s.id)}>
@@ -159,9 +209,10 @@ export function MyOrdersView() {
           {filtered.length === 0 ? (
             <div className="empty" style={{ marginTop: 18 }}>
               <div className="mark" />
-              <h3>{q.trim() ? "Aramayla eşleşen sipariş yok" : "Bu süzgeçte sipariş yok"}</h3>
+              <h3>{q.trim() || cat ? "Arama + kategori birleşiminde sipariş yok" : "Bu süzgeçte sipariş yok"}</h3>
               <p style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
                 {q.trim() ? <button className="chip" type="button" onClick={() => setQ("")}>Aramayı temizle</button> : null}
+                {cat ? <button className="chip" type="button" onClick={() => setCat("")}>Kategoriyi temizle</button> : null}
                 {filter !== "all" ? <button className="chip" type="button" onClick={() => setFilter("all")}>Tümünü göster</button> : null}
               </p>
             </div>
