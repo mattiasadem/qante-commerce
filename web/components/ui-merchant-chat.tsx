@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { ChatAction, StagedChange } from "@/lib/core";
 import { ActivityLine, GenerativeBlock } from "@/components/generative";
@@ -9,13 +10,37 @@ import { MERCHANT_ACTIVITY_DEFAULT } from "@/lib/tool-copy-tr";
 
 const MERCHANT_FALLBACK = MERCHANT_ACTIVITY_DEFAULT[0];
 
-const STARTERS = ["Bu hafta ciro", "Stoğu bitmeye yakın", "Bekleyen değişiklikler"];
+const STARTERS = [
+  "Bu hafta ciro",
+  "Stoğu bitmeye yakın",
+  "Bekleyen değişiklikler",
+  "Yavaş satanlar",
+  "Açık siparişler",
+];
 
 export function MerchantChat({ prefill }: { prefill?: string }) {
+  const router = useRouter();
+  const pathname = usePathname() || "/merchant/sohbet";
   const [input, setInput] = useState(prefill ?? "");
   const { messages, busy, activity, submit } = useAgentStream({ endpoint: "/api/merchant/chat" });
   const [stageBusy, setStageBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  function syncQuery(text: string) {
+    const q = text.trim().slice(0, 120);
+    const href = q ? `${pathname}?q=${encodeURIComponent(q)}` : pathname;
+    router.replace(href, { scroll: false });
+  }
+
+  async function ask(text: string) {
+    const t = text.trim();
+    if (!t) return;
+    syncQuery(t);
+    setInput(t);
+    await submit(t);
+    setInput("");
+  }
 
   async function runAction(a: ChatAction) {
     const key = a.kind === "order"
@@ -77,6 +102,20 @@ export function MerchantChat({ prefill }: { prefill?: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefill]);
 
+  async function copyLink() {
+    const q = (prefill ?? input).trim();
+    const href = typeof window !== "undefined"
+      ? `${window.location.origin}${q ? `${pathname}?q=${encodeURIComponent(q.slice(0, 120))}` : pathname}`
+      : pathname;
+    try {
+      await navigator.clipboard.writeText(href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setFlash("Link kopyalanamadı");
+    }
+  }
+
   return (
     <div className="ops-chat" data-component="MerchantChat">
       {flash ? (
@@ -89,13 +128,34 @@ export function MerchantChat({ prefill }: { prefill?: string }) {
       ) : (
         <p className="muted chat-banner">
           Digest + change_preview · CTAlar yerel Bekleyen veya Siparişler defterine yazar · ikas&apos;a gitmez
+          {" · "}
+          <button className="chip" type="button" data-cta="sohbet-copy-link" onClick={() => void copyLink()}>
+            {copied ? "Kopyalandı" : "Linki kopyala"}
+          </button>
         </p>
       )}
       <div className="rail-log">
         {messages.length === 0 ? (
           <>
             <div className="turn">Haftalık özet, stok veya bekleyen. Kartlar akışla gelir.</div>
-            <Suggestions suggestions={STARTERS} onPick={(s) => void submit(s)} disabled={busy} />
+            <div className="filter-rail chips scroll" role="list" aria-label="Sohbet starter" data-cta="sohbet-starter-rail" style={{ marginBottom: 8 }}>
+              {STARTERS.map((s) => (
+                <Link
+                  key={s}
+                  className="chip"
+                  href={`${pathname}?q=${encodeURIComponent(s)}`}
+                  data-cta="sohbet-starter"
+                  data-q={s}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    void ask(s);
+                  }}
+                >
+                  {s}
+                </Link>
+              ))}
+            </div>
+            <Suggestions suggestions={STARTERS} onPick={(s) => void ask(s)} disabled={busy} />
           </>
         ) : null}
         {messages.map((m, i) => (
@@ -107,7 +167,7 @@ export function MerchantChat({ prefill }: { prefill?: string }) {
                 {m.text ? <div className="turn">{m.text}</div> : null}
                 {m.slots.map((slot) => (
                   <div key={slot.stream_id} style={{ marginTop: 8 }}>
-                    <GenerativeBlock slot={slot} onAsk={(t) => void submit(t)} />
+                    <GenerativeBlock slot={slot} onAsk={(t) => void ask(t)} />
                   </div>
                 ))}
                 {m.pending ? <ActivityLine label={activity || MERCHANT_FALLBACK} /> : null}
@@ -132,7 +192,7 @@ export function MerchantChat({ prefill }: { prefill?: string }) {
                   </div>
                 ) : null}
                 {!m.pending && m.suggestions?.length ? (
-                  <Suggestions suggestions={m.suggestions.slice(0, 3)} onPick={(s) => void submit(s)} disabled={busy} />
+                  <Suggestions suggestions={m.suggestions.slice(0, 3)} onPick={(s) => void ask(s)} disabled={busy} />
                 ) : null}
               </>
             )}
@@ -142,8 +202,19 @@ export function MerchantChat({ prefill }: { prefill?: string }) {
       {busy && !messages.some((m) => m.role === "assistant" && m.pending) ? (
         <ActivityLine label={activity || MERCHANT_FALLBACK} />
       ) : null}
-      <form className="composer" onSubmit={(e) => { e.preventDefault(); void submit(input); setInput(""); }}>
-        <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="bu hafta ciro" aria-label="Operatör mesajı" />
+      <form
+        className="composer"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void ask(input);
+        }}
+      >
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="bu hafta ciro"
+          aria-label="Operatör mesajı"
+        />
         <button className="btn btn-primary" type="submit" disabled={busy}>Gönder</button>
       </form>
     </div>
