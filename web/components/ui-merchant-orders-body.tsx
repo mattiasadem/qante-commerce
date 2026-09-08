@@ -10,9 +10,12 @@ import { OrderRow } from "@/components/ui-merchant-orders-row";
 export function OrdersView({ orders: initialOrders, issues: initialIssues }: { orders: Order[]; issues: Issue[] }) {
   const params = useSearchParams();
   const focus = (params.get("focus") ?? params.get("id") ?? "").trim();
+  const filterParam = (params.get("filter") ?? params.get("status") ?? "").trim().toLowerCase();
+  const ORDER_FILTER_IDS = ORDER_FILTERS.map((f) => f.id);
   const [orders, setOrders] = useState(initialOrders);
   const [issues, setIssues] = useState(initialIssues);
-  const [filter, setFilter] = useState(focus ? "store" : "open");
+  const initialFilter = focus ? "store" : ORDER_FILTER_IDS.includes(filterParam) ? filterParam : "open";
+  const [filter, setFilter] = useState(initialFilter);
   const [busy, setBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
   const [highlight, setHighlight] = useState(focus);
@@ -34,6 +37,10 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
       setFlash(`${focus} · mağaza checkout · yerel defter`);
     }
   }, [focus]);
+
+  useEffect(() => {
+    if (!focus && ORDER_FILTER_IDS.includes(filterParam)) setFilter(filterParam);
+  }, [filterParam, focus]);
 
   useEffect(() => {
     if (prefParam) setPref(prefParam);
@@ -174,6 +181,8 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
             className={`chip ${filter === f.id ? "on" : ""}`}
             type="button"
             aria-pressed={filter === f.id}
+            data-cta="orders-filter"
+            data-filter={f.id}
             onClick={() => setFilter(f.id)}
           >
             {f.label} {counts[f.id] ?? 0}
@@ -272,7 +281,7 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
         </p>
       ) : (
         <p className="muted">
-          Mağaza checkout Siparişler&apos;e düşer · Kargola / Toplu kargola / Toplu teslim / Toplu iade kapat / Toplu ödeme alındı / Toplu iptal / İptal yerel deftere yazar · ikas&apos;a gitmez
+          Mağaza checkout Siparişler&apos;e düşer · URL filter/pref/cat/q/sort/focus · Kargola / toplu aksiyonlar / İptal yerel deftere yazar · ikas&apos;a gitmez
         </p>
       )}
       {shippable.length > 0 || fulfillable.length > 0 || closableReturns.length > 0 || payable.length > 0 || cancellable.length > 0 ? (
