@@ -1,99 +1,58 @@
 'use client';
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { StagedChange } from "@/lib/core";
-import { KIND_LABEL, getProduct, shortDate } from "@/lib/core";
-
-type KindFilter = "all" | "price" | "stock" | "listing";
-type HistoryFilter = "all" | "applied" | "discarded";
-
-const KIND_FILTERS: { id: KindFilter; label: string }[] = [
-  { id: "all", label: "Tümü" },
-  { id: "price", label: "Fiyat" },
-  { id: "stock", label: "Stok" },
-  { id: "listing", label: "Liste" },
-];
-
-const HISTORY_FILTERS: { id: HistoryFilter; label: string }[] = [
-  { id: "all", label: "Tümü" },
-  { id: "applied", label: "Uygulandı" },
-  { id: "discarded", label: "Reddedildi" },
-];
-
-export type StagedSortId = "newest" | "oldest" | "name" | "kind";
-
-export const STAGED_SORTS: { id: StagedSortId; label: string }[] = [
-  { id: "newest", label: "En yeni" },
-  { id: "oldest", label: "En eski" },
-  { id: "name", label: "Ürün A→Z" },
-  { id: "kind", label: "Tür" },
-];
-
-const KIND_RANK: Record<string, number> = { price: 0, stock: 1, listing: 2 };
-
-
-function changeCategory(c: StagedChange): string {
-  return (getProduct(c.product_id)?.category ?? "").trim();
-}
-
-export function compareChangesBySort(a: StagedChange, b: StagedChange, sort: StagedSortId): number {
-  if (sort === "oldest") {
-    const d = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-    if (d !== 0) return d;
-    return a.product_name.localeCompare(b.product_name, "tr");
-  }
-  if (sort === "name") {
-    const d = a.product_name.localeCompare(b.product_name, "tr");
-    if (d !== 0) return d;
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  }
-  if (sort === "kind") {
-    const d = (KIND_RANK[a.kind] ?? 9) - (KIND_RANK[b.kind] ?? 9);
-    if (d !== 0) return d;
-    return a.product_name.localeCompare(b.product_name, "tr");
-  }
-  // newest (default)
-  const d = new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  if (d !== 0) return d;
-  return a.product_name.localeCompare(b.product_name, "tr");
-}
-
-/** Case-insensitive match on id, product, reason, staged_by, before/after, decision note. */
-export function changeMatchesQuery(c: StagedChange, q: string): boolean {
-  const needle = q.trim().toLowerCase();
-  if (!needle) return true;
-  if (c.id.toLowerCase().includes(needle)) return true;
-  if (c.product_id.toLowerCase().includes(needle)) return true;
-  if (c.product_name.toLowerCase().includes(needle)) return true;
-  if (changeCategory(c).toLowerCase().includes(needle)) return true;
-  if (c.staged_by.toLowerCase().includes(needle)) return true;
-  if (c.reason.toLowerCase().includes(needle)) return true;
-  if ((c.decision_note ?? "").toLowerCase().includes(needle)) return true;
-  if ((KIND_LABEL[c.kind] ?? c.kind).toLowerCase().includes(needle)) return true;
-  if (c.kind.toLowerCase().includes(needle)) return true;
-  for (const [k, v] of Object.entries(c.before)) {
-    if (k.toLowerCase().includes(needle) || String(v).toLowerCase().includes(needle)) return true;
-  }
-  for (const [k, v] of Object.entries(c.after)) {
-    if (k.toLowerCase().includes(needle) || String(v).toLowerCase().includes(needle)) return true;
-  }
-  for (const g of c.guardrails) {
-    if (g.label.toLowerCase().includes(needle) || g.id.toLowerCase().includes(needle)) return true;
-  }
-  return false;
-}
+import { KIND_LABEL, shortDate } from "@/lib/core";
+import {
+  KIND_FILTERS,
+  HISTORY_FILTERS,
+  STAGED_SORTS,
+  type KindFilter,
+  type HistoryFilter,
+  type StagedSortId,
+  changeCategory,
+  compareChangesBySort,
+  changeMatchesQuery,
+} from "@/components/ui-merchant-staged-helpers";
 
 export function StagedQueue({ initial }: { initial: StagedChange[] }) {
+  const params = useSearchParams();
+  const kindParam = (params.get("kind") ?? params.get("filter") ?? "").trim().toLowerCase();
+  const histParam = (params.get("hist") ?? params.get("history") ?? "").trim().toLowerCase();
+  const catParam = (params.get("cat") ?? "").trim();
+  const qParam = (params.get("q") ?? "").trim();
+  const sortParam = (params.get("sort") ?? "").trim().toLowerCase();
+  const initialKind: KindFilter = (KIND_FILTERS.some((f) => f.id === kindParam) ? kindParam : "all") as KindFilter;
+  const initialHist: HistoryFilter = (HISTORY_FILTERS.some((f) => f.id === histParam) ? histParam : "all") as HistoryFilter;
+  const initialSort: StagedSortId = (STAGED_SORTS.some((s) => s.id === sortParam) ? sortParam : "newest") as StagedSortId;
+
   const [items, setItems] = useState(initial);
-  const [kind, setKind] = useState<KindFilter>("all");
-  const [hist, setHist] = useState<HistoryFilter>("all");
-  const [cat, setCat] = useState("");
-  const [q, setQ] = useState("");
-  const [sort, setSort] = useState<StagedSortId>("newest");
+  const [kind, setKind] = useState<KindFilter>(initialKind);
+  const [hist, setHist] = useState<HistoryFilter>(initialHist);
+  const [cat, setCat] = useState(catParam);
+  const [q, setQ] = useState(qParam);
+  const [sort, setSort] = useState<StagedSortId>(initialSort);
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [rejectBulk, setRejectBulk] = useState(false);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (KIND_FILTERS.some((f) => f.id === kindParam)) setKind(kindParam as KindFilter);
+  }, [kindParam]);
+  useEffect(() => {
+    if (HISTORY_FILTERS.some((f) => f.id === histParam)) setHist(histParam as HistoryFilter);
+  }, [histParam]);
+  useEffect(() => {
+    if (catParam) setCat(catParam);
+  }, [catParam]);
+  useEffect(() => {
+    if (qParam) setQ(qParam);
+  }, [qParam]);
+  useEffect(() => {
+    if (STAGED_SORTS.some((s) => s.id === sortParam)) setSort(sortParam as StagedSortId);
+  }, [sortParam]);
 
   useEffect(() => {
     void fetch("/api/merchant/staged", { cache: "no-store" }).then((r) => r.json()).then((d: { changes?: StagedChange[] }) => {
@@ -259,10 +218,18 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
     void mutate(id, "discard", note);
   }
 
+  const urlFiltersOn = Boolean(
+    (kindParam && kindParam !== "all") ||
+      (histParam && histParam !== "all") ||
+      catParam ||
+      qParam ||
+      (sortParam && sortParam !== "newest"),
+  );
+
   return (
-    <>
+    <div data-cta="staged-deeplink">
       <p className="muted" style={{ marginBottom: 12 }}>
-        <span className="banner-demo">DEMO kuyruk · Onayla / Toplu onayla / Toplu reddet / Tekrar kuyruğa al yerel deftere yazar, ikas’a gitmez</span>
+        <span className="banner-demo">DEMO kuyruk · Onayla / Toplu onayla / Toplu reddet / Tekrar kuyruğa al yerel deftere yazar, ikas’a gitmez{urlFiltersOn ? " · URL filtreleri açık" : ""}</span>
       </p>
       <div className="filter-rail chips scroll" role="tablist" aria-label="Bekleyen tür filtresi">
         {KIND_FILTERS.map((f) => (
@@ -473,6 +440,6 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
           </div>
         </div>
       ) : null}
-    </>
+    </div>
   );
 }
