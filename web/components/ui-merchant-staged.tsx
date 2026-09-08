@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from "react";
 import type { StagedChange } from "@/lib/core";
-import { KIND_LABEL, shortDate } from "@/lib/core";
+import { KIND_LABEL, getProduct, shortDate } from "@/lib/core";
 
 type KindFilter = "all" | "price" | "stock" | "listing";
 type HistoryFilter = "all" | "applied" | "discarded";
@@ -29,6 +29,11 @@ export const STAGED_SORTS: { id: StagedSortId; label: string }[] = [
 ];
 
 const KIND_RANK: Record<string, number> = { price: 0, stock: 1, listing: 2 };
+
+
+function changeCategory(c: StagedChange): string {
+  return (getProduct(c.product_id)?.category ?? "").trim();
+}
 
 export function compareChangesBySort(a: StagedChange, b: StagedChange, sort: StagedSortId): number {
   if (sort === "oldest") {
@@ -59,6 +64,7 @@ export function changeMatchesQuery(c: StagedChange, q: string): boolean {
   if (c.id.toLowerCase().includes(needle)) return true;
   if (c.product_id.toLowerCase().includes(needle)) return true;
   if (c.product_name.toLowerCase().includes(needle)) return true;
+  if (changeCategory(c).toLowerCase().includes(needle)) return true;
   if (c.staged_by.toLowerCase().includes(needle)) return true;
   if (c.reason.toLowerCase().includes(needle)) return true;
   if ((c.decision_note ?? "").toLowerCase().includes(needle)) return true;
@@ -80,6 +86,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
   const [items, setItems] = useState(initial);
   const [kind, setKind] = useState<KindFilter>("all");
   const [hist, setHist] = useState<HistoryFilter>("all");
+  const [cat, setCat] = useState("");
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<StagedSortId>("newest");
   const [rejectId, setRejectId] = useState<string | null>(null);
@@ -95,15 +102,35 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
   }, []);
 
   const pending = useMemo(() => items.filter((c) => c.status === "staged"), [items]);
+  const kindRows = useMemo(
+    () => pending.filter((c) => kind === "all" || c.kind === kind),
+    [pending, kind],
+  );
+  const categories = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const c of kindRows) {
+      const name = changeCategory(c);
+      if (!name) continue;
+      map.set(name, (map.get(name) ?? 0) + 1);
+    }
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0], "tr"));
+  }, [kindRows]);
   const filteredPending = useMemo(() => {
-    const rows = pending.filter((c) => (kind === "all" || c.kind === kind) && changeMatchesQuery(c, q));
+    const rows = kindRows.filter((c) => {
+      if (cat && changeCategory(c) !== cat) return false;
+      return changeMatchesQuery(c, q);
+    });
     return [...rows].sort((a, b) => compareChangesBySort(a, b, sort));
-  }, [pending, kind, q, sort]);
+  }, [kindRows, cat, q, sort]);
   const history = useMemo(() => items.filter((c) => c.status !== "staged"), [items]);
   const filteredHistory = useMemo(() => {
-    const rows = history.filter((c) => (hist === "all" || c.status === hist) && changeMatchesQuery(c, q));
+    const rows = history.filter((c) => {
+      if (hist !== "all" && c.status !== hist) return false;
+      if (cat && changeCategory(c) !== cat) return false;
+      return changeMatchesQuery(c, q);
+    });
     return [...rows].sort((a, b) => compareChangesBySort(a, b, sort));
-  }, [history, hist, q, sort]);
+  }, [history, hist, cat, q, sort]);
   const kindCounts = useMemo(() => {
     const c: Record<KindFilter, number> = { all: pending.length, price: 0, stock: 0, listing: 0 };
     for (const x of pending) {
@@ -250,6 +277,33 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
           </button>
         ))}
       </div>
+      {categories.length ? (
+        <div className="filter-rail chips scroll" role="tablist" aria-label="Kategori" data-cta="staged-category-rail" style={{ marginTop: 8 }}>
+          <button
+            className={`chip ${cat === "" ? "on" : ""}`}
+            type="button"
+            aria-pressed={cat === ""}
+            data-cta="staged-category"
+            data-cat=""
+            onClick={() => setCat("")}
+          >
+            Tüm kategoriler
+          </button>
+          {categories.map(([name, n]) => (
+            <button
+              key={name}
+              className={`chip ${cat === name ? "on" : ""}`}
+              type="button"
+              aria-pressed={cat === name}
+              data-cta="staged-category"
+              data-cat={name}
+              onClick={() => setCat(cat === name ? "" : name)}
+            >
+              {name} · {n}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <div className="ops-search" data-cta="staged-search" style={{ marginTop: 10, marginBottom: 12, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
         <input
           className="input"
@@ -266,7 +320,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
             Temizle
           </button>
         ) : null}
-        <span className="faint">{q.trim() ? `${filteredPending.length} bekleyen · ${filteredHistory.length} geçmiş` : "tür + geçmiş üstünde arar"}</span>
+        <span className="faint">{q.trim() || cat ? `${filteredPending.length} bekleyen · ${filteredHistory.length} geçmiş` : "tür + kategori + geçmiş üstünde arar"}</span>
       </div>
       <div className="filter-rail chips scroll" role="tablist" aria-label="Sıralama" data-cta="staged-sort-rail" style={{ marginTop: 8, marginBottom: 12 }}>
         {STAGED_SORTS.map((s) => (
@@ -312,8 +366,8 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
       {filteredPending.length === 0 ? (
         <div className="empty">
           <div className="mark" />
-          <h3>{pending.length === 0 ? "Bekleyen yok" : q.trim() ? "Aramada bekleyen yok" : "Bu filtrede bekleyen yok"}</h3>
-          <p>{pending.length === 0 ? "Onay ve redler geçmişte. Canlı ikas yazılmadı." : q.trim() ? "Arama + tür birleşiminde kayıt yok." : "Başka bir tür seç veya katalogdan yeni öneri ekle."}</p>
+          <h3>{pending.length === 0 ? "Bekleyen yok" : (q.trim() || cat) ? "Aramada bekleyen yok" : "Bu filtrede bekleyen yok"}</h3>
+          <p>{pending.length === 0 ? "Onay ve redler geçmişte. Canlı ikas yazılmadı." : (q.trim() || cat) ? "Arama + tür + kategori birleşiminde kayıt yok." : "Başka bir tür seç veya katalogdan yeni öneri ekle."}</p>
         </div>
       ) : null}
       {filteredPending.map((c) => (
@@ -321,7 +375,7 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
           <div className="change-head">
             <div>
               <strong>{KIND_LABEL[c.kind]}</strong>
-              <div className="faint">{c.product_name} · {c.staged_by} · {shortDate(c.created_at)} · {c.variant_count} varyant</div>
+              <div className="faint">{c.product_name}{changeCategory(c) ? ` · ${changeCategory(c)}` : ""} · {c.staged_by} · {shortDate(c.created_at)} · {c.variant_count} varyant</div>
             </div>
             <span className={`tag ${c.status === "staged" ? "accent" : c.status === "discarded" ? "danger" : "ok"}`}>
               {c.status === "staged" ? "bekliyor" : c.status === "discarded" ? "reddedildi" : "uygulandı"}
@@ -376,8 +430,8 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
       {history.length && filteredHistory.length === 0 ? (
         <div className="empty">
           <div className="mark" />
-          <h3>{q.trim() ? "Aramada geçmiş yok" : "Bu filtrede geçmiş yok"}</h3>
-          <p>{q.trim() ? "Arama + durum birleşiminde kayıt yok." : "Uygulandı veya Reddedildi seç, ya da Tümü."}</p>
+          <h3>{(q.trim() || cat) ? "Aramada geçmiş yok" : "Bu filtrede geçmiş yok"}</h3>
+          <p>{(q.trim() || cat) ? "Arama + durum + kategori birleşiminde kayıt yok." : "Uygulandı veya Reddedildi seç, ya da Tümü."}</p>
         </div>
       ) : null}
       {filteredHistory.map((c) => (
