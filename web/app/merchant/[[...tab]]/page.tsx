@@ -58,14 +58,16 @@ export default async function MerchantPage({
   } else if (tab === "stok") {
     body = (
       <>
-        <Head title="Stok" lede="Uyarı kümesi. Toplu yenile yerel kuyruğa yazar; Onayla ikas'a gitmez." />
-        <StockView alerts={alerts} />
+        <Head title="Stok" lede="Uyarı kümesi. URL (filter/cat/q/sort) + Toplu yenile/indirim yerel kuyruğa yazar; Onayla ikas'a gitmez." />
+        <Suspense fallback={<p className="muted">stok…</p>}>
+          <StockView alerts={alerts} />
+        </Suspense>
       </>
     );
   } else if (tab === "siparisler") {
     body = (
       <>
-        <Head title="Siparişler" lede="Mağaza checkout + seed. Kargola ve toplu aksiyonlar yerel deftere yazar." />
+        <Head title="Siparişler" lede="Mağaza checkout + seed. URL (filter/pref/cat/q/sort/focus) + Kargola ve toplu aksiyonlar yerel deftere yazar; ikas'a gitmez." />
         <Suspense fallback={<p className="muted">siparişler…</p>}>
           <OrdersView orders={getOrders()} issues={issues} />
         </Suspense>
