@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import type { Alert, Issue } from "@/lib/core";
 import { getProduct, money, suggestPriceCut, suggestRestockQty } from "@/lib/core";
 import {
@@ -24,10 +25,31 @@ import {
 import { useOzetAlertActions } from "@/components/ui-merchant-metrics-actions";
 
 export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[] }) {
-  const [filter, setFilter] = useState<OzetFilterId>("all");
-  const [cat, setCat] = useState("");
-  const [q, setQ] = useState("");
-  const [sort, setSort] = useState<OzetSortId>("priority");
+  const params = useSearchParams();
+  const kindParam = (params.get("kind") ?? params.get("filter") ?? "").trim().toLowerCase();
+  const catParam = (params.get("cat") ?? "").trim();
+  const qParam = (params.get("q") ?? "").trim();
+  const sortParam = (params.get("sort") ?? "").trim().toLowerCase();
+  const initialFilter: OzetFilterId = (OZET_FILTERS.some((f) => f.id === kindParam) ? kindParam : "all") as OzetFilterId;
+  const initialSort: OzetSortId = (OZET_SORTS.some((s) => s.id === sortParam) ? sortParam : "priority") as OzetSortId;
+  const [filter, setFilter] = useState<OzetFilterId>(initialFilter);
+  const [cat, setCat] = useState(catParam);
+  const [q, setQ] = useState(qParam);
+  const [sort, setSort] = useState<OzetSortId>(initialSort);
+
+  useEffect(() => {
+    if (OZET_FILTERS.some((f) => f.id === kindParam)) setFilter(kindParam as OzetFilterId);
+  }, [kindParam]);
+  useEffect(() => {
+    if (catParam) setCat(catParam);
+  }, [catParam]);
+  useEffect(() => {
+    if (qParam) setQ(qParam);
+  }, [qParam]);
+  useEffect(() => {
+    if (OZET_SORTS.some((s) => s.id === sortParam)) setSort(sortParam as OzetSortId);
+  }, [sortParam]);
+
   const {
     busy, flash, flashHref, visibleAlerts: aliveAlerts, visibleIssues: aliveIssues,
     act, bulkOrders, stageRestock, stagePrice, stageRestockAll, stagePriceAll,
@@ -186,6 +208,7 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
       ) : (
         <p className="muted">
           Toplu yenile/indirim Bekleyen&apos;e · Toplu kargo/ödeme/iade yerel defter · ikas&apos;a gitmez
+          {(kindParam || catParam || qParam || (sortParam && sortParam !== "priority")) ? " · URL filtreleri açık" : ""}
         </p>
       )}
       {hasBulk ? (
@@ -266,6 +289,7 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
                   {busy === i.order_id ? "…" : cta.label}
                 </button>
               ) : null}
+              <Link className="btn" href={`/merchant/siparisler?focus=${encodeURIComponent(i.order_id)}`} data-cta="ozet-issue-order">Sipariş</Link>
               <Link className="btn" href={`/merchant/sohbet?q=${encodeURIComponent(i.order_id)}`}>Sor</Link>
             </div>
           );
