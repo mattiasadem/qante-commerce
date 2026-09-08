@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Issue, Order } from "@/lib/core";
 import { STATUS_LABEL, canCancelOrder, isStoreCheckoutOrder } from "@/lib/core";
 import { Logo } from "@/components/ui-shell";
-import { ORDER_FILTERS, ORDER_SORTS, PREF_FILTERS, compareOrdersBySort, orderHasPref, orderMatchesQuery, type OrderSortId } from "@/components/ui-merchant-orders-filters";
+import { ORDER_FILTERS, ORDER_SORTS, PREF_FILTERS, compareOrdersBySort, orderCategories, orderHasCategory, orderHasPref, orderMatchesQuery, type OrderSortId } from "@/components/ui-merchant-orders-filters";
 import { OrderRow } from "@/components/ui-merchant-orders-row";
 
 export function OrdersView({ orders: initialOrders, issues: initialIssues }: { orders: Order[]; issues: Issue[] }) {
@@ -24,6 +24,8 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
   const sortParam = (params.get("sort") ?? "").trim().toLowerCase();
   const initialSort: OrderSortId = (ORDER_SORTS.some((s) => s.id === sortParam) ? sortParam : "newest") as OrderSortId;
   const [sort, setSort] = useState<OrderSortId>(initialSort);
+  const catParam = (params.get("cat") ?? "").trim();
+  const [cat, setCat] = useState(catParam);
 
   useEffect(() => {
     if (focus) {
@@ -44,6 +46,10 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
   useEffect(() => {
     if (ORDER_SORTS.some((s) => s.id === sortParam)) setSort(sortParam as OrderSortId);
   }, [sortParam]);
+
+  useEffect(() => {
+    if (catParam) setCat(catParam);
+  }, [catParam]);
 
   useEffect(() => {
     void fetch("/api/merchant/orders", { cache: "no-store" })
@@ -132,10 +138,17 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
     return c;
   }, [statusRows]);
   const visiblePrefs = useMemo(() => PREF_FILTERS.filter((p) => (prefCounts[p.id] ?? 0) > 0 || pref === p.id), [prefCounts, pref]);
+  const categories = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const o of statusRows) {
+      for (const name of orderCategories(o)) map.set(name, (map.get(name) ?? 0) + 1);
+    }
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0], "tr"));
+  }, [statusRows]);
   const rows = useMemo(() => {
-    const list = (pref ? statusRows.filter((o) => orderHasPref(o, pref)) : statusRows).filter((o) =>
-      orderMatchesQuery(o, q),
-    );
+    const list = (pref ? statusRows.filter((o) => orderHasPref(o, pref)) : statusRows)
+      .filter((o) => orderHasCategory(o, cat))
+      .filter((o) => orderMatchesQuery(o, q));
     return [...list].sort((a, b) => {
       const ah = highlight && a.id === highlight ? 0 : 1;
       const bh = highlight && b.id === highlight ? 0 : 1;
@@ -145,7 +158,7 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
       if (ao !== bo) return ao - bo;
       return compareOrdersBySort(a, b, sort);
     });
-  }, [statusRows, pref, q, openIds, highlight, sort]);
+  }, [statusRows, pref, cat, q, openIds, highlight, sort]);
   const shippable = useMemo(() => rows.filter((o) => o.status === "paid"), [rows]);
   const fulfillable = useMemo(() => rows.filter((o) => o.status === "shipped"), [rows]);
   const closableReturns = useMemo(() => rows.filter((o) => o.status === "return_requested"), [rows]);
@@ -167,6 +180,33 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
           </button>
         ))}
       </div>
+      {categories.length ? (
+        <div className="filter-rail chips scroll" role="tablist" aria-label="Kategori" data-cta="orders-category-rail" style={{ marginTop: 8 }}>
+          <button
+            className={`chip ${cat === "" ? "on" : ""}`}
+            type="button"
+            aria-pressed={cat === ""}
+            data-cta="orders-category"
+            data-cat=""
+            onClick={() => setCat("")}
+          >
+            Tüm kategoriler
+          </button>
+          {categories.map(([name, n]) => (
+            <button
+              key={name}
+              className={`chip ${cat === name ? "on" : ""}`}
+              type="button"
+              aria-pressed={cat === name}
+              data-cta="orders-category"
+              data-cat={name}
+              onClick={() => setCat((cur) => (cur === name ? "" : name))}
+            >
+              {name} · {n}
+            </button>
+          ))}
+        </div>
+      ) : null}
       {visiblePrefs.length > 0 ? (
         <div className="filter-rail chips scroll" role="tablist" aria-label="Tercih filtresi" data-cta="pref-filter-rail" style={{ marginTop: 8 }}>
           <button
@@ -209,7 +249,7 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
             Temizle
           </button>
         ) : null}
-        <span className="faint">{q.trim() ? `${rows.length} sonuç` : "durum + tercih üstünde arar"}</span>
+        <span className="faint">{q.trim() || cat ? `${rows.length} sonuç` : "durum + kategori + tercih üstünde arar"}</span>
       </div>
       <div className="filter-rail chips scroll" role="tablist" aria-label="Sıralama" data-cta="orders-sort-rail" style={{ marginTop: 8 }}>
         {ORDER_SORTS.map((s) => (
@@ -294,7 +334,7 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
         <div className="empty">
           <Logo size={32} />
           <h3>Kayıt yok</h3>
-          <p>{q.trim() ? "Arama + filtre birleşiminde kayıt yok." : "Bu durum/tercih filtresinde seed sipariş yok."}</p>
+          <p>{q.trim() || cat || pref ? "Arama + filtre birleşiminde kayıt yok." : "Bu durum/tercih filtresinde seed sipariş yok."}</p>
         </div>
       ) : (
         <div className="list">
