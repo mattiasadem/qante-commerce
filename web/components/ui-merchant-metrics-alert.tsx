@@ -7,26 +7,35 @@ import {
   OZET_FILTERS,
   alertKey,
   alertMatchesOzet,
+  alertMatchesOzetQuery,
   issueAction,
   issueMatchesOzet,
+  issueMatchesOzetQuery,
   type OzetFilterId,
 } from "@/components/ui-merchant-metrics-filters";
 import { useOzetAlertActions } from "@/components/ui-merchant-metrics-actions";
 
 export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[] }) {
   const [filter, setFilter] = useState<OzetFilterId>("all");
+  const [q, setQ] = useState("");
   const {
     busy, flash, flashHref, visibleAlerts: aliveAlerts, visibleIssues: aliveIssues,
     act, bulkOrders, stageRestock, stagePrice, stageRestockAll, stagePriceAll,
   } = useOzetAlertActions(alerts, issues, filter);
 
   const visibleAlerts = useMemo(
-    () => aliveAlerts.filter((a) => alertMatchesOzet(a, filter)),
-    [aliveAlerts, filter],
+    () =>
+      aliveAlerts
+        .filter((a) => alertMatchesOzet(a, filter))
+        .filter((a) => alertMatchesOzetQuery(a, q)),
+    [aliveAlerts, filter, q],
   );
   const visibleIssues = useMemo(
-    () => aliveIssues.filter((i) => issueMatchesOzet(i, filter)),
-    [aliveIssues, filter],
+    () =>
+      aliveIssues
+        .filter((i) => issueMatchesOzet(i, filter))
+        .filter((i) => issueMatchesOzetQuery(i, q)),
+    [aliveIssues, filter, q],
   );
 
   const restockIds = useMemo(
@@ -43,16 +52,18 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
   const hasBulk = restockIds.length > 0 || discountIds.length > 0 || shipIds.length > 0 || payIds.length > 0 || returnIds.length > 0;
 
   const filterCounts = useMemo(() => {
+    const alertsForCount = aliveAlerts.filter((a) => alertMatchesOzetQuery(a, q));
+    const issuesForCount = aliveIssues.filter((i) => issueMatchesOzetQuery(i, q));
     const c: Record<OzetFilterId, number> = {
-      all: aliveAlerts.length + aliveIssues.length,
-      stock: aliveAlerts.filter((a) => a.kind === "low_stock" || a.kind === "out_of_stock").length,
-      slow: aliveAlerts.filter((a) => a.kind === "slow_mover").length,
-      unshipped: aliveIssues.filter((i) => i.kind === "unshipped").length,
-      pending_payment: aliveIssues.filter((i) => i.kind === "pending_payment").length,
-      return_open: aliveIssues.filter((i) => i.kind === "return_open").length,
+      all: alertsForCount.length + issuesForCount.length,
+      stock: alertsForCount.filter((a) => a.kind === "low_stock" || a.kind === "out_of_stock").length,
+      slow: alertsForCount.filter((a) => a.kind === "slow_mover").length,
+      unshipped: issuesForCount.filter((i) => i.kind === "unshipped").length,
+      pending_payment: issuesForCount.filter((i) => i.kind === "pending_payment").length,
+      return_open: issuesForCount.filter((i) => i.kind === "return_open").length,
     };
     return c;
-  }, [aliveAlerts, aliveIssues]);
+  }, [aliveAlerts, aliveIssues, q]);
 
   return (
     <>
@@ -70,6 +81,24 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
             {filterCounts[f.id] ? ` (${filterCounts[f.id]})` : ""}
           </button>
         ))}
+      </div>
+      <div className="ops-search" data-cta="ozet-search" style={{ marginTop: 0, marginBottom: 12, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <input
+          className="input"
+          type="search"
+          value={q}
+          onChange={(e) => setQ(e.target.value.slice(0, 80))}
+          placeholder="Ara · ürün, sipariş, mesaj…"
+          aria-label="Özet ara"
+          data-cta="ozet-search-input"
+          style={{ flex: "1 1 220px", maxWidth: 420 }}
+        />
+        {q.trim() ? (
+          <button className="btn btn-sm" type="button" data-cta="ozet-search-clear" onClick={() => setQ("")}>
+            Temizle
+          </button>
+        ) : null}
+        <span className="faint">{q.trim() ? `${visibleAlerts.length + visibleIssues.length} kayıt` : "filtre üstünde arar"}</span>
       </div>
       {flash ? (
         <p className="muted">
@@ -161,7 +190,16 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
             </div>
           );
         })}
-        {visibleAlerts.length === 0 && visibleIssues.length === 0 ? <div className="list-row"><span className="muted">Dikkat gerektiren kayıt yok.</span></div> : null}
+        {visibleAlerts.length === 0 && visibleIssues.length === 0 ? (
+          <div className="list-row">
+            <span className="muted">{q.trim() ? "Aramada dikkat kaydı yok." : "Dikkat gerektiren kayıt yok."}</span>
+            {q.trim() ? (
+              <button className="chip" type="button" data-cta="ozet-search-clear-empty" onClick={() => setQ("")}>
+                Aramayı temizle
+              </button>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </>
   );

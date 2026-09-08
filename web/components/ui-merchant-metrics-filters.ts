@@ -34,3 +34,41 @@ export function issueAction(kind: string): { action: string; label: string } | n
   if (kind === "return_open") return { action: "close_return", label: "İade kapat" };
   return null;
 }
+
+/** Case-insensitive match on product / message / kind aliases for Özet alerts. */
+export function alertMatchesOzetQuery(a: Alert, q: string): boolean {
+  const needle = q.trim().toLocaleLowerCase("tr-TR");
+  if (!needle) return true;
+  const hay = [a.product_id, a.product_name, a.message ?? "", a.kind]
+    .join(" ")
+    .toLocaleLowerCase("tr-TR");
+  if (hay.includes(needle)) return true;
+  const aliases =
+    a.kind === "out_of_stock"
+      ? "tükendi tukendi"
+      : a.kind === "low_stock"
+        ? "düşük dusuk stok"
+        : a.kind === "slow_mover"
+          ? "yavaş yavas indirim"
+          : "";
+  return needle.length >= 3 && aliases.includes(needle);
+}
+
+/** Case-insensitive match on order id / message / kind aliases for Özet issues. */
+export function issueMatchesOzetQuery(i: Issue, q: string): boolean {
+  const needle = q.trim().toLocaleLowerCase("tr-TR");
+  if (!needle) return true;
+  const hay = [i.order_id, i.message ?? "", i.kind, String(i.total ?? "")]
+    .join(" ")
+    .toLocaleLowerCase("tr-TR");
+  if (hay.includes(needle)) return true;
+  const aliases =
+    i.kind === "unshipped"
+      ? "kargo kargola"
+      : i.kind === "pending_payment"
+        ? "ödeme odeme"
+        : i.kind === "return_open"
+          ? "iade"
+          : "";
+  return needle.length >= 3 && aliases.includes(needle);
+}
