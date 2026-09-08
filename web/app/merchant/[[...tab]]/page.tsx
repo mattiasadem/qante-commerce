@@ -40,8 +40,10 @@ export default async function MerchantPage({
   } else if (tab === "bekleyen") {
     body = (
       <>
-        <Head title="Bekleyen" lede="Onay kuyruğu. Toplu onayla yerel deftere yazar; canlı ikas yazımı kapalı." />
-        <StagedQueue initial={getStaged()} />
+        <Head title="Bekleyen" lede="Onay kuyruğu. URL (kind/cat/q/sort/hist) + Toplu onayla yerel deftere yazar; canlı ikas yazımı kapalı." />
+        <Suspense fallback={<p className="muted">bekleyen…</p>}>
+          <StagedQueue initial={getStaged()} />
+        </Suspense>
       </>
     );
   } else if (tab === "katalog") {
