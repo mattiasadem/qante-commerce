@@ -24,7 +24,8 @@ export default async function MerchantPage({
 }) {
   const tab = (await params).tab?.[0] ?? "";
   const { q } = await searchParams;
-  const current = tab ? `/merchant/${tab}` : "/merchant";
+  const current =
+    tab === "ozet" || !tab ? "/merchant" : `/merchant/${tab}`;
   const snap = computeSnapshot();
   const alerts = computeAlerts();
   const issues = computeIssues();
@@ -76,11 +77,16 @@ export default async function MerchantPage({
   } else {
     body = (
       <>
-        <Head title="Özet" lede={`${shortDate(snap.period_start)} — ${shortDate(snap.period_end)} · son ${snap.period_days} gün`} />
+        <Head
+          title="Özet"
+          lede={`${shortDate(snap.period_start)} — ${shortDate(snap.period_end)} · son ${snap.period_days} gün · URL (kind/cat/q/sort) + Linki kopyala`}
+        />
         <MetricCards snap={snap} />
         <MiniBars bars={weeklyBars()} />
         <h2 className="section-label">Dikkat gereken</h2>
-        <AlertList alerts={alerts} issues={issues} />
+        <Suspense fallback={<p className="muted">özet…</p>}>
+          <AlertList alerts={alerts} issues={issues} />
+        </Suspense>
       </>
     );
   }
