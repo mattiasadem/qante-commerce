@@ -14,6 +14,7 @@ import {
   compareChangesBySort,
   changeMatchesQuery,
 } from "@/components/ui-merchant-staged-helpers";
+import { StagedPendingEmpty, StagedHistoryEmpty } from "@/components/ui-merchant-staged-empty";
 
 function stagedQstr(kind: KindFilter, hist: HistoryFilter, cat: string, q: string, sort: StagedSortId) {
   const sp = new URLSearchParams();
@@ -375,11 +376,13 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
         </div>
       ) : null}
       {filteredPending.length === 0 ? (
-        <div className="empty">
-          <div className="mark" />
-          <h3>{pending.length === 0 ? "Bekleyen yok" : (q.trim() || cat) ? "Aramada bekleyen yok" : "Bu filtrede bekleyen yok"}</h3>
-          <p>{pending.length === 0 ? "Onay ve redler geçmişte. Canlı ikas yazılmadı." : (q.trim() || cat) ? "Arama + tür + kategori birleşiminde kayıt yok." : "Başka bir tür seç veya katalogdan yeni öneri ekle."}</p>
-        </div>
+        <StagedPendingEmpty
+          pendingCount={pending.length}
+          kind={kind}
+          cat={cat}
+          q={q}
+          onClearFilters={() => { setQ(""); setCat(""); setKind("all"); }}
+        />
       ) : null}
       {filteredPending.map((c) => (
         <article className="change ops-change" key={c.id}>
@@ -439,11 +442,12 @@ export function StagedQueue({ initial }: { initial: StagedChange[] }) {
         </div>
       ) : null}
       {history.length && filteredHistory.length === 0 ? (
-        <div className="empty">
-          <div className="mark" />
-          <h3>{(q.trim() || cat) ? "Aramada geçmiş yok" : "Bu filtrede geçmiş yok"}</h3>
-          <p>{(q.trim() || cat) ? "Arama + durum + kategori birleşiminde kayıt yok." : "Uygulandı veya Reddedildi seç, ya da Tümü."}</p>
-        </div>
+        <StagedHistoryEmpty
+          hist={hist}
+          cat={cat}
+          q={q}
+          onClearFilters={() => { setQ(""); setCat(""); setHist("all"); }}
+        />
       ) : null}
       {filteredHistory.map((c) => (
         <article className="change ops-change" key={`h-${c.id}`}>
