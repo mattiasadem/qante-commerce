@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import type { Product } from "@/lib/core";
 import { CATEGORIES } from "@/lib/core";
 import { ShopFooter } from "@/components/ui-shell";
@@ -102,7 +103,23 @@ export function HomeView({
       </div>
       {showRecentRail ? (
         <>
-          <div className="section-label">Son bakılanlar</div>
+          <div className="section-label" style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <span>Son bakılanlar</span>
+            {h.recentInStock.length ? (
+              <button
+                className="chip on"
+                type="button"
+                data-cta="recent-rail-add-all"
+                disabled={h.recentBusy}
+                onClick={() => void h.addAllRecentInStock()}
+              >
+                {h.recentBusy ? "ekleniyor…" : `Tümünü sepete ekle · ${h.recentInStock.length}`}
+              </button>
+            ) : null}
+            <Link className="chip" href="/?recent=1" data-cta="recent-rail-see-all">
+              Tümünü gör
+            </Link>
+          </div>
           <div className="featured" data-rail="recent">{h.recentProducts.slice(0, 4).map((p) => (<ProductCard key={p.id} product={p} />))}</div>
         </>
       ) : null}
