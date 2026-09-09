@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { PdpView } from "@/components/ui-shop";
 import { AssistantRail, AssistantSheet } from "@/components/GenAssistant";
@@ -13,7 +14,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   if (!product) notFound();
   return (
     <div className="shop">
-      <PdpView product={product} related={relatedTo(id)} />
+      <Suspense fallback={<div className="grid-wrap"><p className="muted">ürün</p></div>}>
+        <PdpView product={product} related={relatedTo(id)} />
+      </Suspense>
       <AssistantRail productId={product.id} />
       <AssistantSheet productId={product.id} />
     </div>
