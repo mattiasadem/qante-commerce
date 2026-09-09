@@ -84,8 +84,8 @@ export function FavoriteButton({
 }
 
 
-/** PDP share: copy absolute product URL to clipboard. */
-export function ShareButton({ productId, className = "btn" }: { productId: string; className?: string }) {
+/** PDP share: copy absolute product URL (optional variant query) to clipboard. */
+export function ShareButton({ productId, search, className = "btn" }: { productId: string; search?: string; className?: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -94,7 +94,8 @@ export function ShareButton({ productId, className = "btn" }: { productId: strin
       data-cta="share"
       title="Ürün linkini kopyala"
       onClick={async () => {
-        const url = `${window.location.origin}/urun/${encodeURIComponent(productId)}`;
+        const qs = (search ?? "").replace(/^\?/, "");
+        const url = `${window.location.origin}/urun/${encodeURIComponent(productId)}${qs ? `?${qs}` : ""}`;
         try {
           if (navigator.clipboard?.writeText) {
             await navigator.clipboard.writeText(url);
