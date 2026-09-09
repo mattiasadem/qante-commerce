@@ -97,6 +97,7 @@ export function useHomeFilters(opts: {
   const [recentBusy, setRecentBusy] = useState(false);
   const [compareBusy, setCompareBusy] = useState(false);
   const [saleBusy, setSaleBusy] = useState(false);
+  const [lowBusy, setLowBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [sort, setSort] = useState<SortId>(parseSort(initialSort));
   const [inStockOnly, setInStockOnly] = useState(Boolean(initialStock));
@@ -173,7 +174,7 @@ export function useHomeFilters(opts: {
     router.push(qs ? `/?${qs}` : "/");
   }
   async function copyLink() {
-    const qs = buildHomeQs({ query, category: category, sort, inStockOnly, onSaleOnly, lowStockOnly, favOnly, recentOnly, watchOnly, compareOnly,
+    const qs = buildHomeQs({ query, category, sort, inStockOnly, onSaleOnly, lowStockOnly, favOnly, recentOnly, watchOnly, compareOnly,
       compareIds,
     });
     const path = qs ? `/?${qs}` : "/";
@@ -276,6 +277,17 @@ export function useHomeFilters(opts: {
     const base = onSaleOnly ? filtered : saleProducts;
     return base.filter((p) => p.stock > 0);
   }, [onSaleOnly, filtered, saleProducts]);
+  const lowStockProducts = useMemo(() => {
+    const list = products.filter((p) => isLowStock(p.stock));
+    list.sort((a, b) => {
+      if (a.stock !== b.stock) return a.stock - b.stock;
+      return a.name.localeCompare(b.name, "tr");
+    });
+    return list;
+  }, [products]);
+  const lowStockReady = useMemo(() => {
+    return lowStockOnly ? filtered.filter((p) => isLowStock(p.stock)) : lowStockProducts;
+  }, [lowStockOnly, filtered, lowStockProducts]);
   const compareIdsLive = useMemo(() => compareItems.map((c) => c.id), [compareItems]);
   const watchBackCount = useMemo(
     () => products.filter((p) => watchIds.includes(p.id) && p.stock > 0).length,
@@ -311,6 +323,12 @@ export function useHomeFilters(opts: {
     setSaleBusy(true);
     try { for (const p of saleInStock) await add(p.id, 1); }
     finally { setSaleBusy(false); }
+  }
+  async function addAllLowStock() {
+    if (!lowStockReady.length) return;
+    setLowBusy(true);
+    try { for (const p of lowStockReady) await add(p.id, 1); }
+    finally { setLowBusy(false); }
   }
 
   function clearAllFilters() {
@@ -351,10 +369,10 @@ export function useHomeFilters(opts: {
 
   return {
     sort, setSort, inStockOnly, setInStockOnly, onSaleOnly, setOnSaleOnly, lowStockOnly, setLowStockOnly,
-    favOnly, recentOnly, watchOnly, compareOnly, favIds, recentIds, watchIds, compareIdsLive, favBusy, watchBusy, recentBusy, compareBusy, saleBusy, copied,
-    filtered, recentProducts, favProducts, watchProducts, compareProducts, saleProducts, favInStock, recentInStock, watchInStock, compareInStock, saleInStock, watchBackCount,
+    favOnly, recentOnly, watchOnly, compareOnly, favIds, recentIds, watchIds, compareIdsLive, favBusy, watchBusy, recentBusy, compareBusy, saleBusy, lowBusy, copied,
+    filtered, recentProducts, favProducts, watchProducts, compareProducts, saleProducts, lowStockProducts, favInStock, recentInStock, watchInStock, compareInStock, saleInStock, lowStockReady, watchBackCount,
     setFavFilter, setWatchFilter, setRecentFilter, setCompareFilter, pick, copyLink,
-    addAllFavorites, addAllRecentInStock, addAllWatchInStock, addAllCompareInStock, addAllSaleInStock, clearFavorites, clearRecentViews, clearRestockWatch, clearCompare,
+    addAllFavorites, addAllRecentInStock, addAllWatchInStock, addAllCompareInStock, addAllSaleInStock, addAllLowStock, clearFavorites, clearRecentViews, clearRestockWatch, clearCompare,
     clearAllFilters, filtersActive,
     query, category,
   };
