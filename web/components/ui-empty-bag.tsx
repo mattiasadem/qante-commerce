@@ -17,6 +17,9 @@ export function EmptyBag({ onClose }: { onClose?: () => void }) {
         <Link className="btn" href="/?watch=1" data-cta="empty-to-watch" onClick={() => onClose?.()}>
           Beklediklerime bak
         </Link>
+        <Link className="btn" href="/?cmp=1" data-cta="empty-to-compare" onClick={() => onClose?.()}>
+          Karşılaştırılanlara bak
+        </Link>
       </div>
     </div>
   );

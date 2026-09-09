@@ -23,13 +23,15 @@ export default async function HomePage({
     low?: string;
     recent?: string;
     watch?: string;
+    cmp?: string;
   }>;
 }) {
-  const { q, cat, fav, sort, stock, sale, low, recent, watch } = await searchParams;
+  const { q, cat, fav, sort, stock, sale, low, recent, watch, cmp } = await searchParams;
   const products = filterCatalog(q, cat);
   const initialFav = truthy(fav);
   const initialWatch = truthy(watch) && !initialFav;
-  const initialRecent = truthy(recent) && !initialFav && !initialWatch;
+  const initialCompare = truthy(cmp) && !initialFav && !initialWatch;
+  const initialRecent = truthy(recent) && !initialFav && !initialWatch && !initialCompare;
   const initialSort = (sort && SORT_OK.has(sort) ? sort : "default") as
     | "default"
     | "price_asc"
@@ -49,6 +51,7 @@ export default async function HomePage({
         initialLow={truthy(low)}
         initialRecent={initialRecent}
         initialWatch={initialWatch}
+        initialCompare={initialCompare}
         greeting={greeting()}
         dateLabel={shortDate()}
       />
