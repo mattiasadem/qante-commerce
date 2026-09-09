@@ -16,6 +16,7 @@ export function HomeView({
   initialStock = false,
   initialSale = false,
   initialLow = false,
+  initialFeat = false,
   initialRecent = false,
   initialWatch = false,
   initialCompare = false,
@@ -31,6 +32,7 @@ export function HomeView({
   initialStock?: boolean;
   initialSale?: boolean;
   initialLow?: boolean;
+  initialFeat?: boolean;
   initialRecent?: boolean;
   initialWatch?: boolean;
   initialCompare?: boolean;
@@ -38,23 +40,23 @@ export function HomeView({
   dateLabel: string;
 }) {
   const h = useHomeFilters({
-    products, query, category, initialFav, initialSort, initialStock, initialSale, initialLow, initialRecent, initialWatch, initialCompare,
+    products, query, category, initialFav, initialSort, initialStock, initialSale, initialLow, initialFeat, initialRecent, initialWatch, initialCompare,
   });
   const listMode = h.favOnly || h.recentOnly || h.watchOnly || h.compareOnly;
   const showFeatured =
-    !query && !category && featured.length && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !listMode;
+    !query && !category && featured.length && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !h.featuredOnly && !listMode;
   const showRecentRail =
-    !query && !category && h.recentProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !listMode;
+    !query && !category && h.recentProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !h.featuredOnly && !listMode;
   const showFavRail =
-    !query && !category && h.favProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !listMode;
+    !query && !category && h.favProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !h.featuredOnly && !listMode;
   const showWatchRail =
-    !query && !category && h.watchProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !listMode;
+    !query && !category && h.watchProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !h.featuredOnly && !listMode;
   const showCompareRail =
-    !query && !category && h.compareProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !listMode;
+    !query && !category && h.compareProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !h.featuredOnly && !listMode;
   const showSaleRail =
-    !query && !category && h.saleProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !listMode;
+    !query && !category && h.saleProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !h.featuredOnly && !listMode;
   const showLowRail =
-    !query && !category && h.lowStockProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !listMode;
+    !query && !category && h.lowStockProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !h.featuredOnly && !listMode;
 
   return (
     <div className="grid-wrap">
@@ -87,6 +89,12 @@ export function HomeView({
         {h.lowStockOnly && h.lowStockReady.length ? (
           <button className="chip on" type="button" data-cta="low-add-all" disabled={h.lowBusy} onClick={() => void h.addAllLowStock()}>
             {h.lowBusy ? "ekleniyor…" : `Tümünü sepete ekle · ${h.lowStockReady.length}`}
+          </button>
+        ) : null}
+        <button className={`chip ${h.featuredOnly ? "on" : ""}`} type="button" aria-pressed={h.featuredOnly} data-filter="featured" onClick={() => h.setFeaturedOnly((v) => !v)}>Öne çıkan</button>
+        {h.featuredOnly && h.featuredInStock.length ? (
+          <button className="chip on" type="button" data-cta="feat-add-all" disabled={h.featBusy} onClick={() => void h.addAllFeatured()}>
+            {h.featBusy ? "ekleniyor…" : `Tümünü sepete ekle · ${h.featuredInStock.length}`}
           </button>
         ) : null}
         <button className={`chip ${h.favOnly ? "on" : ""}`} type="button" aria-pressed={h.favOnly} data-filter="favorites" onClick={() => h.setFavFilter(!h.favOnly)}>
@@ -306,16 +314,33 @@ export function HomeView({
       ) : null}
       {showFeatured ? (
         <>
-          <div className="section-label">Öne çıkan</div>
-          <div className="featured">{featured.map((p) => (<ProductCard key={p.id} product={p} />))}</div>
+          <div className="section-label" style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <span>Öne çıkan · {h.featuredProducts.length || featured.length}</span>
+            {h.featuredInStock.length ? (
+              <button
+                className="chip on"
+                type="button"
+                data-cta="feat-rail-add-all"
+                disabled={h.featBusy}
+                onClick={() => void h.addAllFeatured()}
+              >
+                {h.featBusy ? "ekleniyor…" : `Tümünü sepete · ${h.featuredInStock.length}`}
+              </button>
+            ) : null}
+            <Link className="chip" href="/?feat=1" data-cta="feat-rail-see-all">
+              Tümünü gör
+            </Link>
+          </div>
+          <div className="featured" data-rail="featured">{(h.featuredProducts.length ? h.featuredProducts : featured).slice(0, 4).map((p) => (<ProductCard key={p.id} product={p} />))}</div>
         </>
       ) : null}
       <div className="section-label">
-        {query ? `${h.filtered.length} sonuç · ${query}` : h.compareOnly ? `Karşılaştırılanlar · ${h.filtered.length}` : h.favOnly ? `Favoriler · ${h.filtered.length}` : h.recentOnly ? `Son bakılanlar · ${h.filtered.length}` : h.watchOnly ? `Beklediklerim · ${h.filtered.length}` : h.lowStockOnly ? `Az stok · ${h.filtered.length}` : category ? category : "Katalog"}
+        {query ? `${h.filtered.length} sonuç · ${query}` : h.compareOnly ? `Karşılaştırılanlar · ${h.filtered.length}` : h.favOnly ? `Favoriler · ${h.filtered.length}` : h.recentOnly ? `Son bakılanlar · ${h.filtered.length}` : h.watchOnly ? `Beklediklerim · ${h.filtered.length}` : h.featuredOnly ? `Öne çıkan · ${h.filtered.length}` : h.lowStockOnly ? `Az stok · ${h.filtered.length}` : category ? category : "Katalog"}
         {h.sort !== "default" ? ` · ${SORTS.find((s) => s.id === h.sort)?.label}` : ""}
         {h.inStockOnly ? " · stokta" : ""}
         {h.onSaleOnly ? " · indirimli" : ""}
-        {h.lowStockOnly && (query || category || h.favOnly || h.recentOnly || h.watchOnly || h.compareOnly || h.onSaleOnly) ? " · az stok" : ""}
+        {h.featuredOnly && (query || category || h.favOnly || h.recentOnly || h.watchOnly || h.compareOnly || h.onSaleOnly || h.lowStockOnly) ? " · öne çıkan" : ""}
+        {h.lowStockOnly && (query || category || h.favOnly || h.recentOnly || h.watchOnly || h.compareOnly || h.onSaleOnly || h.featuredOnly) ? " · az stok" : ""}
       </div>
       <ProductGrid
         products={h.filtered}
@@ -328,7 +353,9 @@ export function HomeView({
                 ? "Favori yok"
                 : h.recentOnly
                   ? "Son bakılan yok"
-                  : h.onSaleOnly
+                  : h.featuredOnly
+                    ? "Öne çıkan yok"
+                    : h.onSaleOnly
                     ? "İndirimli yok"
                     : h.lowStockOnly
                       ? "Az stok yok"
@@ -343,6 +370,8 @@ export function HomeView({
                 ? "Karttaki kalple favoriye ekle."
                 : h.recentOnly
                   ? "Ürün sayfalarına bakınca burada birikir."
+                  : h.featuredOnly
+                    ? "Şu an öne çıkan ürün yok; filtreyi kapat veya başka kategori dene."
                   : h.onSaleOnly
                     ? "Şu an indirimli ürün yok; filtreyi kapat veya başka kategori dene."
                     : h.lowStockOnly
