@@ -73,6 +73,7 @@ export function CartPageView() {
             <Link className="btn" href="/?cmp=1" data-cta="empty-to-compare">Karşılaştırılanlara bak</Link>
             <Link className="btn" href="/?sale=1" data-cta="empty-to-sale">İndirimlilere bak</Link>
             <Link className="btn" href="/?low=1" data-cta="empty-to-low">Az stoka bak</Link>
+            <Link className="btn" href="/?oos=1" data-cta="empty-to-oos">Tükenene bak</Link>
           </p>
         </div>
       ) : (
