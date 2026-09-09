@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { useAsk, useCart } from "@/components/ui-shell-providers";
 import { CompareTray } from "@/components/ui-compare";
+import { useCompare } from "@/components/ui-compare-model";
 import { Logo } from "@/components/ui-shell-chrome";
 import {
   CartDrawer,
@@ -24,6 +25,8 @@ export function StoreShell({ children }: { children: ReactNode }) {
   const favCount = useFavCount();
   const watchCount = useWatchCount();
   const recentCount = useRecentCount();
+  const { items: compareItems } = useCompare();
+  const compareCount = compareItems.length;
   const favOn = path === "/" && (search.get("fav") === "1" || search.get("fav") === "true");
   const watchOn = path === "/" && (search.get("watch") === "1" || search.get("watch") === "true") && !favOn;
   const recentOn =
@@ -31,6 +34,12 @@ export function StoreShell({ children }: { children: ReactNode }) {
     (search.get("recent") === "1" || search.get("recent") === "true") &&
     !favOn &&
     !watchOn;
+  const cmpOn =
+    path === "/" &&
+    (search.get("cmp") === "1" || search.get("cmp") === "true") &&
+    !favOn &&
+    !watchOn &&
+    !recentOn;
   return (
     <>
       <header className="header">
@@ -63,6 +72,14 @@ export function StoreShell({ children }: { children: ReactNode }) {
           >
             Takip{watchCount > 0 ? <span className="badge">{watchCount}</span> : null}
           </Link>
+          <Link
+            href="/?cmp=1"
+            className={`icon-btn ${cmpOn ? "on" : ""}`}
+            data-cta="nav-compare"
+            aria-label="Karşılaştırılanlar"
+          >
+            Karşılaştır{compareCount > 0 ? <span className="badge">{compareCount}</span> : null}
+          </Link>
           <Link href="/siparislerim" className={`icon-btn ${path.startsWith("/siparislerim") ? "on" : ""}`} data-cta="my-orders">Siparişlerim</Link>
           <Link href="/merchant" className="icon-btn">Operatör</Link>
           <button className="icon-btn" type="button" onClick={() => setCartOpen(true)} aria-label="Sepet">
@@ -74,10 +91,11 @@ export function StoreShell({ children }: { children: ReactNode }) {
       <CompareTray />
       {children}
       <nav className="dock" aria-label="Mobil">
-        <Link href="/" className={path === "/" && !favOn && !watchOn && !recentOn ? "on" : ""}>Mağaza</Link>
+        <Link href="/" className={path === "/" && !favOn && !watchOn && !recentOn && !cmpOn ? "on" : ""}>Mağaza</Link>
         <Link href="/?fav=1" className={favOn ? "on" : ""} data-cta="dock-favorites">Favori{favCount > 0 ? ` ${favCount}` : ""}</Link>
         <Link href="/?recent=1" className={recentOn ? "on" : ""} data-cta="dock-recent">Geçmiş{recentCount > 0 ? ` ${recentCount}` : ""}</Link>
         <Link href="/?watch=1" className={watchOn ? "on" : ""} data-cta="dock-restock-watch">Takip{watchCount > 0 ? ` ${watchCount}` : ""}</Link>
+        <Link href="/?cmp=1" className={cmpOn ? "on" : ""} data-cta="dock-compare">Karşılaştır{compareCount > 0 ? ` ${compareCount}` : ""}</Link>
         <Link href="/siparislerim" className={path.startsWith("/siparislerim") ? "on" : ""}>Sipariş</Link>
         <button type="button" onClick={() => setSheetOpen(true)}>Asistan</button>
         <button type="button" className={path === "/sepet" ? "on" : ""} onClick={() => setCartOpen(true)}>
