@@ -11,7 +11,7 @@ export default function SiparislerPage() {
       <header className="ops-head">
         <h1>Siparişler</h1>
         <p className="lede">
-          Mağaza checkout + seed. URL (filter/pref/cat/q/sort/focus) + Kargola ve toplu aksiyonlar yerel deftere yazar; ikas'a gitmez.
+          Mağaza checkout + seed. URL yazar (filter/pref/cat/q/sort/focus) + Linki kopyala · Kargola ve toplu aksiyonlar yerel deftere yazar; ikas'a gitmez.
         </p>
       </header>
       <Suspense fallback={<p className="muted">siparişler…</p>}>
