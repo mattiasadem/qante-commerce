@@ -21,12 +21,13 @@ export default async function HomePage({
     stock?: string;
     sale?: string;
     low?: string;
+    feat?: string;
     recent?: string;
     watch?: string;
     cmp?: string;
   }>;
 }) {
-  const { q, cat, fav, sort, stock, sale, low, recent, watch, cmp } = await searchParams;
+  const { q, cat, fav, sort, stock, sale, low, feat, recent, watch, cmp } = await searchParams;
   const products = filterCatalog(q, cat);
   const initialFav = truthy(fav);
   const initialWatch = truthy(watch) && !initialFav;
@@ -49,6 +50,7 @@ export default async function HomePage({
         initialStock={truthy(stock)}
         initialSale={truthy(sale)}
         initialLow={truthy(low)}
+        initialFeat={truthy(feat)}
         initialRecent={initialRecent}
         initialWatch={initialWatch}
         initialCompare={initialCompare}

@@ -66,11 +66,13 @@ export function CartPageView() {
           <p>Keten, yün veya ev. Gridden bir parça ekle.</p>
           <p style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
             <Link className="btn" href="/">Mağazaya bak</Link>
+            <Link className="btn" href="/?feat=1" data-cta="empty-to-feat">Öne çıkana bak</Link>
             <Link className="btn" href="/?fav=1" data-cta="empty-to-favorites">Favorilere bak</Link>
             <Link className="btn" href="/?recent=1" data-cta="empty-to-recent">Son bakılanlara bak</Link>
             <Link className="btn" href="/?watch=1" data-cta="empty-to-watch">Beklediklerime bak</Link>
             <Link className="btn" href="/?cmp=1" data-cta="empty-to-compare">Karşılaştırılanlara bak</Link>
             <Link className="btn" href="/?sale=1" data-cta="empty-to-sale">İndirimlilere bak</Link>
+            <Link className="btn" href="/?low=1" data-cta="empty-to-low">Az stoka bak</Link>
           </p>
         </div>
       ) : (

@@ -8,6 +8,9 @@ export function EmptyBag({ onClose }: { onClose?: () => void }) {
       <h3>Sepet henüz boş</h3>
       <p>Keten, yün veya ev. Gridden bir parça ekle.</p>
       <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+        <Link className="btn" href="/?feat=1" data-cta="empty-to-feat" onClick={() => onClose?.()}>
+          Öne çıkana bak
+        </Link>
         <Link className="btn" href="/?fav=1" data-cta="empty-to-favorites" onClick={() => onClose?.()}>
           Favorilere bak
         </Link>
