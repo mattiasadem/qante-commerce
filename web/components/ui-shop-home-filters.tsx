@@ -1,11 +1,26 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { Product } from "@/lib/core";
 import { useAsk, useCart } from "@/components/ui-shell";
 import { SORTS, isLowStock, useFavorites, useRecentViews, useRestockWatch, type SortId } from "@/components/ui-shop-core";
 
 const SORT_IDS = new Set<SortId>(SORTS.map((s) => s.id));
+
+
+function parseCompareParam(raw?: string | null): string[] {
+  if (!raw) return [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const part of raw.split(/[,+|]/)) {
+    const id = part.trim();
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+    if (out.length >= 3) break;
+  }
+  return out;
+}
 
 export function parseSort(v?: string | null): SortId {
   if (v && SORT_IDS.has(v as SortId) && v !== "default") return v as SortId;
@@ -22,6 +37,7 @@ export function buildHomeQs(opts: {
   favOnly: boolean;
   recentOnly: boolean;
   watchOnly: boolean;
+  compareIds?: string[];
 }) {
   const params = new URLSearchParams();
   if (opts.query) params.set("q", opts.query);
@@ -33,6 +49,8 @@ export function buildHomeQs(opts: {
   if (opts.favOnly) params.set("fav", "1");
   if (opts.recentOnly) params.set("recent", "1");
   if (opts.watchOnly) params.set("watch", "1");
+  const compare = (opts.compareIds ?? []).map((x) => x.trim()).filter(Boolean).slice(0, 3);
+  if (compare.length) params.set("compare", compare.join(","));
   return params.toString();
 }
 
@@ -62,6 +80,8 @@ export function useHomeFilters(opts: {
   } = opts;
   const { requestAsk } = useAsk();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const compareIds = useMemo(() => parseCompareParam(searchParams.get("compare")), [searchParams]);
   const { ids: favIds, clear: clearFavorites } = useFavorites();
   const { ids: recentIds, clear: clearRecentViews } = useRecentViews();
   const { ids: watchIds, clear: clearRestockWatch } = useRestockWatch();
@@ -95,7 +115,9 @@ export function useHomeFilters(opts: {
   }, [initialRecent, initialFav, initialWatch]);
 
   useEffect(() => {
-    const next = buildHomeQs({ query, category, sort, inStockOnly, onSaleOnly, lowStockOnly, favOnly, recentOnly, watchOnly });
+    const next = buildHomeQs({ query, category, sort, inStockOnly, onSaleOnly, lowStockOnly, favOnly, recentOnly, watchOnly,
+      compareIds,
+    });
     const cur = buildHomeQs({
       query, category,
       sort: parseSort(initialSort),
@@ -105,10 +127,11 @@ export function useHomeFilters(opts: {
       favOnly: Boolean(initialFav),
       recentOnly: Boolean(initialRecent) && !initialFav && !initialWatch,
       watchOnly: Boolean(initialWatch) && !initialFav,
+      compareIds,
     });
     if (next === cur) return;
     router.replace(next ? `/?${next}` : "/", { scroll: false });
-  }, [query, category, sort, inStockOnly, onSaleOnly, lowStockOnly, favOnly, recentOnly, watchOnly, initialSort, initialStock, initialSale, initialLow, initialFav, initialRecent, initialWatch, router]);
+  }, [query, category, sort, inStockOnly, onSaleOnly, lowStockOnly, favOnly, recentOnly, watchOnly, compareIds, initialSort, initialStock, initialSale, initialLow, initialFav, initialRecent, initialWatch, router]);
 
   function setFavFilter(next: boolean) {
     setFavOnly(next);
@@ -125,11 +148,15 @@ export function useHomeFilters(opts: {
   function pick(cat: string) {
     const next = category === cat ? "" : cat;
     requestAsk(next ? `${next} bakıyorum` : "öne çıkanlar");
-    const qs = buildHomeQs({ query, category: next || undefined, sort, inStockOnly, onSaleOnly, lowStockOnly, favOnly, recentOnly, watchOnly });
+    const qs = buildHomeQs({ query, category: next || undefined, sort, inStockOnly, onSaleOnly, lowStockOnly, favOnly, recentOnly, watchOnly,
+      compareIds,
+    });
     router.push(qs ? `/?${qs}` : "/");
   }
   async function copyLink() {
-    const qs = buildHomeQs({ query, category, sort, inStockOnly, onSaleOnly, lowStockOnly, favOnly, recentOnly, watchOnly });
+    const qs = buildHomeQs({ query, category, sort, inStockOnly, onSaleOnly, lowStockOnly, favOnly, recentOnly, watchOnly,
+      compareIds,
+    });
     const path = qs ? `/?${qs}` : "/";
     const href = typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
     try {
