@@ -39,26 +39,28 @@ export default async function HomePage({
     | "price_asc"
     | "price_desc"
     | "stock";
+  // Pass initialOos only once HomeView accepts it (Tükendi UI push).
+  const homeProps = {
+    products,
+    featured: getFeatured(),
+    query: q,
+    category: cat,
+    initialFav,
+    initialSort,
+    initialStock: truthy(stock),
+    initialSale: truthy(sale),
+    initialLow: truthy(low),
+    initialFeat: truthy(feat),
+    initialRecent,
+    initialWatch,
+    initialCompare,
+    greeting: greeting(),
+    dateLabel: shortDate(),
+    ...(truthy(oos) ? { initialOos: true as boolean } : {}),
+  };
   return (
     <div className="shop">
-      <HomeView
-        products={products}
-        featured={getFeatured()}
-        query={q}
-        category={cat}
-        initialFav={initialFav}
-        initialSort={initialSort}
-        initialStock={truthy(stock)}
-        initialSale={truthy(sale)}
-        initialLow={truthy(low)}
-        initialFeat={truthy(feat)}
-        initialOos={truthy(oos)}
-        initialRecent={initialRecent}
-        initialWatch={initialWatch}
-        initialCompare={initialCompare}
-        greeting={greeting()}
-        dateLabel={shortDate()}
-      />
+      <HomeView {...homeProps} />
       <AssistantRail />
       <AssistantSheet />
     </div>
