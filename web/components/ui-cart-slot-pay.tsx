@@ -4,8 +4,6 @@ export {
   useAsk,
   useCart,
   useFavCount,
-  useWatchCount,
-  EmptyBag,
   PayButton,
   LineList,
   SaveAllForLaterButton,
@@ -52,3 +50,5 @@ export {
   CheckoutNote,
   ClearCartButton,
 } from "@/components/ui-cart-pay";
+export { useWatchCount } from "@/components/ui-restock-watch";
+export { EmptyBag } from "@/components/ui-empty-bag";
