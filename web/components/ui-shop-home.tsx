@@ -51,6 +51,8 @@ export function HomeView({
     !query && !category && h.watchProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !listMode;
   const showCompareRail =
     !query && !category && h.compareProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !listMode;
+  const showSaleRail =
+    !query && !category && h.saleProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !listMode;
 
   return (
     <div className="grid-wrap">
@@ -74,6 +76,11 @@ export function HomeView({
         ))}
         <button className={`chip ${h.inStockOnly ? "on" : ""}`} type="button" aria-pressed={h.inStockOnly} data-filter="in-stock" onClick={() => h.setInStockOnly((v) => !v)}>Sadece stokta</button>
         <button className={`chip ${h.onSaleOnly ? "on" : ""}`} type="button" aria-pressed={h.onSaleOnly} data-filter="on-sale" onClick={() => h.setOnSaleOnly((v) => !v)}>İndirimli</button>
+        {h.onSaleOnly && h.saleInStock.length ? (
+          <button className="chip on" type="button" data-cta="sale-add-all" disabled={h.saleBusy} onClick={() => void h.addAllSaleInStock()}>
+            {h.saleBusy ? "ekleniyor…" : `Tümünü sepete ekle · ${h.saleInStock.length}`}
+          </button>
+        ) : null}
         <button className={`chip ${h.lowStockOnly ? "on" : ""}`} type="button" aria-pressed={h.lowStockOnly} data-filter="low-stock" onClick={() => h.setLowStockOnly((v) => !v)}>Az stok</button>
         <button className={`chip ${h.favOnly ? "on" : ""}`} type="button" aria-pressed={h.favOnly} data-filter="favorites" onClick={() => h.setFavFilter(!h.favOnly)}>
           Favoriler{h.favIds.length ? ` · ${h.favIds.length}` : ""}
@@ -126,6 +133,28 @@ export function HomeView({
           </button>
         ) : null}
       </div>
+      {showSaleRail ? (
+        <>
+          <div className="section-label" style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <span>İndirimliler · {h.saleProducts.length}</span>
+            {h.saleInStock.length ? (
+              <button
+                className="chip on"
+                type="button"
+                data-cta="sale-rail-add-all"
+                disabled={h.saleBusy}
+                onClick={() => void h.addAllSaleInStock()}
+              >
+                {h.saleBusy ? "ekleniyor…" : `Tümünü sepete · ${h.saleInStock.length}`}
+              </button>
+            ) : null}
+            <Link className="chip" href="/?sale=1" data-cta="sale-rail-see-all">
+              Tümünü gör
+            </Link>
+          </div>
+          <div className="featured" data-rail="sale">{h.saleProducts.slice(0, 4).map((p) => (<ProductCard key={p.id} product={p} />))}</div>
+        </>
+      ) : null}
       {showCompareRail ? (
         <>
           <div className="section-label" style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
@@ -270,7 +299,9 @@ export function HomeView({
                 ? "Favori yok"
                 : h.recentOnly
                   ? "Son bakılan yok"
-                  : undefined
+                  : h.onSaleOnly
+                    ? "İndirimli yok"
+                    : undefined
         }
         emptyHint={
           h.compareOnly
@@ -281,7 +312,9 @@ export function HomeView({
                 ? "Karttaki kalple favoriye ekle."
                 : h.recentOnly
                   ? "Ürün sayfalarına bakınca burada birikir."
-                  : undefined
+                  : h.onSaleOnly
+                    ? "Şu an indirimli ürün yok; filtreyi kapat veya başka kategori dene."
+                    : undefined
         }
       />
       <ShopFooter />
