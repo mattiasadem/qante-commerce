@@ -13,6 +13,7 @@ import {
   PayButton,
   EmptyBag,
   useFavCount,
+  useWatchCount,
   LineList,
   SaveAllForLaterButton,
   CouponTotals,
@@ -128,7 +129,9 @@ export function StoreShell({ children }: { children: ReactNode }) {
   const path = usePathname();
   const search = useSearchParams();
   const favCount = useFavCount();
+  const watchCount = useWatchCount();
   const favOn = path === "/" && (search.get("fav") === "1" || search.get("fav") === "true");
+  const watchOn = path === "/" && (search.get("watch") === "1" || search.get("watch") === "true") && !favOn;
   return (
     <>
       <header className="header">
@@ -145,6 +148,14 @@ export function StoreShell({ children }: { children: ReactNode }) {
           <Link href="/?fav=1" className={`icon-btn ${favOn ? "on" : ""}`} data-cta="nav-favorites" aria-label="Favoriler">
             Favoriler{favCount > 0 ? <span className="badge">{favCount}</span> : null}
           </Link>
+          <Link
+            href="/?watch=1"
+            className={`icon-btn ${watchOn ? "on" : ""}`}
+            data-cta="nav-restock-watch"
+            aria-label="Beklediklerim"
+          >
+            Takip{watchCount > 0 ? <span className="badge">{watchCount}</span> : null}
+          </Link>
           <Link href="/siparislerim" className={`icon-btn ${path.startsWith("/siparislerim") ? "on" : ""}`} data-cta="my-orders">Siparişlerim</Link>
           <Link href="/merchant" className="icon-btn">Operatör</Link>
           <button className="icon-btn" type="button" onClick={() => setCartOpen(true)} aria-label="Sepet">
@@ -156,8 +167,9 @@ export function StoreShell({ children }: { children: ReactNode }) {
       <CompareTray />
       {children}
       <nav className="dock" aria-label="Mobil">
-        <Link href="/" className={path === "/" && !favOn ? "on" : ""}>Mağaza</Link>
+        <Link href="/" className={path === "/" && !favOn && !watchOn ? "on" : ""}>Mağaza</Link>
         <Link href="/?fav=1" className={favOn ? "on" : ""} data-cta="dock-favorites">Favori{favCount > 0 ? ` ${favCount}` : ""}</Link>
+        <Link href="/?watch=1" className={watchOn ? "on" : ""} data-cta="dock-restock-watch">Takip{watchCount > 0 ? ` ${watchCount}` : ""}</Link>
         <Link href="/siparislerim" className={path.startsWith("/siparislerim") ? "on" : ""}>Sipariş</Link>
         <button type="button" onClick={() => setSheetOpen(true)}>Asistan</button>
         <button type="button" className={path === "/sepet" ? "on" : ""} onClick={() => setCartOpen(true)}>
@@ -190,6 +202,7 @@ export function CartPageView() {
           <p style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
             <Link className="btn" href="/">Mağazaya bak</Link>
             <Link className="btn" href="/?fav=1" data-cta="empty-to-favorites">Favorilere bak</Link>
+            <Link className="btn" href="/?watch=1" data-cta="empty-to-watch">Beklediklerime bak</Link>
           </p>
         </div>
       ) : (
