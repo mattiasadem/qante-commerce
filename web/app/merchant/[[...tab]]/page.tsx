@@ -68,7 +68,7 @@ export default async function MerchantPage({
   } else if (tab === "siparisler") {
     body = (
       <>
-        <Head title="Siparişler" lede="Mağaza checkout + seed. URL (filter/pref/cat/q/sort/focus) + Kargola ve toplu aksiyonlar yerel deftere yazar; ikas'a gitmez." />
+        <Head title="Siparişler" lede="Mağaza checkout + seed. URL yazar (filter/pref/cat/q/sort/focus) + Linki kopyala · Kargola ve toplu aksiyonlar yerel deftere yazar; ikas'a gitmez." />
         <Suspense fallback={<p className="muted">siparişler…</p>}>
           <OrdersView orders={getOrders()} issues={issues} />
         </Suspense>
