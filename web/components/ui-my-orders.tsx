@@ -220,9 +220,22 @@ export function MyOrdersView() {
           <div className="mark" />
           <h3>Henüz demo sipariş yok</h3>
           <p>
-            Sepetten <strong>Ödemeye geç</strong> ile bir sipariş yaz; burada listelenir.{" "}
-            <Link href="/">Mağazaya bak</Link>
+            Sepetten <strong>Ödemeye geç</strong> ile bir sipariş yaz; burada listelenir.
           </p>
+          <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+            <Link className="btn" href="/" data-cta="my-orders-empty-to-shop">
+              Mağazaya bak
+            </Link>
+            <Link className="btn" href="/?sale=1" data-cta="my-orders-empty-to-sale">
+              İndirimlilere bak
+            </Link>
+            <Link className="btn" href="/?fav=1" data-cta="my-orders-empty-to-favorites">
+              Favorilere bak
+            </Link>
+            <Link className="btn" href="/sepet" data-cta="my-orders-empty-to-cart">
+              Sepete git
+            </Link>
+          </div>
         </div>
       ) : (
         <>
