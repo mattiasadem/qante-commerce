@@ -4,6 +4,7 @@ export {
   useAsk,
   useCart,
   useFavCount,
+  useWatchCount,
   EmptyBag,
   PayButton,
   LineList,
