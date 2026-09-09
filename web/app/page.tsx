@@ -2,10 +2,39 @@ export const dynamic = "force-dynamic";
 import { AssistantRail, AssistantSheet, HomeView } from "@/components/ui-shop";
 import { filterCatalog, getFeatured, greeting, shortDate } from "@/lib/core";
 
-export default async function HomePage({ searchParams }: { searchParams: Promise<{ q?: string; cat?: string; fav?: string }> }) {
-  const { q, cat, fav } = await searchParams;
+const SORT_OK = new Set(["default", "price_asc", "price_desc", "stock"]);
+
+function truthy(v?: string) {
+  if (!v) return false;
+  const t = v.trim().toLowerCase();
+  return t === "1" || t === "true" || t === "yes";
+}
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    q?: string;
+    cat?: string;
+    fav?: string;
+    sort?: string;
+    stock?: string;
+    sale?: string;
+    low?: string;
+    recent?: string;
+    watch?: string;
+  }>;
+}) {
+  const { q, cat, fav, sort, stock, sale, low, recent, watch } = await searchParams;
   const products = filterCatalog(q, cat);
-  const initialFav = fav === "1" || fav === "true" || fav === "yes";
+  const initialFav = truthy(fav);
+  const initialWatch = truthy(watch) && !initialFav;
+  const initialRecent = truthy(recent) && !initialFav && !initialWatch;
+  const initialSort = (sort && SORT_OK.has(sort) ? sort : "default") as
+    | "default"
+    | "price_asc"
+    | "price_desc"
+    | "stock";
   return (
     <div className="shop">
       <HomeView
@@ -14,6 +43,12 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         query={q}
         category={cat}
         initialFav={initialFav}
+        initialSort={initialSort}
+        initialStock={truthy(stock)}
+        initialSale={truthy(sale)}
+        initialLow={truthy(low)}
+        initialRecent={initialRecent}
+        initialWatch={initialWatch}
         greeting={greeting()}
         dateLabel={shortDate()}
       />
