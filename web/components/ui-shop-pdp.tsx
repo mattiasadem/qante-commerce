@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Product } from "@/lib/core";
 import { RETURN_DAYS, SHIP_FREE, money } from "@/lib/core";
 import { CheckoutNote, LineList, OrderNoteField, PayButton, ShipBar, ShopFooter, useAsk, useCart, ClearCartButton, SaveAllForLaterButton } from "@/components/ui-shell";
@@ -106,19 +107,77 @@ function PdpStickyBar({
   );
 }
 
+
+function buildPdpQs(opts: { color?: string; size?: string; qty: number }): string {
+  const params = new URLSearchParams();
+  if (opts.color) params.set("color", opts.color);
+  if (opts.size) params.set("size", opts.size);
+  if (opts.qty > 1) params.set("qty", String(opts.qty));
+  return params.toString();
+}
+
 export function PdpView({ product, related }: { product: Product; related: Product[] }) {
+  const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const colorIds = useMemo(() => new Set((product.colors ?? []).map((c) => c.id)), [product.colors]);
+  const sizeSet = useMemo(() => new Set(product.sizes ?? []), [product.sizes]);
+  const colorFromUrl = params.get("color");
+  const sizeFromUrl = params.get("size");
+  const qtyFromUrl = params.get("qty");
+  const initialColor = colorFromUrl && colorIds.has(colorFromUrl) ? colorFromUrl : product.colors?.[0]?.id;
+  const initialSize = sizeFromUrl && sizeSet.has(sizeFromUrl) ? sizeFromUrl : (product.sizes?.[1] ?? product.sizes?.[0]);
+  const initialQty = (() => {
+    const n = Number(qtyFromUrl);
+    if (!Number.isFinite(n)) return 1;
+    return Math.min(Math.max(1, Math.floor(n)), Math.max(1, product.stock));
+  })();
   const [shot, setShot] = useState(0);
-  const [color, setColor] = useState(product.colors?.[0]?.id);
-  const [size, setSize] = useState(product.sizes?.[1] ?? product.sizes?.[0]);
-  const [qty, setQty] = useState(1);
+  const [color, setColor] = useState(initialColor);
+  const [size, setSize] = useState(initialSize);
+  const [qty, setQty] = useState(initialQty);
   const [sticky, setSticky] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const ctaRef = useRef<HTMLDivElement | null>(null);
   const out = product.stock <= 0;
   const maxQty = Math.max(1, product.stock);
   const colorName = product.colors?.find((c) => c.id === color)?.name;
+  const variantQs = useMemo(() => buildPdpQs({ color, size, qty }), [color, size, qty]);
   useEffect(() => {
     pushRecent(product.id);
   }, [product.id]);
+  useEffect(() => {
+    const c = params.get("color");
+    const s = params.get("size");
+    const q = params.get("qty");
+    setColor(c && colorIds.has(c) ? c : product.colors?.[0]?.id);
+    setSize(s && sizeSet.has(s) ? s : (product.sizes?.[1] ?? product.sizes?.[0]));
+    const n = Number(q);
+    setQty(Number.isFinite(n) ? Math.min(Math.max(1, Math.floor(n)), Math.max(1, product.stock)) : 1);
+    setShot(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- rehydrate only on product change
+  }, [product.id]);
+  useEffect(() => {
+    // Keep color/size/qty shareable in the URL (deep-link + Paylaş).
+    const next = variantQs ? `${pathname}?${variantQs}` : pathname;
+    const cur = new URLSearchParams(params.toString());
+    const want = new URLSearchParams(variantQs);
+    const same =
+      (cur.get("color") || null) === (want.get("color") || null) &&
+      (cur.get("size") || null) === (want.get("size") || null) &&
+      (cur.get("qty") || null) === (want.get("qty") || null);
+    if (same) return;
+    router.replace(next, { scroll: false });
+  }, [variantQs, pathname, router, params]);
+  async function copyLink() {
+    const path = variantQs ? `${pathname}?${variantQs}` : pathname;
+    const href = typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
+    try {
+      await navigator.clipboard.writeText(href);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 1600);
+    } catch { /* ignore */ }
+  }
   useEffect(() => {
     const el = ctaRef.current;
     if (!el) return;
@@ -193,7 +252,7 @@ export function PdpView({ product, related }: { product: Product; related: Produ
             <AddButton productId={product.id} qty={qty} variant={{ ...(colorName ? { color: colorName } : {}), ...(size ? { size } : {}) }} />
             <BuyNowButton productId={product.id} qty={qty} variant={{ ...(colorName ? { color: colorName } : {}), ...(size ? { size } : {}) }} />
             <FavoriteButton productId={product.id} />
-            <ShareButton productId={product.id} />
+            <ShareButton productId={product.id} search={variantQs} />
             <CompareButton product={product} />
           </div>
         ) : (
@@ -201,10 +260,15 @@ export function PdpView({ product, related }: { product: Product; related: Produ
             <AddButton productId={product.id} disabled />
             <NotifyRestockButton product={product} />
             <FavoriteButton productId={product.id} />
-            <ShareButton productId={product.id} />
+            <ShareButton productId={product.id} search={variantQs} />
             <CompareButton product={product} />
           </div>
         )}
+        <div className="chips" style={{ marginTop: 12 }} data-cta="pdp-link-rail">
+          <button className="chip" type="button" data-cta="pdp-copy-link" onClick={() => void copyLink()}>
+            {copiedLink ? "Kopyalandı" : "Linki kopyala"}
+          </button>
+        </div>
         <AskAboutProduct product={product} />
         {related.length ? (
           <>
