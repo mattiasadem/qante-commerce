@@ -23,6 +23,9 @@ export function EmptyBag({ onClose }: { onClose?: () => void }) {
         <Link className="btn" href="/?sale=1" data-cta="empty-to-sale" onClick={() => onClose?.()}>
           İndirimlilere bak
         </Link>
+        <Link className="btn" href="/?low=1" data-cta="empty-to-low" onClick={() => onClose?.()}>
+          Az stoka bak
+        </Link>
       </div>
     </div>
   );
