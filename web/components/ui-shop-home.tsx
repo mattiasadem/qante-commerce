@@ -71,6 +71,11 @@ export function HomeView({
         <button className={`chip ${h.recentOnly ? "on" : ""}`} type="button" aria-pressed={h.recentOnly} data-filter="recent" onClick={() => h.setRecentFilter(!h.recentOnly)}>
           Son bakılanlar{h.recentIds.length ? ` · ${h.recentIds.length}` : ""}
         </button>
+        {h.recentOnly && h.recentInStock.length ? (
+          <button className="chip on" type="button" data-cta="recent-add-all" disabled={h.recentBusy} onClick={() => void h.addAllRecentInStock()}>
+            {h.recentBusy ? "ekleniyor…" : `Tümünü sepete ekle · ${h.recentInStock.length}`}
+          </button>
+        ) : null}
         {h.recentOnly && h.recentIds.length ? (
           <button className="chip" type="button" data-cta="clear-recent" onClick={() => { h.clearRecentViews(); h.setRecentFilter(false); }}>Geçmişi temizle</button>
         ) : null}
