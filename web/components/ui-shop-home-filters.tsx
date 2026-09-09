@@ -88,6 +88,7 @@ export function useHomeFilters(opts: {
   const { add } = useCart();
   const [favBusy, setFavBusy] = useState(false);
   const [watchBusy, setWatchBusy] = useState(false);
+  const [recentBusy, setRecentBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [sort, setSort] = useState<SortId>(parseSort(initialSort));
   const [inStockOnly, setInStockOnly] = useState(Boolean(initialStock));
@@ -207,6 +208,7 @@ export function useHomeFilters(opts: {
     return recentIds.map((id) => map.get(id)).filter(Boolean) as Product[];
   }, [products, recentIds]);
   const favInStock = useMemo(() => filtered.filter((p) => p.stock > 0), [filtered]);
+  const recentInStock = useMemo(() => (recentOnly ? filtered.filter((p) => p.stock > 0) : []), [filtered, recentOnly]);
   const watchInStock = useMemo(() => (watchOnly ? filtered.filter((p) => p.stock > 0) : []), [filtered, watchOnly]);
   const watchBackCount = useMemo(
     () => products.filter((p) => watchIds.includes(p.id) && p.stock > 0).length,
@@ -219,6 +221,12 @@ export function useHomeFilters(opts: {
     try { for (const p of favInStock) await add(p.id, 1); }
     finally { setFavBusy(false); }
   }
+  async function addAllRecentInStock() {
+    if (!recentInStock.length) return;
+    setRecentBusy(true);
+    try { for (const p of recentInStock) await add(p.id, 1); }
+    finally { setRecentBusy(false); }
+  }
   async function addAllWatchInStock() {
     if (!watchInStock.length) return;
     setWatchBusy(true);
@@ -228,10 +236,10 @@ export function useHomeFilters(opts: {
 
   return {
     sort, setSort, inStockOnly, setInStockOnly, onSaleOnly, setOnSaleOnly, lowStockOnly, setLowStockOnly,
-    favOnly, recentOnly, watchOnly, favIds, recentIds, watchIds, favBusy, watchBusy, copied,
-    filtered, recentProducts, favInStock, watchInStock, watchBackCount,
+    favOnly, recentOnly, watchOnly, favIds, recentIds, watchIds, favBusy, watchBusy, recentBusy, copied,
+    filtered, recentProducts, favInStock, recentInStock, watchInStock, watchBackCount,
     setFavFilter, setWatchFilter, setRecentFilter, pick, copyLink,
-    addAllFavorites, addAllWatchInStock, clearFavorites, clearRecentViews, clearRestockWatch,
+    addAllFavorites, addAllRecentInStock, addAllWatchInStock, clearFavorites, clearRecentViews, clearRestockWatch,
     query, category,
   };
 }
