@@ -36,6 +36,7 @@ export function buildHomeQs(opts: {
   onSaleOnly: boolean;
   lowStockOnly: boolean;
   featuredOnly: boolean;
+  outOfStockOnly: boolean;
   favOnly: boolean;
   recentOnly: boolean;
   watchOnly: boolean;
@@ -50,6 +51,7 @@ export function buildHomeQs(opts: {
   if (opts.onSaleOnly) params.set("sale", "1");
   if (opts.lowStockOnly) params.set("low", "1");
   if (opts.featuredOnly) params.set("feat", "1");
+  if (opts.outOfStockOnly) params.set("oos", "1");
   if (opts.favOnly) params.set("fav", "1");
   if (opts.recentOnly) params.set("recent", "1");
   if (opts.watchOnly) params.set("watch", "1");
@@ -69,6 +71,7 @@ export function useHomeFilters(opts: {
   initialSale?: boolean;
   initialLow?: boolean;
   initialFeat?: boolean;
+  initialOos?: boolean;
   initialRecent?: boolean;
   initialWatch?: boolean;
   initialCompare?: boolean;
@@ -83,6 +86,7 @@ export function useHomeFilters(opts: {
     initialSale = false,
     initialLow = false,
     initialFeat = false,
+    initialOos = false,
     initialRecent = false,
     initialWatch = false,
     initialCompare = false,
@@ -103,12 +107,14 @@ export function useHomeFilters(opts: {
   const [saleBusy, setSaleBusy] = useState(false);
   const [lowBusy, setLowBusy] = useState(false);
   const [featBusy, setFeatBusy] = useState(false);
+  const [oosBusy, setOosBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [sort, setSort] = useState<SortId>(parseSort(initialSort));
   const [inStockOnly, setInStockOnly] = useState(Boolean(initialStock));
   const [onSaleOnly, setOnSaleOnly] = useState(Boolean(initialSale));
   const [lowStockOnly, setLowStockOnly] = useState(Boolean(initialLow));
   const [featuredOnly, setFeaturedOnly] = useState(Boolean(initialFeat));
+  const [outOfStockOnly, setOutOfStockOnly] = useState(Boolean(initialOos));
   const [favOnly, setFavOnly] = useState(Boolean(initialFav));
   const [watchOnly, setWatchOnly] = useState(Boolean(initialWatch) && !initialFav);
   const [compareOnly, setCompareOnly] = useState(Boolean(initialCompare) && !initialFav && !initialWatch);
@@ -119,6 +125,7 @@ export function useHomeFilters(opts: {
   useEffect(() => { setOnSaleOnly(Boolean(initialSale)); }, [initialSale]);
   useEffect(() => { setLowStockOnly(Boolean(initialLow)); }, [initialLow]);
   useEffect(() => { setFeaturedOnly(Boolean(initialFeat)); }, [initialFeat]);
+  useEffect(() => { setOutOfStockOnly(Boolean(initialOos)); }, [initialOos]);
   useEffect(() => {
     if (initialFav) { setFavOnly(true); setRecentOnly(false); setWatchOnly(false); setCompareOnly(false); }
     else setFavOnly(false);
@@ -137,7 +144,7 @@ export function useHomeFilters(opts: {
   }, [initialRecent, initialFav, initialWatch, initialCompare]);
 
   useEffect(() => {
-    const next = buildHomeQs({ query, category, sort, inStockOnly, onSaleOnly, lowStockOnly, featuredOnly, favOnly, recentOnly, watchOnly, compareOnly,
+    const next = buildHomeQs({ query, category, sort, inStockOnly, onSaleOnly, lowStockOnly, featuredOnly, outOfStockOnly, favOnly, recentOnly, watchOnly, compareOnly,
       compareIds,
     });
     const cur = buildHomeQs({
@@ -147,6 +154,7 @@ export function useHomeFilters(opts: {
       onSaleOnly: Boolean(initialSale),
       lowStockOnly: Boolean(initialLow),
       featuredOnly: Boolean(initialFeat),
+      outOfStockOnly: Boolean(initialOos),
       favOnly: Boolean(initialFav),
       recentOnly: Boolean(initialRecent) && !initialFav && !initialWatch && !initialCompare,
       watchOnly: Boolean(initialWatch) && !initialFav,
@@ -155,7 +163,7 @@ export function useHomeFilters(opts: {
     });
     if (next === cur) return;
     router.replace(next ? `/?${next}` : "/", { scroll: false });
-  }, [query, category, sort, inStockOnly, onSaleOnly, lowStockOnly, featuredOnly, favOnly, recentOnly, watchOnly, compareOnly, compareIds, initialSort, initialStock, initialSale, initialLow, initialFeat, initialFav, initialRecent, initialWatch, initialCompare, router]);
+  }, [query, category, sort, inStockOnly, onSaleOnly, lowStockOnly, featuredOnly, outOfStockOnly, favOnly, recentOnly, watchOnly, compareOnly, compareIds, initialSort, initialStock, initialSale, initialLow, initialFeat, initialOos, initialFav, initialRecent, initialWatch, initialCompare, router]);
 
   function setFavFilter(next: boolean) {
     setFavOnly(next);
@@ -176,13 +184,13 @@ export function useHomeFilters(opts: {
   function pick(cat: string) {
     const next = category === cat ? "" : cat;
     requestAsk(next ? `${next} bakıyorum` : "öne çıkanlar");
-    const qs = buildHomeQs({ query, category: next || undefined, sort, inStockOnly, onSaleOnly, lowStockOnly, featuredOnly, favOnly, recentOnly, watchOnly, compareOnly,
+    const qs = buildHomeQs({ query, category: next || undefined, sort, inStockOnly, onSaleOnly, lowStockOnly, featuredOnly, outOfStockOnly, favOnly, recentOnly, watchOnly, compareOnly,
       compareIds,
     });
     router.push(qs ? `/?${qs}` : "/");
   }
   async function copyLink() {
-    const qs = buildHomeQs({ query, category, sort, inStockOnly, onSaleOnly, lowStockOnly, featuredOnly, favOnly, recentOnly, watchOnly, compareOnly,
+    const qs = buildHomeQs({ query, category, sort, inStockOnly, onSaleOnly, lowStockOnly, featuredOnly, outOfStockOnly, favOnly, recentOnly, watchOnly, compareOnly,
       compareIds,
     });
     const path = qs ? `/?${qs}` : "/";
@@ -221,6 +229,7 @@ export function useHomeFilters(opts: {
       list.sort((a, b) => (order.get(a.id)! - order.get(b.id)!));
     }
     if (inStockOnly) list = list.filter((p) => p.stock > 0);
+    if (outOfStockOnly) list = list.filter((p) => p.stock <= 0);
     if (onSaleOnly) list = list.filter((p) => typeof p.compare_at === "number" && p.compare_at > p.price);
     if (lowStockOnly) list = list.filter((p) => isLowStock(p.stock));
     if (featuredOnly) list = list.filter((p) => Boolean(p.featured));
@@ -234,7 +243,7 @@ export function useHomeFilters(opts: {
         return b.stock - a.stock;
       });
     return list;
-  }, [products, sort, inStockOnly, onSaleOnly, lowStockOnly, featuredOnly, favOnly, favIds, recentOnly, recentIds, watchOnly, watchIds, compareOnly, compareItems]);
+  }, [products, sort, inStockOnly, outOfStockOnly, onSaleOnly, lowStockOnly, featuredOnly, favOnly, favIds, recentOnly, recentIds, watchOnly, watchIds, compareOnly, compareItems]);
 
   const recentProducts = useMemo(() => {
     const map = new Map(products.map((p) => [p.id, p]));
@@ -307,6 +316,14 @@ export function useHomeFilters(opts: {
     const base = featuredOnly ? filtered : featuredProducts;
     return base.filter((p) => p.stock > 0);
   }, [featuredOnly, filtered, featuredProducts]);
+  const oosProducts = useMemo(() => {
+    const list = products.filter((p) => p.stock <= 0);
+    list.sort((a, b) => a.name.localeCompare(b.name, "tr"));
+    return list;
+  }, [products]);
+  const oosList = useMemo(() => {
+    return outOfStockOnly ? filtered.filter((p) => p.stock <= 0) : oosProducts;
+  }, [outOfStockOnly, filtered, oosProducts]);
   const compareIdsLive = useMemo(() => compareItems.map((c) => c.id), [compareItems]);
   const watchBackCount = useMemo(
     () => products.filter((p) => watchIds.includes(p.id) && p.stock > 0).length,
@@ -356,12 +373,21 @@ export function useHomeFilters(opts: {
     finally { setFeatBusy(false); }
   }
 
+  function setOosFilter(next: boolean) {
+    setOutOfStockOnly(next);
+    if (next) setInStockOnly(false);
+  }
+  function setStockFilter(next: boolean) {
+    setInStockOnly(next);
+    if (next) setOutOfStockOnly(false);
+  }
   function clearAllFilters() {
     setSort("default");
     setInStockOnly(false);
     setOnSaleOnly(false);
     setLowStockOnly(false);
     setFeaturedOnly(false);
+    setOutOfStockOnly(false);
     setFavOnly(false);
     setRecentOnly(false);
     setWatchOnly(false);
@@ -372,6 +398,7 @@ export function useHomeFilters(opts: {
       onSaleOnly: false,
       lowStockOnly: false,
       featuredOnly: false,
+      outOfStockOnly: false,
       favOnly: false,
       recentOnly: false,
       watchOnly: false,
@@ -386,6 +413,7 @@ export function useHomeFilters(opts: {
       query ||
       sort !== "default" ||
       inStockOnly ||
+      outOfStockOnly ||
       onSaleOnly ||
       lowStockOnly ||
       featuredOnly ||
@@ -396,9 +424,9 @@ export function useHomeFilters(opts: {
   );
 
   return {
-    sort, setSort, inStockOnly, setInStockOnly, onSaleOnly, setOnSaleOnly, lowStockOnly, setLowStockOnly, featuredOnly, setFeaturedOnly,
-    favOnly, recentOnly, watchOnly, compareOnly, favIds, recentIds, watchIds, compareIdsLive, favBusy, watchBusy, recentBusy, compareBusy, saleBusy, lowBusy, featBusy, copied,
-    filtered, recentProducts, favProducts, watchProducts, compareProducts, saleProducts, lowStockProducts, featuredProducts, favInStock, recentInStock, watchInStock, compareInStock, saleInStock, lowStockReady, featuredInStock, watchBackCount,
+    sort, setSort, inStockOnly, setInStockOnly: setStockFilter, onSaleOnly, setOnSaleOnly, lowStockOnly, setLowStockOnly, featuredOnly, setFeaturedOnly, outOfStockOnly, setOutOfStockOnly: setOosFilter,
+    favOnly, recentOnly, watchOnly, compareOnly, favIds, recentIds, watchIds, compareIdsLive, favBusy, watchBusy, recentBusy, compareBusy, saleBusy, lowBusy, featBusy, oosBusy, copied,
+    filtered, recentProducts, favProducts, watchProducts, compareProducts, saleProducts, lowStockProducts, featuredProducts, oosProducts, favInStock, recentInStock, watchInStock, compareInStock, saleInStock, lowStockReady, featuredInStock, oosList, watchBackCount,
     setFavFilter, setWatchFilter, setRecentFilter, setCompareFilter, pick, copyLink,
     addAllFavorites, addAllRecentInStock, addAllWatchInStock, addAllCompareInStock, addAllSaleInStock, addAllLowStock, addAllFeatured, clearFavorites, clearRecentViews, clearRestockWatch, clearCompare,
     clearAllFilters, filtersActive,
