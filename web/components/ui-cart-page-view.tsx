@@ -70,6 +70,7 @@ export function CartPageView() {
             <Link className="btn" href="/?recent=1" data-cta="empty-to-recent">Son bakılanlara bak</Link>
             <Link className="btn" href="/?watch=1" data-cta="empty-to-watch">Beklediklerime bak</Link>
             <Link className="btn" href="/?cmp=1" data-cta="empty-to-compare">Karşılaştırılanlara bak</Link>
+            <Link className="btn" href="/?sale=1" data-cta="empty-to-sale">İndirimlilere bak</Link>
           </p>
         </div>
       ) : (
