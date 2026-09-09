@@ -114,7 +114,27 @@ export function HomeView({
         {h.onSaleOnly ? " · indirimli" : ""}
         {h.lowStockOnly ? " · az stok" : ""}
       </div>
-      <ProductGrid products={h.filtered} />
+      <ProductGrid
+        products={h.filtered}
+        emptyTitle={
+          h.watchOnly
+            ? "Beklediklerin boş"
+            : h.favOnly
+              ? "Favori yok"
+              : h.recentOnly
+                ? "Son bakılan yok"
+                : undefined
+        }
+        emptyHint={
+          h.watchOnly
+            ? "Tükenen bir üründe Gelince haber ver de; stok gelince burada görünür. Kartta Takipte / Beklemeden çıkar ile çıkar."
+            : h.favOnly
+              ? "Karttaki kalple favoriye ekle."
+              : h.recentOnly
+                ? "Ürün sayfalarına bakınca burada birikir."
+                : undefined
+        }
+      />
       <ShopFooter />
     </div>
   );
