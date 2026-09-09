@@ -211,12 +211,27 @@ export function useHomeFilters(opts: {
     const map = new Map(products.map((p) => [p.id, p]));
     return favIds.map((id) => map.get(id)).filter(Boolean) as Product[];
   }, [products, favIds]);
+  const watchProducts = useMemo(() => {
+    const map = new Map(products.map((p) => [p.id, p]));
+    const list = watchIds.map((id) => map.get(id)).filter(Boolean) as Product[];
+    // In-stock (back) first, then watch order
+    list.sort((a, b) => {
+      const ao = a.stock > 0 ? 0 : 1;
+      const bo = b.stock > 0 ? 0 : 1;
+      if (ao !== bo) return ao - bo;
+      return watchIds.indexOf(a.id) - watchIds.indexOf(b.id);
+    });
+    return list;
+  }, [products, watchIds]);
   const favInStock = useMemo(() => {
     const base = favOnly ? filtered : favProducts;
     return base.filter((p) => p.stock > 0);
   }, [favOnly, filtered, favProducts]);
   const recentInStock = useMemo(() => recentProducts.filter((p) => p.stock > 0), [recentProducts]);
-  const watchInStock = useMemo(() => (watchOnly ? filtered.filter((p) => p.stock > 0) : []), [filtered, watchOnly]);
+  const watchInStock = useMemo(() => {
+    const base = watchOnly ? filtered : watchProducts;
+    return base.filter((p) => p.stock > 0);
+  }, [watchOnly, filtered, watchProducts]);
   const watchBackCount = useMemo(
     () => products.filter((p) => watchIds.includes(p.id) && p.stock > 0).length,
     [products, watchIds],
@@ -244,7 +259,7 @@ export function useHomeFilters(opts: {
   return {
     sort, setSort, inStockOnly, setInStockOnly, onSaleOnly, setOnSaleOnly, lowStockOnly, setLowStockOnly,
     favOnly, recentOnly, watchOnly, favIds, recentIds, watchIds, favBusy, watchBusy, recentBusy, copied,
-    filtered, recentProducts, favProducts, favInStock, recentInStock, watchInStock, watchBackCount,
+    filtered, recentProducts, favProducts, watchProducts, favInStock, recentInStock, watchInStock, watchBackCount,
     setFavFilter, setWatchFilter, setRecentFilter, pick, copyLink,
     addAllFavorites, addAllRecentInStock, addAllWatchInStock, clearFavorites, clearRecentViews, clearRestockWatch,
     query, category,

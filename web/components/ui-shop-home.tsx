@@ -44,6 +44,8 @@ export function HomeView({
     !query && !category && h.recentProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !h.favOnly && !h.recentOnly && !h.watchOnly;
   const showFavRail =
     !query && !category && h.favProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !h.favOnly && !h.recentOnly && !h.watchOnly;
+  const showWatchRail =
+    !query && !category && h.watchProducts.length > 0 && h.sort === "default" && !h.inStockOnly && !h.onSaleOnly && !h.lowStockOnly && !h.favOnly && !h.recentOnly && !h.watchOnly;
 
   return (
     <div className="grid-wrap">
@@ -103,6 +105,28 @@ export function HomeView({
         ) : null}
         <button className="chip" type="button" data-cta="home-copy-link" onClick={() => void h.copyLink()}>{h.copied ? "Kopyalandı" : "Linki kopyala"}</button>
       </div>
+      {showWatchRail ? (
+        <>
+          <div className="section-label" style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <span>Beklediklerim{h.watchBackCount ? ` · ${h.watchBackCount} geldi` : ""}</span>
+            {h.watchInStock.length ? (
+              <button
+                className="chip on"
+                type="button"
+                data-cta="watch-rail-add-all"
+                disabled={h.watchBusy}
+                onClick={() => void h.addAllWatchInStock()}
+              >
+                {h.watchBusy ? "ekleniyor…" : `Gelenleri sepete ekle · ${h.watchInStock.length}`}
+              </button>
+            ) : null}
+            <Link className="chip" href="/?watch=1" data-cta="watch-rail-see-all">
+              Tümünü gör
+            </Link>
+          </div>
+          <div className="featured" data-rail="restock-watch">{h.watchProducts.slice(0, 4).map((p) => (<ProductCard key={p.id} product={p} />))}</div>
+        </>
+      ) : null}
       {showRecentRail ? (
         <>
           <div className="section-label" style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
