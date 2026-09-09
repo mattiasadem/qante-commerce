@@ -5,6 +5,7 @@ import { useCart } from "@/components/ui-shell-providers";
 import { ShopFooter } from "@/components/ui-shell-chrome";
 import {
   PayButton,
+  EmptyBag,
   LineList,
   SaveAllForLaterButton,
   CouponTotals,
@@ -66,6 +67,7 @@ export function CartPageView() {
           <p style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
             <Link className="btn" href="/">Mağazaya bak</Link>
             <Link className="btn" href="/?fav=1" data-cta="empty-to-favorites">Favorilere bak</Link>
+            <Link className="btn" href="/?recent=1" data-cta="empty-to-recent">Son bakılanlara bak</Link>
             <Link className="btn" href="/?watch=1" data-cta="empty-to-watch">Beklediklerime bak</Link>
           </p>
         </div>

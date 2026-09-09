@@ -11,6 +11,9 @@ export function EmptyBag({ onClose }: { onClose?: () => void }) {
         <Link className="btn" href="/?fav=1" data-cta="empty-to-favorites" onClick={() => onClose?.()}>
           Favorilere bak
         </Link>
+        <Link className="btn" href="/?recent=1" data-cta="empty-to-recent" onClick={() => onClose?.()}>
+          Son bakılanlara bak
+        </Link>
         <Link className="btn" href="/?watch=1" data-cta="empty-to-watch" onClick={() => onClose?.()}>
           Beklediklerime bak
         </Link>
