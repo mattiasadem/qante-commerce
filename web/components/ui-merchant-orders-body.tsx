@@ -1,5 +1,5 @@
 "use client";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { Issue, Order } from "@/lib/core";
 import { STATUS_LABEL, canCancelOrder, isStoreCheckoutOrder } from "@/lib/core";
@@ -7,8 +7,31 @@ import { Logo } from "@/components/ui-shell";
 import { ORDER_FILTERS, ORDER_SORTS, PREF_FILTERS, compareOrdersBySort, orderCategories, orderHasCategory, orderHasPref, orderMatchesQuery, type OrderSortId } from "@/components/ui-merchant-orders-filters";
 import { OrderRow } from "@/components/ui-merchant-orders-row";
 
+
+function ordersQstr(
+  filter: string,
+  pref: string | null,
+  cat: string,
+  q: string,
+  sort: OrderSortId,
+  focus: string,
+) {
+  const sp = new URLSearchParams();
+  if (filter && filter !== "open") sp.set("filter", filter);
+  if (pref) sp.set("pref", pref);
+  if (cat.trim()) sp.set("cat", cat.trim());
+  const qq = q.trim().slice(0, 80);
+  if (qq) sp.set("q", qq);
+  if (sort !== "newest") sp.set("sort", sort);
+  const ff = focus.trim();
+  if (ff) sp.set("focus", ff);
+  return sp.toString();
+}
+
 export function OrdersView({ orders: initialOrders, issues: initialIssues }: { orders: Order[]; issues: Issue[] }) {
   const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname() || "/merchant/siparisler";
   const focus = (params.get("focus") ?? params.get("id") ?? "").trim();
   const filterParam = (params.get("filter") ?? params.get("status") ?? "").trim().toLowerCase();
   const ORDER_FILTER_IDS = ORDER_FILTERS.map((f) => f.id);
@@ -29,6 +52,7 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
   const [sort, setSort] = useState<OrderSortId>(initialSort);
   const catParam = (params.get("cat") ?? "").trim();
   const [cat, setCat] = useState(catParam);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (focus) {
@@ -57,6 +81,40 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
   useEffect(() => {
     if (catParam) setCat(catParam);
   }, [catParam]);
+
+  useEffect(() => {
+    const focusWrite = filter === "store" ? highlight : "";
+    const next = ordersQstr(filter, pref, cat, q, sort, focusWrite);
+    const curFilter = focus
+      ? "store"
+      : ORDER_FILTER_IDS.includes(filterParam)
+        ? filterParam
+        : "open";
+    const cur = ordersQstr(
+      curFilter,
+      prefParam || null,
+      catParam,
+      qParam,
+      (ORDER_SORTS.some((s) => s.id === sortParam) ? sortParam : "newest") as OrderSortId,
+      focus,
+    );
+    if (next === cur) return;
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  }, [filter, pref, cat, q, sort, highlight, focus, filterParam, prefParam, catParam, qParam, sortParam, pathname, router]);
+
+  async function copyLink() {
+    const focusWrite = filter === "store" ? highlight : "";
+    const qs = ordersQstr(filter, pref, cat, q, sort, focusWrite);
+    const path = qs ? `${pathname}?${qs}` : pathname;
+    const href = typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
+    try {
+      await navigator.clipboard.writeText(href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* ignore */
+    }
+  }
 
   useEffect(() => {
     void fetch("/api/merchant/orders", { cache: "no-store" })
@@ -173,7 +231,7 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
   const cancellable = useMemo(() => rows.filter((o) => canCancelOrder(o.status)), [rows]);
 
   return (
-    <>
+    <div data-cta="orders-url-write-root">
       <div className="filter-rail chips scroll" role="tablist" aria-label="Sipariş filtresi">
         {ORDER_FILTERS.map((f) => (
           <button
@@ -183,7 +241,10 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
             aria-pressed={filter === f.id}
             data-cta="orders-filter"
             data-filter={f.id}
-            onClick={() => setFilter(f.id)}
+            onClick={() => {
+              setFilter(f.id);
+              if (f.id !== "store") setHighlight("");
+            }}
           >
             {f.label} {counts[f.id] ?? 0}
           </button>
@@ -278,10 +339,18 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
       {flash ? (
         <p className="muted">
           <span className="banner-demo">{flash}</span>
+          {" · "}
+          <button className="chip" type="button" data-cta="orders-copy-link" onClick={() => void copyLink()}>
+            {copied ? "Kopyalandı" : "Linki kopyala"}
+          </button>
         </p>
       ) : (
-        <p className="muted">
-          Mağaza checkout Siparişler&apos;e düşer · URL filter/pref/cat/q/sort/focus · Kargola / toplu aksiyonlar / İptal yerel deftere yazar · ikas&apos;a gitmez
+        <p className="muted" data-cta="orders-url-write">
+          Mağaza checkout Siparişler&apos;e düşer · URL yazar (filter/pref/cat/q/sort/focus) + Linki kopyala · Kargola / toplu aksiyonlar / İptal yerel deftere yazar · ikas&apos;a gitmez
+          {" · "}
+          <button className="chip" type="button" data-cta="orders-copy-link" onClick={() => void copyLink()}>
+            {copied ? "Kopyalandı" : "Linki kopyala"}
+          </button>
         </p>
       )}
       {shippable.length > 0 || fulfillable.length > 0 || closableReturns.length > 0 || payable.length > 0 || cancellable.length > 0 ? (
@@ -364,6 +433,6 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
           ))}
         </div>
       )}
-    </>
+    </div>
   );
 }
