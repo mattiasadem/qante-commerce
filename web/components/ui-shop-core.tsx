@@ -250,6 +250,12 @@ export function addRestockWatch(id: string) {
   return next;
 }
 
+export function removeRestockWatch(id: string) {
+  const next = readRestockWatch().filter((x) => x !== id);
+  writeRestockWatch(next);
+  return next;
+}
+
 export function clearRestockWatch() {
   writeRestockWatch([]);
 }
@@ -268,8 +274,7 @@ export function useRestockWatch() {
     };
   }, []);
   const remove = useCallback((id: string) => {
-    const next = readRestockWatch().filter((x) => x !== id);
-    writeRestockWatch(next);
+    const next = removeRestockWatch(id);
     setIds(next);
   }, []);
   const clear = useCallback(() => {
@@ -279,26 +284,76 @@ export function useRestockWatch() {
   return { ids, remove, clear };
 }
 
-/** OOS waitlist: localStorage + open ask rail (demo, no email). */
+/** OOS waitlist toggle: localStorage + open ask rail on add (demo, no email). */
 export function NotifyRestockButton({ product, className = "btn" }: { product: Product; className?: string }) {
   const { requestAsk } = useAsk();
-  const [done, setDone] = useState(false);
+  const [on, setOn] = useState(false);
   useEffect(() => {
-    setDone(readRestockWatch().includes(product.id));
+    setOn(readRestockWatch().includes(product.id));
+  }, [product.id]);
+  useEffect(() => {
+    const sync = () => setOn(readRestockWatch().includes(product.id));
+    window.addEventListener("storage", sync);
+    window.addEventListener("qante-restock", sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener("qante-restock", sync);
+    };
   }, [product.id]);
   return (
     <button
       className={className}
       type="button"
-      disabled={done}
+      aria-pressed={on}
       data-cta="notify-restock"
-      onClick={() => {
+      title={on ? "Beklemeden çıkar" : "Gelince haber ver"}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (on) {
+          removeRestockWatch(product.id);
+          setOn(false);
+          return;
+        }
         addRestockWatch(product.id);
         requestAsk(`${product.name} gelince haber ver`, product.id);
-        setDone(true);
+        setOn(true);
       }}
     >
-      {done ? "Kaydedildi" : "Gelince haber ver"}
+      {on ? "Beklemeden çıkar" : "Gelince haber ver"}
+    </button>
+  );
+}
+
+/** In-stock watch chip — remove from Beklediklerim without ask rail. */
+export function WatchChipButton({ productId, className = "btn quick" }: { productId: string; className?: string }) {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const sync = () => setOn(readRestockWatch().includes(productId));
+    sync();
+    window.addEventListener("storage", sync);
+    window.addEventListener("qante-restock", sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener("qante-restock", sync);
+    };
+  }, [productId]);
+  if (!on) return null;
+  return (
+    <button
+      className={className}
+      type="button"
+      aria-pressed
+      data-cta="unwatch-restock"
+      title="Beklemeden çıkar"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        removeRestockWatch(productId);
+        setOn(false);
+      }}
+    >
+      Takipte
     </button>
   );
 }
@@ -356,9 +411,12 @@ export function ProductCard({ product }: { product: Product }) {
           {out ? (
             <NotifyRestockButton product={product} className="btn quick" />
           ) : (
-            <button className="btn btn-primary quick" type="button" onClick={() => void add(product.id)}>
-              Ekle
-            </button>
+            <>
+              <button className="btn btn-primary quick" type="button" onClick={() => void add(product.id)}>
+                Ekle
+              </button>
+              <WatchChipButton productId={product.id} />
+            </>
           )}
           <CompareButton product={product} className="btn quick" compact />
         </div>
@@ -367,13 +425,21 @@ export function ProductCard({ product }: { product: Product }) {
   );
 }
 
-export function ProductGrid({ products }: { products: Product[] }) {
+export function ProductGrid({
+  products,
+  emptyTitle,
+  emptyHint,
+}: {
+  products: Product[];
+  emptyTitle?: string;
+  emptyHint?: string;
+}) {
   if (!products.length) {
     return (
-      <div className="empty">
+      <div className="empty" data-cta="grid-empty">
         <div className="mark" />
-        <h3>Bu süzgeçte parça yok</h3>
-        <p>Başka bir kategori veya arama dene.</p>
+        <h3>{emptyTitle ?? "Bu süzgeçte parça yok"}</h3>
+        <p>{emptyHint ?? "Başka bir kategori veya arama dene."}</p>
       </div>
     );
   }
