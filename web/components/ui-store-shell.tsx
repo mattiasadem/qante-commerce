@@ -11,6 +11,7 @@ import {
 import {
   useFavCount,
   useWatchCount,
+  useRecentCount,
 } from "@/components/ui-cart-slot-pay";
 
 export function StoreShell({ children }: { children: ReactNode }) {
@@ -22,8 +23,14 @@ export function StoreShell({ children }: { children: ReactNode }) {
   const search = useSearchParams();
   const favCount = useFavCount();
   const watchCount = useWatchCount();
+  const recentCount = useRecentCount();
   const favOn = path === "/" && (search.get("fav") === "1" || search.get("fav") === "true");
   const watchOn = path === "/" && (search.get("watch") === "1" || search.get("watch") === "true") && !favOn;
+  const recentOn =
+    path === "/" &&
+    (search.get("recent") === "1" || search.get("recent") === "true") &&
+    !favOn &&
+    !watchOn;
   return (
     <>
       <header className="header">
@@ -39,6 +46,14 @@ export function StoreShell({ children }: { children: ReactNode }) {
         <div className="header-actions">
           <Link href="/?fav=1" className={`icon-btn ${favOn ? "on" : ""}`} data-cta="nav-favorites" aria-label="Favoriler">
             Favoriler{favCount > 0 ? <span className="badge">{favCount}</span> : null}
+          </Link>
+          <Link
+            href="/?recent=1"
+            className={`icon-btn ${recentOn ? "on" : ""}`}
+            data-cta="nav-recent"
+            aria-label="Son bakılanlar"
+          >
+            Geçmiş{recentCount > 0 ? <span className="badge">{recentCount}</span> : null}
           </Link>
           <Link
             href="/?watch=1"
@@ -59,8 +74,9 @@ export function StoreShell({ children }: { children: ReactNode }) {
       <CompareTray />
       {children}
       <nav className="dock" aria-label="Mobil">
-        <Link href="/" className={path === "/" && !favOn && !watchOn ? "on" : ""}>Mağaza</Link>
+        <Link href="/" className={path === "/" && !favOn && !watchOn && !recentOn ? "on" : ""}>Mağaza</Link>
         <Link href="/?fav=1" className={favOn ? "on" : ""} data-cta="dock-favorites">Favori{favCount > 0 ? ` ${favCount}` : ""}</Link>
+        <Link href="/?recent=1" className={recentOn ? "on" : ""} data-cta="dock-recent">Geçmiş{recentCount > 0 ? ` ${recentCount}` : ""}</Link>
         <Link href="/?watch=1" className={watchOn ? "on" : ""} data-cta="dock-restock-watch">Takip{watchCount > 0 ? ` ${watchCount}` : ""}</Link>
         <Link href="/siparislerim" className={path.startsWith("/siparislerim") ? "on" : ""}>Sipariş</Link>
         <button type="button" onClick={() => setSheetOpen(true)}>Asistan</button>

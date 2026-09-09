@@ -51,4 +51,5 @@ export {
   ClearCartButton,
 } from "@/components/ui-cart-pay";
 export { useWatchCount } from "@/components/ui-restock-watch";
+export { useRecentCount } from "@/components/ui-recent-count";
 export { EmptyBag } from "@/components/ui-empty-bag";
