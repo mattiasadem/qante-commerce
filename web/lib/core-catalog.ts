@@ -11,12 +11,12 @@ export const ORDERS: Order[] = OR.split("\n").map((l) => {
 /** Demo buyer prefs on open seed rows so merchant chips are visible without a fresh checkout. */
 const SEED_BUYER_PREFS: Record<string, string> = {
   ord_0830: "[ambalaj:premium] [hediye] [bahsis:40] [kupon:HOSGELDIN]",
-  ord_0901: "[garanti:yil1] [destek:oncelikli] [komsu:komsuya] [saat:ogle]",
+  ord_0901: "[garanti:yil1] [destek:oncelikli] [komsu:komsuya] [saat:ogle] [bahsis:20]",
   ord_0904: "[kirilgan:cift] [montaj:tam] [paketmatik:mng] [imza:gerekli]",
   ord_0905: "[erisim:asansor] [taksit:6] [odeme:kart] [firma:yurtici]",
-  ord_0906: "[ambalaj:minimal] [eko:minimal] [zil:sessiz] [kupon:KARGO]",
+  ord_0906: "[ambalaj:minimal] [eko:minimal] [zil:sessiz] [kupon:KARGO] [bahsis:60]",
   ord_0907: "[gizli:fatura] [komsu:kapida] [saat:aksam] [taksit:3]",
-  ord_0908: "[imza:kimlik] [erisim:yardim] [paketmatik:ptt] [kupon:QANTE10]",
+  ord_0908: "[imza:kimlik] [erisim:yardim] [paketmatik:ptt] [kupon:QANTE10] [bahsis:40]",
   ord_0909: "[ambalaj:premium] [foto:kapida] [bildirim:whatsapp] [kupon:QANTE10]",
 };
 for (const o of ORDERS) {
@@ -96,3 +96,4 @@ export function pick(ids: string[], n = 3) {
   }
   return out;
 }
+
