@@ -17,6 +17,7 @@ export const ORDER_FILTERS: { id: string; label: string; match: (o: Order, open:
 export const PREF_FILTERS: { id: string; label: string }[] = [
   { id: "kupon", label: "Kupon" },
   { id: "bahsis", label: "Bahşiş" },
+  { id: "montaj", label: "Montaj" },
   { id: "gizli", label: "Gizlilik" },
   { id: "komsu", label: "Komşu" },
   { id: "taksit", label: "Taksit" },
