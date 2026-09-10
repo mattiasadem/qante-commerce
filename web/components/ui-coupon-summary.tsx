@@ -1,7 +1,7 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { parseCouponFromNote } from "@/components/ui-coupon";
+import { parseCouponFromNote } from "@/components/ui-coupon-parse";
 
 /** Shows Kupon · … from order note on /siparis. */
 export function CouponSummaryBanner() {
