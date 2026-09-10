@@ -16,8 +16,9 @@ import { parseDoormanFromNote } from "@/components/ui-doorman";
 import { parseInsuranceFromNote } from "@/components/ui-insurance";
 import { parseKomsuFromNote } from "@/components/ui-komsu";
 import { parsePaketmatikFromNote } from "@/components/ui-paketmatik";
+import { parseErisimFromNote } from "@/components/ui-erisim";
 
-/** Siparişlerim row: show checkout coupon / slot / taksit / tip / montaj / hediye / fatura / ambalaj / eko / gizlilik / imza / kırılgan / kapıcı / sigorta / komşu / paketmatik from buyer note. */
+/** Siparişlerim row: show checkout coupon / slot / taksit / tip / montaj / hediye / fatura / ambalaj / eko / gizlilik / imza / kırılgan / kapıcı / sigorta / komşu / paketmatik / erişim from buyer note. */
 export function MyOrderPrefLines({ note }: { note?: string }) {
   const coupon = parseCouponFromNote(note);
   const slot = parseShipSlotFromNote(note);
@@ -35,7 +36,8 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const insurance = parseInsuranceFromNote(note);
   const komsu = parseKomsuFromNote(note);
   const paketmatik = parsePaketmatikFromNote(note);
-  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik) return null;
+  const erisim = parseErisimFromNote(note);
+  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
       {coupon ? (
@@ -116,6 +118,11 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
       {paketmatik ? (
         <div className="faint" data-cta="my-orders-paketmatik">
           Paketmatik · {paketmatik.label}
+        </div>
+      ) : null}
+      {erisim ? (
+        <div className="faint" data-cta="my-orders-erisim">
+          Erişim · {erisim.label}
         </div>
       ) : null}
     </div>
