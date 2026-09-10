@@ -30,6 +30,7 @@ export const PREF_FILTERS: { id: string; label: string }[] = [
   { id: "garanti", label: "Garanti" },
   { id: "firma", label: "Firma" },
   { id: "kirilgan", label: "Kırılgan" },
+  { id: "kapici", label: "Kapıcı" },
 ];
 
 /** True when buyer_note has `[key]` or `[key:…]`. */
@@ -79,51 +80,5 @@ export function lineSummary(o: Order) {
   return o.items.map((it) => {
     const name = getProduct(it.product_id)?.name ?? it.product_id;
     return `${name} ×${it.qty}`;
-  }).join(" · ");
-}
-
-/** Case-insensitive match on id, line items, buyer/ship notes, sku. */
-export function orderMatchesQuery(o: Order, q: string): boolean {
-  const needle = q.trim().toLowerCase();
-  if (!needle) return true;
-  if (o.id.toLowerCase().includes(needle)) return true;
-  if ((o.buyer_note ?? "").toLowerCase().includes(needle)) return true;
-  if ((o.ship_note ?? "").toLowerCase().includes(needle)) return true;
-  if (String(o.total).includes(needle)) return true;
-  if (lineSummary(o).toLowerCase().includes(needle)) return true;
-  for (const it of o.items) {
-    if (it.product_id.toLowerCase().includes(needle)) return true;
-    const p = getProduct(it.product_id);
-    if (p?.name.toLowerCase().includes(needle)) return true;
-    if (p?.sku?.toLowerCase().includes(needle)) return true;
-    if (p?.category?.toLowerCase().includes(needle)) return true;
-  }
-  return false;
-}
-
-export type OrderSortId = "newest" | "oldest" | "total_desc" | "total_asc";
-
-export const ORDER_SORTS: { id: OrderSortId; label: string }[] = [
-  { id: "newest", label: "En yeni" },
-  { id: "oldest", label: "En eski" },
-  { id: "total_desc", label: "Tutar ↓" },
-  { id: "total_asc", label: "Tutar ↑" },
-];
-
-/** Secondary sort after highlight/open priority. */
-export function compareOrdersBySort(a: Order, b: Order, sort: OrderSortId): number {
-  if (sort === "oldest") {
-    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-  }
-  if (sort === "total_desc") {
-    const d = (b.total ?? 0) - (a.total ?? 0);
-    if (d !== 0) return d;
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  }
-  if (sort === "total_asc") {
-    const d = (a.total ?? 0) - (b.total ?? 0);
-    if (d !== 0) return d;
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  }
-  return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  }).join(", ");
 }

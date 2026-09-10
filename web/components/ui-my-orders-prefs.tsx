@@ -12,8 +12,9 @@ import { parseEcoFromNote } from "@/components/ui-eco";
 import { parseGizliFromNote } from "@/components/ui-gizli";
 import { parseImzaFromNote } from "@/components/ui-imza";
 import { parseFragileFromNote } from "@/components/ui-fragile";
+import { parseDoormanFromNote } from "@/components/ui-doorman";
 
-/** Siparişlerim row: show checkout coupon / slot / taksit / tip / montaj / hediye / fatura / ambalaj / eko / gizlilik / imza / kırılgan from buyer note. */
+/** Siparişlerim row: show checkout coupon / slot / taksit / tip / montaj / hediye / fatura / ambalaj / eko / gizlilik / imza / kırılgan / kapıcı from buyer note. */
 export function MyOrderPrefLines({ note }: { note?: string }) {
   const coupon = parseCouponFromNote(note);
   const slot = parseShipSlotFromNote(note);
@@ -27,7 +28,8 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const gizli = parseGizliFromNote(note);
   const imza = parseImzaFromNote(note);
   const fragile = parseFragileFromNote(note);
-  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli && !imza && !fragile) return null;
+  const doorman = parseDoormanFromNote(note);
+  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
       {coupon ? (
@@ -88,6 +90,11 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
       {fragile ? (
         <div className="faint" data-cta="my-orders-fragile">
           Kırılgan · {fragile.label}
+        </div>
+      ) : null}
+      {doorman ? (
+        <div className="faint" data-cta="my-orders-doorman">
+          Kapıcı · {doorman.note || "Kapıcıya bırak"}
         </div>
       ) : null}
     </div>
