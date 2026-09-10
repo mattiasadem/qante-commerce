@@ -9,6 +9,7 @@ export type Row = {
   total: number;
   item_count: number;
   ship_note?: string;
+  note?: string;
   items: { product_id: string; name: string; qty: number }[];
 };
 
