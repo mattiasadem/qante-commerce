@@ -23,6 +23,8 @@ export {
   ShopFrame,
 } from "@/components/ui-payment-shell";
 export { CouponField, CouponTotals, useCoupon } from "@/components/ui-coupon";
+export { parseCouponFromNote } from "@/components/ui-coupon-parse";
+export { CouponSummaryBanner } from "@/components/ui-coupon-summary";
 export { DeliveryField, formatDeliveryTag, readDelivery } from "@/components/ui-delivery";
 export { CartToastHost, flashCartToast } from "@/components/ui-cart-toast";
 export { GiftField, formatGiftTag, readGift, parseGiftFromNote } from "@/components/ui-gift";
