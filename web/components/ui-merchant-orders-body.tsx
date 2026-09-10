@@ -3,7 +3,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { Issue, Order } from "@/lib/core";
 import { STATUS_LABEL, canCancelOrder, isStoreCheckoutOrder } from "@/lib/core";
-import { Logo } from "@/components/ui-shell";
+import { OrdersEmpty } from "@/components/ui-merchant-orders-empty";
 import { ORDER_FILTERS, ORDER_SORTS, PREF_FILTERS, compareOrdersBySort, orderCategories, orderHasCategory, orderHasPref, orderMatchesQuery, type OrderSortId } from "@/components/ui-merchant-orders-filters";
 import { OrderRow } from "@/components/ui-merchant-orders-row";
 
@@ -409,11 +409,21 @@ export function OrdersView({ orders: initialOrders, issues: initialIssues }: { o
         </div>
       ) : null}
       {rows.length === 0 ? (
-        <div className="empty">
-          <Logo size={32} />
-          <h3>Kayıt yok</h3>
-          <p>{q.trim() || cat || pref ? "Arama + filtre birleşiminde kayıt yok." : "Bu durum/tercih filtresinde seed sipariş yok."}</p>
-        </div>
+        <OrdersEmpty
+          totalOrders={orders.length}
+          filter={filter}
+          pref={pref}
+          cat={cat}
+          q={q}
+          onClearFilters={() => {
+            setFilter("open");
+            setPref(null);
+            setCat("");
+            setQ("");
+            setSort("newest");
+            setHighlight("");
+          }}
+        />
       ) : (
         <div className="list">
           {rows.map((o) => (
