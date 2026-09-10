@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { Alert, StagedChange } from "@/lib/core";
 import { getProduct, money, suggestPriceCut, suggestRestockQty } from "@/lib/core";
+import { StockAttentionEmpty } from "@/components/ui-merchant-stock-empty";
 
 const STOCK_FILTERS: { id: string; label: string; match: (a: Alert) => boolean }[] = [
   { id: "all", label: "Tümü", match: () => true },
@@ -428,9 +429,18 @@ export function StockView({ alerts }: { alerts: Alert[] }) {
           );
         })}
         {rows.length === 0 ? (
-          <div className="list-row">
-            <span className="muted">{q.trim() || cat ? "Arama + kategori birleşiminde uyarı yok." : "Bu filtrede uyarı yok."}</span>
-          </div>
+          <StockAttentionEmpty
+            totalAlerts={alerts.length}
+            filter={filter}
+            cat={cat}
+            q={q}
+            onClearFilters={() => {
+              setFilter("all");
+              setCat("");
+              setQ("");
+              setSort("urgency");
+            }}
+          />
         ) : null}
       </div>
     </div>
