@@ -32,8 +32,15 @@ export const PREF_FILTERS: { id: string; label: string }[] = [
 export function orderHasPref(o: Order, key: string): boolean {
   const note = (o.buyer_note ?? "").trim();
   if (!note || !key) return false;
-  const re = new RegExp(`\\[${key.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}(?::|\\])`, "i");
-  return re.test(note);
+  const needle = "[" + key.toLowerCase();
+  const lower = note.toLowerCase();
+  let i = 0;
+  while ((i = lower.indexOf(needle, i)) !== -1) {
+    const after = lower[i + needle.length] ?? "";
+    if (after === "]" || after === ":") return true;
+    i += 1;
+  }
+  return false;
 }
 
 /** Distinct non-empty product categories on an order's lines. */
