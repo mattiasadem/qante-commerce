@@ -10,12 +10,12 @@ export const ORDERS: Order[] = OR.split("\n").map((l) => {
 /** Demo buyer prefs on open seed rows so merchant chips are visible without a fresh checkout. */
 const SEED_BUYER_PREFS: Record<string, string> = {
   ord_0830: "[ambalaj:premium] [hediye:Sevgilerle] [bahsis:40] [kupon:HOSGELDIN] [montaj:temel] [fatura:bireysel]",
-  ord_0901: "[garanti:yil1] [destek:oncelikli] [komsu:komsuya] [saat:ogle] [bahsis:20] [montaj:uzman] [fatura:bireysel]",
-  ord_0904: "[kirilgan:cift] [montaj:tam] [paketmatik:mng] [imza:gerekli] [hediye:İyi ki doğdun] [fatura:kurumsal|Nivorius GmbH|DE123456]",
-  ord_0905: "[erisim:asansor] [taksit:6] [odeme:kart] [firma:yurtici] [montaj:temel] [fatura:kurumsal|Demo AŞ|1234567890|Kadıköy]",
+  ord_0901: "[garanti:yil1] [destek:oncelikli] [komsu:komsuya] [saat:ogle] [bahsis:20] [montaj:uzman] [fatura:bireysel] [ambalaj:standart]",
+  ord_0904: "[kirilgan:cift] [montaj:tam] [paketmatik:mng] [imza:gerekli] [hediye:İyi ki doğdun] [fatura:kurumsal|Nivorius GmbH|DE123456] [ambalaj:premium]",
+  ord_0905: "[erisim:asansor] [taksit:6] [odeme:kart] [firma:yurtici] [montaj:temel] [fatura:kurumsal|Demo AŞ|1234567890|Kadıköy] [ambalaj:minimal]",
   ord_0906: "[ambalaj:minimal] [eko:minimal] [zil:sessiz] [kupon:KARGO] [bahsis:60] [hediye] [fatura:bireysel]",
-  ord_0907: "[gizli:fatura] [komsu:kapida] [saat:aksam] [taksit:3] [montaj:tam] [fatura:kurumsal|Qante Demo]",
-  ord_0908: "[imza:kimlik] [erisim:yardim] [paketmatik:ptt] [kupon:QANTE10] [bahsis:40] [montaj:uzman] [fatura:bireysel]",
+  ord_0907: "[gizli:fatura] [komsu:kapida] [saat:aksam] [taksit:3] [montaj:tam] [fatura:kurumsal|Qante Demo] [ambalaj:standart]",
+  ord_0908: "[imza:kimlik] [erisim:yardim] [paketmatik:ptt] [kupon:QANTE10] [bahsis:40] [montaj:uzman] [fatura:bireysel] [ambalaj:premium]",
   ord_0909: "[ambalaj:premium] [foto:kapida] [bildirim:whatsapp] [kupon:QANTE10] [hediye:Mutlu yıllar] [fatura:kurumsal|Atelier TR|9876543210|Beşiktaş]",
 };
 for (const o of ORDERS) {
