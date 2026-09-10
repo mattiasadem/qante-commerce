@@ -32,6 +32,7 @@ export const PREF_FILTERS: { id: string; label: string }[] = [
   { id: "kirilgan", label: "Kırılgan" },
   { id: "kapici", label: "Kapıcı" },
   { id: "sigorta", label: "Sigorta" },
+  { id: "paketmatik", label: "Paketmatik" },
 ];
 
 /** True when buyer_note has `[key]` or `[key:…]`. */
