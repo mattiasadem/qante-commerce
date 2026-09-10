@@ -9,6 +9,7 @@ import { parsePaymentFromNote } from "@/components/ui-payment";
 import { parseVariantsFromNote } from "@/components/ui-variant";
 import { ShipBar, ShopFooter, useCart } from "@/components/ui-shell";
 import { ShipTrackBanner } from "@/components/ui-ship-track";
+import { OrderConfirmEmpty } from "@/components/ui-order-confirm-empty";
 
 type DemoOrderView = {
   order_id: string;
@@ -211,7 +212,7 @@ export function OrderConfirm() {
         ) : null}
       </div>
       {missing ? (
-        <div className="empty"><div className="mark" /><h3>Sipariş bulunamadı</h3><p>Bu oturumun son demo siparişi yok. <Link href="/">Mağazaya dön</Link></p></div>
+        <OrderConfirmEmpty />
       ) : !order ? (
         <p className="muted">yazılıyor…</p>
       ) : (
