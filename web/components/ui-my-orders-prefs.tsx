@@ -18,8 +18,9 @@ import { parseKomsuFromNote } from "@/components/ui-komsu";
 import { parsePaketmatikFromNote } from "@/components/ui-paketmatik";
 import { parseErisimFromNote } from "@/components/ui-erisim";
 import { parseWarrantyFromNote } from "@/components/ui-warranty";
+import { parseDestekFromNote } from "@/components/ui-destek";
 
-/** Siparişlerim row: show checkout coupon / slot / taksit / tip / montaj / hediye / fatura / ambalaj / eko / gizlilik / imza / kırılgan / kapıcı / sigorta / komşu / paketmatik / erişim / garanti from buyer note. */
+/** Siparişlerim row: show checkout coupon / slot / taksit / tip / montaj / hediye / fatura / ambalaj / eko / gizlilik / imza / kırılgan / kapıcı / sigorta / komşu / paketmatik / erişim / garanti / destek from buyer note. */
 export function MyOrderPrefLines({ note }: { note?: string }) {
   const coupon = parseCouponFromNote(note);
   const slot = parseShipSlotFromNote(note);
@@ -39,7 +40,8 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const paketmatik = parsePaketmatikFromNote(note);
   const erisim = parseErisimFromNote(note);
   const warranty = parseWarrantyFromNote(note);
-  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty) return null;
+  const destek = parseDestekFromNote(note);
+  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
       {coupon ? (
@@ -130,6 +132,11 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
       {warranty ? (
         <div className="faint" data-cta="my-orders-warranty">
           Garanti · {warranty.label}
+        </div>
+      ) : null}
+      {destek ? (
+        <div className="faint" data-cta="my-orders-destek">
+          Destek · {destek.label}
         </div>
       ) : null}
     </div>
