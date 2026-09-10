@@ -15,6 +15,7 @@ export const ORDER_FILTERS: { id: string; label: string; match: (o: Order, open:
 
 /** Checkout preference keys operators can filter by on Siparişler. */
 export const PREF_FILTERS: { id: string; label: string }[] = [
+  { id: "kupon", label: "Kupon" },
   { id: "gizli", label: "Gizlilik" },
   { id: "komsu", label: "Komşu" },
   { id: "taksit", label: "Taksit" },
@@ -31,7 +32,7 @@ export const PREF_FILTERS: { id: string; label: string }[] = [
 export function orderHasPref(o: Order, key: string): boolean {
   const note = (o.buyer_note ?? "").trim();
   if (!note || !key) return false;
-  const re = new RegExp(`\\[${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?::|\\])`, "i");
+  const re = new RegExp(`\\[${key.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}(?::|\\])`, "i");
   return re.test(note);
 }
 
