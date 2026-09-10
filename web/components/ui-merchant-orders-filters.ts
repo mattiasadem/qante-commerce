@@ -16,6 +16,7 @@ export const ORDER_FILTERS: { id: string; label: string; match: (o: Order, open:
 /** Checkout preference keys operators can filter by on Siparişler. */
 export const PREF_FILTERS: { id: string; label: string }[] = [
   { id: "kupon", label: "Kupon" },
+  { id: "bahsis", label: "Bahşiş" },
   { id: "gizli", label: "Gizlilik" },
   { id: "komsu", label: "Komşu" },
   { id: "taksit", label: "Taksit" },
