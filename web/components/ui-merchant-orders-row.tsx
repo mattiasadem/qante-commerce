@@ -4,6 +4,7 @@ import type { Issue, Order } from "@/lib/core";
 import { STATUS_LABEL, canCancelOrder, isStoreCheckoutOrder, money, nextOrderAction, shortDate } from "@/lib/core";
 import { CARRIERS, shipNoteLabel } from "@/components/ui-ship-track";
 import { BuyerPrefChips } from "@/components/ui-merchant-buyer-tags";
+import { MerchantCouponLine } from "@/components/ui-merchant-coupon";
 import { lineSummary, statusTone } from "@/components/ui-merchant-orders-filters";
 
 type ShipDraft = Record<string, { carrier: string; tracking: string }>;
@@ -47,6 +48,7 @@ export function OrderRow({
             Kargo · {shipNoteLabel(o.ship_note) ?? o.ship_note}
           </div>
         ) : null}
+        <MerchantCouponLine note={o.buyer_note} />
         <BuyerPrefChips note={o.buyer_note} activeKey={pref} onSelectKey={onPrefSelect} />
         {o.status === "paid" && cta?.action === "ship" ? (
           <div style={{ marginTop: 8 }} data-cta="ship-track-fields">
