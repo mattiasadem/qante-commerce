@@ -6,6 +6,7 @@ import type { Product } from "@/lib/core";
 import { money } from "@/lib/core";
 import { useAsk, useCart } from "@/components/ui-shell";
 import { CompareButton } from "@/components/ui-compare";
+import { ProductGridEmpty } from "@/components/ui-product-grid-empty";
 import { setLineVariant, type LineVariant } from "@/components/ui-variant";
 
 const FAV_KEY = "qante_favorites";
@@ -435,13 +436,7 @@ export function ProductGrid({
   emptyHint?: string;
 }) {
   if (!products.length) {
-    return (
-      <div className="empty" data-cta="grid-empty">
-        <div className="mark" />
-        <h3>{emptyTitle ?? "Bu süzgeçte parça yok"}</h3>
-        <p>{emptyHint ?? "Başka bir kategori veya arama dene."}</p>
-      </div>
-    );
+    return <ProductGridEmpty emptyTitle={emptyTitle} emptyHint={emptyHint} />;
   }
   return (
     <div className="grid">
