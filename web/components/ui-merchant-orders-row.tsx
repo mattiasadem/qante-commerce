@@ -20,6 +20,7 @@ import { MerchantKomsuLine } from "@/components/ui-merchant-komsu";
 import { MerchantPaketmatikLine } from "@/components/ui-merchant-paketmatik";
 import { MerchantErisimLine } from "@/components/ui-merchant-erisim";
 import { MerchantWarrantyLine } from "@/components/ui-merchant-warranty";
+import { MerchantDestekLine } from "@/components/ui-merchant-destek";
 import { lineSummary, statusTone } from "@/components/ui-merchant-orders-filters";
 
 type ShipDraft = Record<string, { carrier: string; tracking: string }>;
@@ -79,6 +80,7 @@ export function OrderRow({
         <MerchantPaketmatikLine note={o.buyer_note} />
         <MerchantErisimLine note={o.buyer_note} />
         <MerchantWarrantyLine note={o.buyer_note} />
+        <MerchantDestekLine note={o.buyer_note} />
         <BuyerPrefChips note={o.buyer_note} activeKey={pref} onSelectKey={onPrefSelect} />
         {o.status === "paid" && cta?.action === "ship" ? (
           <div style={{ marginTop: 8 }} data-cta="ship-track-fields">
