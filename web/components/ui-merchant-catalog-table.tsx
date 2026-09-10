@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { Product, StagedChange } from "@/lib/core";
 import { money, qualityScore, suggestPriceCut, suggestRestockQty } from "@/lib/core";
+import { CatalogTableEmpty } from "@/components/ui-merchant-catalog-empty";
 
 /** Case-insensitive match on name, sku, category, id. */
 export function productMatchesQuery(p: Product, q: string): boolean {
@@ -384,12 +385,23 @@ export function CatalogTable({ products }: { products: Product[] }) {
                 </tr>
               );
             })}
-            {rows.length === 0 ? (
-              <tr><td colSpan={7} className="faint pad-sm">{q.trim() ? "Aramada ürün yok." : cat ? "Bu kategoride ürün yok." : "Bu filtrede ürün yok."}</td></tr>
-            ) : null}
           </tbody>
         </table>
       </div>
+      {rows.length === 0 ? (
+        <CatalogTableEmpty
+          totalProducts={products.length}
+          filter={filter}
+          cat={cat}
+          q={q}
+          onClearFilters={() => {
+            setFilter("all");
+            setCat("");
+            setQ("");
+            setSort("name");
+          }}
+        />
+      ) : null}
     </div>
   );
 }
