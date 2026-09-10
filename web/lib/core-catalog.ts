@@ -10,14 +10,14 @@ export const ORDERS: Order[] = OR.split("\n").map((l) => {
 
 /** Demo buyer prefs on open seed rows so merchant chips are visible without a fresh checkout. */
 const SEED_BUYER_PREFS: Record<string, string> = {
-  ord_0830: "[ambalaj:premium] [hediye] [bahsis:40] [kupon:HOSGELDIN] [montaj:temel]",
+  ord_0830: "[ambalaj:premium] [hediye:Sevgilerle] [bahsis:40] [kupon:HOSGELDIN] [montaj:temel]",
   ord_0901: "[garanti:yil1] [destek:oncelikli] [komsu:komsuya] [saat:ogle] [bahsis:20] [montaj:uzman]",
-  ord_0904: "[kirilgan:cift] [montaj:tam] [paketmatik:mng] [imza:gerekli]",
+  ord_0904: "[kirilgan:cift] [montaj:tam] [paketmatik:mng] [imza:gerekli] [hediye:İyi ki doğdun]",
   ord_0905: "[erisim:asansor] [taksit:6] [odeme:kart] [firma:yurtici] [montaj:temel]",
-  ord_0906: "[ambalaj:minimal] [eko:minimal] [zil:sessiz] [kupon:KARGO] [bahsis:60]",
+  ord_0906: "[ambalaj:minimal] [eko:minimal] [zil:sessiz] [kupon:KARGO] [bahsis:60] [hediye]",
   ord_0907: "[gizli:fatura] [komsu:kapida] [saat:aksam] [taksit:3] [montaj:tam]",
   ord_0908: "[imza:kimlik] [erisim:yardim] [paketmatik:ptt] [kupon:QANTE10] [bahsis:40] [montaj:uzman]",
-  ord_0909: "[ambalaj:premium] [foto:kapida] [bildirim:whatsapp] [kupon:QANTE10]",
+  ord_0909: "[ambalaj:premium] [foto:kapida] [bildirim:whatsapp] [kupon:QANTE10] [hediye:Mutlu yıllar]",
 };
 for (const o of ORDERS) {
   const n = SEED_BUYER_PREFS[o.id];
