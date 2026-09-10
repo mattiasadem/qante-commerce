@@ -9,8 +9,9 @@ import { parseGiftFromNote } from "@/components/ui-gift";
 import { parseInvoiceFromNote } from "@/components/ui-invoice";
 import { parseAmbalajFromNote } from "@/components/ui-ambalaj";
 import { parseEcoFromNote } from "@/components/ui-eco";
+import { parseGizliFromNote } from "@/components/ui-gizli";
 
-/** Siparişlerim row: show checkout coupon / slot / taksit / tip / montaj / hediye / fatura / ambalaj / eko from buyer note. */
+/** Siparişlerim row: show checkout coupon / slot / taksit / tip / montaj / hediye / fatura / ambalaj / eko / gizlilik from buyer note. */
 export function MyOrderPrefLines({ note }: { note?: string }) {
   const coupon = parseCouponFromNote(note);
   const slot = parseShipSlotFromNote(note);
@@ -21,7 +22,8 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const invoice = parseInvoiceFromNote(note);
   const ambalaj = parseAmbalajFromNote(note);
   const eco = parseEcoFromNote(note);
-  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco) return null;
+  const gizli = parseGizliFromNote(note);
+  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
       {coupon ? (
@@ -67,6 +69,11 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
       {eco ? (
         <div className="faint" data-cta="my-orders-eco">
           Eko · {eco.label}
+        </div>
+      ) : null}
+      {gizli ? (
+        <div className="faint" data-cta="my-orders-gizli">
+          Gizlilik · {gizli.label}
         </div>
       ) : null}
     </div>
