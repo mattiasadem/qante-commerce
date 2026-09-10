@@ -15,6 +15,7 @@ import {
   type Row,
 } from "@/components/ui-my-orders-model";
 import { MyOrderRow } from "@/components/ui-my-orders-row";
+import { MyOrdersEmpty, MyOrdersFilterEmpty } from "@/components/ui-my-orders-empty";
 
 function qstr(filter: FilterId, cat: string, q: string, sort: MyOrderSortId): string {
   const sp = new URLSearchParams();
@@ -216,27 +217,7 @@ export function MyOrdersView() {
           </p>
         </div>
       ) : orders.length === 0 ? (
-        <div className="empty" style={{ marginTop: 18 }}>
-          <div className="mark" />
-          <h3>Henüz demo sipariş yok</h3>
-          <p>
-            Sepetten <strong>Ödemeye geç</strong> ile bir sipariş yaz; burada listelenir.
-          </p>
-          <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
-            <Link className="btn" href="/" data-cta="my-orders-empty-to-shop">
-              Mağazaya bak
-            </Link>
-            <Link className="btn" href="/?sale=1" data-cta="my-orders-empty-to-sale">
-              İndirimlilere bak
-            </Link>
-            <Link className="btn" href="/?fav=1" data-cta="my-orders-empty-to-favorites">
-              Favorilere bak
-            </Link>
-            <Link className="btn" href="/sepet" data-cta="my-orders-empty-to-cart">
-              Sepete git
-            </Link>
-          </div>
-        </div>
+        <MyOrdersEmpty />
       ) : (
         <>
           <div className="search-row" style={{ margin: "14px 0 8px", display: "flex", gap: 8, alignItems: "center" }} data-cta="my-orders-search">
@@ -292,15 +273,14 @@ export function MyOrdersView() {
             ))}
           </div>
           {filtered.length === 0 ? (
-            <div className="empty" style={{ marginTop: 18 }}>
-              <div className="mark" />
-              <h3>{q.trim() || cat ? "Arama + kategori birleşiminde sipariş yok" : "Bu süzgeçte sipariş yok"}</h3>
-              <p style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
-                {q.trim() ? <button className="chip" type="button" onClick={() => setQ("")}>Aramayı temizle</button> : null}
-                {cat ? <button className="chip" type="button" onClick={() => setCat("")}>Kategoriyi temizle</button> : null}
-                {filter !== "all" ? <button className="chip" type="button" onClick={() => setFilter("all")}>Tümünü göster</button> : null}
-              </p>
-            </div>
+            <MyOrdersFilterEmpty
+              q={q}
+              cat={cat}
+              filter={filter}
+              onClearQ={() => setQ("")}
+              onClearCat={() => setCat("")}
+              onClearFilter={() => setFilter("all")}
+            />
           ) : (
             <div className="list" style={{ marginTop: 18 }} data-component="MyOrders">
               {filtered.map((o) => (
