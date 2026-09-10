@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useState } from "react";
 import {
   canCancelOrder,
   canConfirmPayment,
@@ -13,6 +14,7 @@ import {
 } from "@/lib/core";
 import { shipNoteLabel } from "@/components/ui-ship-track";
 import { fmtWhen, statusTagClass, type LedgerAction, type Row } from "@/components/ui-my-orders-model";
+import { MyOrderPrefLines } from "@/components/ui-my-orders-prefs";
 
 export function MyOrderRow({
   o,
@@ -30,6 +32,31 @@ export function MyOrderRow({
   const busy = busyId === o.order_id;
   const locked = busyId !== null;
   const progress = orderProgress(o.status);
+  const [copiedId, setCopiedId] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  async function copyId() {
+    try {
+      await navigator.clipboard.writeText(o.order_id);
+      setCopiedId(true);
+      setTimeout(() => setCopiedId(false), 1600);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  async function copyLink() {
+    const path = `/siparis?id=${encodeURIComponent(o.order_id)}`;
+    const href = typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
+    try {
+      await navigator.clipboard.writeText(href);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 1600);
+    } catch {
+      /* ignore */
+    }
+  }
+
   return (
     <div className="list-row" key={o.order_id} style={{ alignItems: "flex-start" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -50,6 +77,15 @@ export function MyOrderRow({
             Kargo · {shipNoteLabel(o.ship_note) ?? o.ship_note}
           </div>
         ) : null}
+        <MyOrderPrefLines note={o.note} />
+        <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }} data-cta="my-orders-copy-row">
+          <button className="chip" type="button" data-cta="my-orders-copy-id" onClick={() => void copyId()}>
+            {copiedId ? "No kopyalandı" : "No kopyala"}
+          </button>
+          <button className="chip" type="button" data-cta="my-orders-copy-order-link" onClick={() => void copyLink()}>
+            {copiedLink ? "Kopyalandı" : "Linki kopyala"}
+          </button>
+        </div>
       </div>
       <div style={{ textAlign: "right" }}>
         <strong>{money(o.total)}</strong>
