@@ -11,6 +11,7 @@ import {
   type OzetFilterId, type OzetSortId,
 } from "@/components/ui-merchant-metrics-filters";
 import { useOzetAlertActions } from "@/components/ui-merchant-metrics-actions";
+import { OzetAttentionEmpty } from "@/components/ui-merchant-ozet-empty";
 
 function qstr(filter: OzetFilterId, cat: string, q: string, sort: OzetSortId) {
   const sp = new URLSearchParams();
@@ -182,10 +183,13 @@ export function AlertList({ alerts, issues }: { alerts: Alert[]; issues: Issue[]
           );
         })}
         {visibleAlerts.length === 0 && visibleIssues.length === 0 ? (
-          <div className="list-row">
-            <span className="muted">{q.trim() || cat ? "Aramada dikkat kaydı yok." : "Dikkat gerektiren kayıt yok."}</span>
-            {q.trim() || cat ? <button className="chip" type="button" data-cta="ozet-search-clear-empty" onClick={() => { setQ(""); setCat(""); }}>Filtreyi temizle</button> : null}
-          </div>
+          <OzetAttentionEmpty
+            totalAlive={aliveAlerts.length + aliveIssues.length}
+            filter={filter}
+            cat={cat}
+            q={q}
+            onClearFilters={() => { setQ(""); setCat(""); setFilter("all"); }}
+          />
         ) : null}
       </div>
     </div>
