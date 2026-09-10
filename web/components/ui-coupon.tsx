@@ -208,4 +208,16 @@ export function CouponTotals({ subtotal }: { subtotal: number }) {
   );
 }
 
+
+/** Read [kupon:CODE] from checkout note for /siparis summary. */
+export function parseCouponFromNote(note?: string): { code: string; label: string } | null {
+  if (!note) return null;
+  const m = note.match(/\[kupon:([A-Za-z0-9_-]+)\]/i);
+  if (!m) return null;
+  const code = m[1].toUpperCase();
+  const known = COUPONS[code];
+  const label = known ? `${known.code} · ${known.label}` : code;
+  return { code, label };
+}
+
 export { COUPON_KEY, COUPONS };
