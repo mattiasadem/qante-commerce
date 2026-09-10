@@ -6,8 +6,9 @@ import { parseTaksitFromNote } from "@/components/ui-taksit";
 import { parseTipFromNote } from "@/components/ui-tip";
 import { parseMontajFromNote } from "@/components/ui-montaj";
 import { parseGiftFromNote } from "@/components/ui-gift";
+import { parseInvoiceFromNote } from "@/components/ui-invoice";
 
-/** Siparişlerim row: show checkout coupon / slot / taksit / tip / montaj / hediye from buyer note. */
+/** Siparişlerim row: show checkout coupon / slot / taksit / tip / montaj / hediye / fatura from buyer note. */
 export function MyOrderPrefLines({ note }: { note?: string }) {
   const coupon = parseCouponFromNote(note);
   const slot = parseShipSlotFromNote(note);
@@ -15,7 +16,8 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const tip = parseTipFromNote(note);
   const montaj = parseMontajFromNote(note);
   const gift = parseGiftFromNote(note);
-  if (!coupon && !slot && !taksit && !tip && !montaj && !gift) return null;
+  const invoice = parseInvoiceFromNote(note);
+  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
       {coupon ? (
@@ -46,6 +48,11 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
       {gift ? (
         <div className="faint" data-cta="my-orders-gift">
           {gift.note ? `Hediye paketi · ${gift.note}` : "Hediye paketi"}
+        </div>
+      ) : null}
+      {invoice ? (
+        <div className="faint" data-cta="my-orders-invoice">
+          Fatura · {invoice.label}
         </div>
       ) : null}
     </div>
