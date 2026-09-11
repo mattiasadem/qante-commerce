@@ -15,6 +15,7 @@ import {
 import { shipNoteLabel } from "@/components/ui-ship-track";
 import { fmtWhen, statusTagClass, type LedgerAction, type Row } from "@/components/ui-my-orders-model";
 import { MyOrderPrefLines } from "@/components/ui-my-orders-prefs";
+import { MyOrderSaatLine } from "@/components/ui-my-orders-saat";
 import { MyOrderGunLine } from "@/components/ui-my-orders-gun";
 import { MyOrderHizLine } from "@/components/ui-my-orders-hiz";
 import { MyOrderOdemeLine } from "@/components/ui-my-orders-odeme";
@@ -86,6 +87,7 @@ export function MyOrderRow({
           </div>
         ) : null}
         <MyOrderPrefLines note={o.note} />
+        <MyOrderSaatLine note={o.note} />
         <MyOrderGunLine note={o.note} />
         <MyOrderHizLine note={o.note} />
         <MyOrderOdemeLine note={o.note} />
