@@ -19,8 +19,9 @@ import { parsePaketmatikFromNote } from "@/components/ui-paketmatik";
 import { parseErisimFromNote } from "@/components/ui-erisim";
 import { parseWarrantyFromNote } from "@/components/ui-warranty";
 import { parseDestekFromNote } from "@/components/ui-destek";
+import { parseNotifyFromNote } from "@/components/ui-notify";
 
-/** Siparişlerim row: show checkout coupon / slot / taksit / tip / montaj / hediye / fatura / ambalaj / eko / gizlilik / imza / kırılgan / kapıcı / sigorta / komşu / paketmatik / erişim / garanti / destek from buyer note. */
+/** Siparişlerim row: show checkout prefs including bildirim from buyer note. */
 export function MyOrderPrefLines({ note }: { note?: string }) {
   const coupon = parseCouponFromNote(note);
   const slot = parseShipSlotFromNote(note);
@@ -41,7 +42,8 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const erisim = parseErisimFromNote(note);
   const warranty = parseWarrantyFromNote(note);
   const destek = parseDestekFromNote(note);
-  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek) return null;
+  const notify = parseNotifyFromNote(note);
+  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
       {coupon ? (
@@ -137,6 +139,11 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
       {destek ? (
         <div className="faint" data-cta="my-orders-destek">
           Destek · {destek.label}
+        </div>
+      ) : null}
+      {notify ? (
+        <div className="faint" data-cta="my-orders-notify">
+          Bildirim · {notify.label}
         </div>
       ) : null}
     </div>
