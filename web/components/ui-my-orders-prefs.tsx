@@ -25,8 +25,9 @@ import { parsePhotoFromNote } from "@/components/ui-photo";
 import { parseCallFromNote } from "@/components/ui-call";
 import { parseReturnFromNote } from "@/components/ui-return";
 import { parseRecipientFromNote } from "@/components/ui-recipient";
+import { parseShipCarrierFromNote } from "@/components/ui-ship-carrier";
 
-/** Siparişlerim row: show checkout prefs including alternate recipient from buyer note. */
+/** Siparişlerim row: show checkout prefs including preferred carrier from buyer note. */
 export function MyOrderPrefLines({ note }: { note?: string }) {
   const coupon = parseCouponFromNote(note);
   const slot = parseShipSlotFromNote(note);
@@ -53,7 +54,8 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const call = parseCallFromNote(note);
   const ret = parseReturnFromNote(note);
   const alici = parseRecipientFromNote(note);
-  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret && !alici) return null;
+  const firma = parseShipCarrierFromNote(note);
+  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret && !alici && !firma) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
       {coupon ? (
@@ -179,6 +181,11 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
       {alici ? (
         <div className="faint" data-cta="my-orders-recipient">
           Alıcı · {alici.label}
+        </div>
+      ) : null}
+      {firma ? (
+        <div className="faint" data-cta="my-orders-firma">
+          Firma · {firma.label}
         </div>
       ) : null}
     </div>
