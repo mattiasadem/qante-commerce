@@ -24,6 +24,7 @@ import { MerchantDestekLine } from "@/components/ui-merchant-destek";
 import { MerchantTaksitLine } from "@/components/ui-merchant-taksit";
 import { MerchantNotifyLine } from "@/components/ui-merchant-notify";
 import { MerchantQuietLine } from "@/components/ui-merchant-quiet";
+import { MerchantPhotoLine } from "@/components/ui-merchant-photo";
 import { lineSummary, statusTone } from "@/components/ui-merchant-orders-filters";
 
 type ShipDraft = Record<string, { carrier: string; tracking: string }>;
@@ -87,6 +88,7 @@ export function OrderRow({
         <MerchantTaksitLine note={o.buyer_note} />
         <MerchantNotifyLine note={o.buyer_note} />
         <MerchantQuietLine note={o.buyer_note} />
+        <MerchantPhotoLine note={o.buyer_note} />
         <BuyerPrefChips note={o.buyer_note} activeKey={pref} onSelectKey={onPrefSelect} />
         {o.status === "paid" && cta?.action === "ship" ? (
           <div style={{ marginTop: 8 }} data-cta="ship-track-fields">
