@@ -36,6 +36,7 @@ export const PREF_FILTERS: { id: string; label: string }[] = [
   { id: "iade", label: "Kolay iade" },
   { id: "alici", label: "Alıcı" },
   { id: "firma", label: "Firma" },
+  { id: "talimat", label: "Talimat" },
   { id: "kirilgan", label: "Kırılgan" },
   { id: "kapici", label: "Kapıcı" },
   { id: "sigorta", label: "Sigorta" },
