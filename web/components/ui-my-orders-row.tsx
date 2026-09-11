@@ -28,6 +28,7 @@ import { MyOrderTaksitLine } from "@/components/ui-my-orders-taksit";
 import { MyOrderFirmaLine } from "@/components/ui-my-orders-firma";
 import { MyOrderTalimatLine } from "@/components/ui-my-orders-talimat";
 import { MyOrderAliciLine } from "@/components/ui-my-orders-alici";
+import { MyOrderMontajLine } from "@/components/ui-my-orders-montaj";
 
 export function MyOrderRow({
   o,
@@ -104,6 +105,7 @@ export function MyOrderRow({
         <MyOrderFirmaLine note={o.note} />
         <MyOrderTalimatLine note={o.note} />
         <MyOrderAliciLine note={o.note} />
+        <MyOrderMontajLine note={o.note} />
         <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }} data-cta="my-orders-copy-row">
           <button className="chip" type="button" data-cta="my-orders-copy-id" onClick={() => void copyId()}>
             {copiedId ? "No kopyalandı" : "No kopyala"}
