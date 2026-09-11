@@ -21,10 +21,9 @@ import { parsePhotoFromNote } from "@/components/ui-photo";
 import { parseCallFromNote } from "@/components/ui-call";
 import { parseReturnFromNote } from "@/components/ui-return";
 import { parseRecipientFromNote } from "@/components/ui-recipient";
-import { parseShipCarrierFromNote } from "@/components/ui-ship-carrier";
 import { parseShipInstrFromNote } from "@/components/ui-ship-instr";
 
-/** Siparişlerim row: show checkout prefs including preferred carrier from buyer note. */
+/** Siparişlerim row: show checkout prefs including delivery instruction from buyer note. */
 export function MyOrderPrefLines({ note }: { note?: string }) {
   const coupon = parseCouponFromNote(note);
   const montaj = parseMontajFromNote(note);
@@ -47,9 +46,8 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const call = parseCallFromNote(note);
   const ret = parseReturnFromNote(note);
   const alici = parseRecipientFromNote(note);
-  const firma = parseShipCarrierFromNote(note);
   const talimat = parseShipInstrFromNote(note);
-  if (!coupon && !montaj && !gift && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret && !alici && !firma && !talimat) return null;
+  if (!coupon && !montaj && !gift && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret && !alici && !talimat) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
       {coupon ? (
@@ -155,11 +153,6 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
       {alici ? (
         <div className="faint" data-cta="my-orders-recipient">
           Alıcı · {alici.label}
-        </div>
-      ) : null}
-      {firma ? (
-        <div className="faint" data-cta="my-orders-firma">
-          Firma · {firma.label}
         </div>
       ) : null}
       {talimat ? (
