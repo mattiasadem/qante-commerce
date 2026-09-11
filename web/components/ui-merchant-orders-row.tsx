@@ -22,6 +22,7 @@ import { MerchantErisimLine } from "@/components/ui-merchant-erisim";
 import { MerchantWarrantyLine } from "@/components/ui-merchant-warranty";
 import { MerchantDestekLine } from "@/components/ui-merchant-destek";
 import { MerchantTaksitLine } from "@/components/ui-merchant-taksit";
+import { MerchantOdemeLine } from "@/components/ui-merchant-odeme";
 import { MerchantSaatLine } from "@/components/ui-merchant-saat";
 import { MerchantNotifyLine } from "@/components/ui-merchant-notify";
 import { MerchantQuietLine } from "@/components/ui-merchant-quiet";
@@ -94,6 +95,7 @@ export function OrderRow({
         <MerchantWarrantyLine note={o.buyer_note} />
         <MerchantDestekLine note={o.buyer_note} />
         <MerchantTaksitLine note={o.buyer_note} />
+        <MerchantOdemeLine note={o.buyer_note} />
         <MerchantSaatLine note={o.buyer_note} />
         <MerchantNotifyLine note={o.buyer_note} />
         <MerchantQuietLine note={o.buyer_note} />
