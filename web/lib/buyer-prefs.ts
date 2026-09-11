@@ -60,7 +60,7 @@ export const VALUE_LABEL: Record<string, Record<string, string>> = {
   eko: { kagit: "Kağıt", geri: "Geri dönüşüm", yok: "Yok", minimal: "Minimal", standart: "Standart", plastiksiz: "Plastiksiz" },
   odeme: { kart: "Kart", kapida: "Kapıda", havale: "Havale" },
   fatura: { bireysel: "Bireysel", kurumsal: "Kurumsal" },
-  bildirim: { sms: "SMS", email: "E-posta", whatsapp: "WhatsApp", yok: "Yok" },
+  bildirim: { sms: "SMS", email: "E-posta", eposta: "E-posta", ikisi: "SMS + E-posta", whatsapp: "WhatsApp", yok: "Yok" },
   zil: { sessiz: "Sessiz", normal: "Normal", yok: "Çalma" },
   ara: { once: "Önce ara", etme: "Arama", kapida: "Kapıda" },
   foto: { kapida: "Kapıda foto", kutu: "Kutuda foto", imza: "İmza + foto", evet: "İste", yok: "Yok" },
