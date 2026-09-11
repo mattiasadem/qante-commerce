@@ -74,9 +74,11 @@ export function formatQuietTag(info: QuietInfo = readQuiet()): string | null {
 
 export function parseQuietFromNote(note?: string): { mode: QuietMode; label: string } | null {
   if (!note) return null;
-  const m = note.match(/\[zil:(calma|sessiz|not)\]/i);
+  const m = note.match(/\[zil:(calma|sessiz|not|yok|normal)\]/i);
   if (!m) return null;
-  const mode = m[1].toLowerCase() as QuietMode;
+  const raw = m[1].toLowerCase();
+  const mode: QuietMode =
+    raw === "yok" ? "calma" : raw === "normal" ? "sessiz" : (raw as QuietMode);
   return { mode, label: LABELS[mode] };
 }
 
