@@ -6,7 +6,6 @@ import { parseTaksitFromNote } from "@/components/ui-taksit";
 import { parseTipFromNote } from "@/components/ui-tip";
 import { parseMontajFromNote } from "@/components/ui-montaj";
 import { parseGiftFromNote } from "@/components/ui-gift";
-import { parseInvoiceFromNote } from "@/components/ui-invoice";
 import { parseAmbalajFromNote } from "@/components/ui-ambalaj";
 import { parseEcoFromNote } from "@/components/ui-eco";
 import { parseGizliFromNote } from "@/components/ui-gizli";
@@ -36,7 +35,6 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const tip = parseTipFromNote(note);
   const montaj = parseMontajFromNote(note);
   const gift = parseGiftFromNote(note);
-  const invoice = parseInvoiceFromNote(note);
   const ambalaj = parseAmbalajFromNote(note);
   const eco = parseEcoFromNote(note);
   const gizli = parseGizliFromNote(note);
@@ -57,7 +55,7 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const alici = parseRecipientFromNote(note);
   const firma = parseShipCarrierFromNote(note);
   const talimat = parseShipInstrFromNote(note);
-  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret && !alici && !firma && !talimat) return null;
+  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret && !alici && !firma && !talimat) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
       {coupon ? (
@@ -88,11 +86,6 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
       {gift ? (
         <div className="faint" data-cta="my-orders-gift">
           {gift.note ? `Hediye paketi · ${gift.note}` : "Hediye paketi"}
-        </div>
-      ) : null}
-      {invoice ? (
-        <div className="faint" data-cta="my-orders-invoice">
-          Fatura · {invoice.label}
         </div>
       ) : null}
       {ambalaj ? (
