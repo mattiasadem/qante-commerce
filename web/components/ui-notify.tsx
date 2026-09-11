@@ -23,6 +23,16 @@ const SHORT: Record<NotifyChannel, string> = {
 
 const CHANNELS: NotifyChannel[] = ["sms", "eposta", "ikisi"];
 
+/** Extra note values (seed / older tags) for merchant + Siparişlerim lines. */
+const NOTE_LABELS: Record<string, string> = {
+  sms: "SMS",
+  eposta: "E-posta",
+  email: "E-posta",
+  ikisi: "SMS + E-posta",
+  whatsapp: "WhatsApp",
+  yok: "Yok",
+};
+
 const EMPTY: NotifyInfo = { channel: null };
 
 export function readNotify(): NotifyInfo {
@@ -72,12 +82,12 @@ export function formatNotifyTag(info: NotifyInfo = readNotify()): string | null 
   return `[bildirim:${info.channel}]`;
 }
 
-export function parseNotifyFromNote(note?: string): { channel: NotifyChannel; label: string } | null {
+export function parseNotifyFromNote(note?: string): { channel: string; label: string } | null {
   if (!note) return null;
-  const m = note.match(/\[bildirim:(sms|eposta|ikisi)\]/i);
+  const m = note.match(/\[bildirim:(sms|eposta|email|ikisi|whatsapp|yok)\]/i);
   if (!m) return null;
-  const channel = m[1].toLowerCase() as NotifyChannel;
-  return { channel, label: LABELS[channel] };
+  const channel = m[1].toLowerCase();
+  return { channel, label: NOTE_LABELS[channel] ?? channel };
 }
 
 /** Cart /sepet + drawer: Teslimat bildirimi chips, localStorage only. */
