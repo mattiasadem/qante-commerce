@@ -68,6 +68,7 @@ export const VALUE_LABEL: Record<string, Record<string, string>> = {
   taksit: { pesin: "Peşin", "3": "3 taksit", "6": "6 taksit", "9": "9 taksit", "12": "12 taksit" },
   saat: { sabah: "Sabah 09–12", ogle: "Öğle 12–17", aksam: "Akşam 17–21" },
   gun: { bugun: "Bugün", yarin: "Yarın", haftaici: "Hafta içi", cumartesi: "Cumartesi" },
+  talimat: { kapi: "Kapıya bırak", komsu: "Komşuya bırak", zil: "Zili çalma", ara: "Arayarak gel" },
   firma: { yurtici: "Yurtiçi", mng: "MNG", aras: "Aras", surat: "Sürat" },
   iade: { "14": "14 gün", "30": "30 gün", "60": "60 gün" },
   kupon: { qante10: "%10", hosgeldin: "100 ₺", kargo: "Ücretsiz kargo" },
