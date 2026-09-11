@@ -1,6 +1,5 @@
 "use client";
 
-import { parseCouponFromNote } from "@/components/ui-coupon-parse";
 import { parseMontajFromNote } from "@/components/ui-montaj";
 import { parseGiftFromNote } from "@/components/ui-gift";
 import { parseAmbalajFromNote } from "@/components/ui-ambalaj";
@@ -25,7 +24,6 @@ import { parseShipInstrFromNote } from "@/components/ui-ship-instr";
 
 /** Siparişlerim row: show checkout prefs including delivery instruction from buyer note. */
 export function MyOrderPrefLines({ note }: { note?: string }) {
-  const coupon = parseCouponFromNote(note);
   const montaj = parseMontajFromNote(note);
   const gift = parseGiftFromNote(note);
   const ambalaj = parseAmbalajFromNote(note);
@@ -47,14 +45,9 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const ret = parseReturnFromNote(note);
   const alici = parseRecipientFromNote(note);
   const talimat = parseShipInstrFromNote(note);
-  if (!coupon && !montaj && !gift && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret && !alici && !talimat) return null;
+  if (!montaj && !gift && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret && !alici && !talimat) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
-      {coupon ? (
-        <div className="faint" data-cta="my-orders-coupon">
-          Kupon · {coupon.label}
-        </div>
-      ) : null}
       {montaj ? (
         <div className="faint" data-cta="my-orders-montaj">
           Montaj · {montaj.label}
