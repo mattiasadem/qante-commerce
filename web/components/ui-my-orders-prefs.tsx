@@ -20,6 +20,7 @@ import { parseErisimFromNote } from "@/components/ui-erisim";
 import { parseWarrantyFromNote } from "@/components/ui-warranty";
 import { parseDestekFromNote } from "@/components/ui-destek";
 import { parseNotifyFromNote } from "@/components/ui-notify";
+import { parseQuietFromNote } from "@/components/ui-quiet";
 
 /** Siparişlerim row: show checkout prefs including bildirim from buyer note. */
 export function MyOrderPrefLines({ note }: { note?: string }) {
@@ -43,7 +44,8 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const warranty = parseWarrantyFromNote(note);
   const destek = parseDestekFromNote(note);
   const notify = parseNotifyFromNote(note);
-  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify) return null;
+  const quiet = parseQuietFromNote(note);
+  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
       {coupon ? (
@@ -144,6 +146,11 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
       {notify ? (
         <div className="faint" data-cta="my-orders-notify">
           Bildirim · {notify.label}
+        </div>
+      ) : null}
+      {quiet ? (
+        <div className="faint" data-cta="my-orders-quiet">
+          Zil · {quiet.label}
         </div>
       ) : null}
     </div>
