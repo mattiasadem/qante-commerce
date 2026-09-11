@@ -28,6 +28,7 @@ export const PREF_FILTERS: { id: string; label: string }[] = [
   { id: "saat", label: "Saat" },
   { id: "gun", label: "Gün" },
   { id: "hiz", label: "Hız" },
+  { id: "sekil", label: "Teslim şekli" },
   { id: "erisim", label: "Erişim" },
   { id: "eko", label: "Eko" },
   { id: "garanti", label: "Garanti" },
