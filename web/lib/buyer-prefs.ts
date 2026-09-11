@@ -71,6 +71,7 @@ export const VALUE_LABEL: Record<string, Record<string, string>> = {
   firma: { yurtici: "Yurtiçi", mng: "MNG", aras: "Aras", surat: "Sürat" },
   iade: { "14": "14 gün", "30": "30 gün", "60": "60 gün" },
   kupon: { qante10: "%10", hosgeldin: "100 ₺", kargo: "Ücretsiz kargo" },
+  iletisim: { whatsapp: "WhatsApp", sms: "SMS", email: "E-posta", ara: "Ara" },
 };
 
 export type BuyerPrefChip = { key: string; label: string };
