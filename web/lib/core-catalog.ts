@@ -1,5 +1,6 @@
 import type { Product, Order } from "@/lib/core-types";
 import { PRODUCTS } from "@/lib/core-art";
+import { SEED_BUYER_PREFS } from "@/lib/seed-buyer-prefs";
 
 const OR = "ord_0610|2026-06-10T11:00:00+03:00|fulfilled|219|prod_kadife_minder:1:219\nord_0620|2026-06-20T11:00:00+03:00|fulfilled|329.5|prod_ipek_fular:1:329.5\nord_0708|2026-07-08T11:20:00+03:00|fulfilled|1249.9|prod_keten_gomlek:1:1249.9\nord_0712|2026-07-12T16:05:00+03:00|fulfilled|249.9|prod_pamuklu_tisort:1:249.9\nord_0715|2026-07-15T09:40:00+03:00|fulfilled|2169.5|prod_yun_kazak:1:1490,prod_seramik_vazo:1:679.5\nord_0719|2026-07-19T14:10:00+03:00|cancelled|1890|prod_keten_pantolon:1:1890\nord_0722|2026-07-22T18:30:00+03:00|fulfilled|778|prod_yun_atki:2:389\nord_0728|2026-07-28T10:00:00+03:00|fulfilled|1498.9|prod_keten_gomlek:1:1249.9,prod_pamuklu_tisort:1:249.9\nord_0801|2026-08-01T13:15:00+03:00|fulfilled|888|prod_ahsap_tepsi:1:429,prod_cam_surahi:1:459\nord_0805|2026-08-05T12:00:00+03:00|fulfilled|1890|prod_keten_pantolon:1:1890\nord_0807|2026-08-07T09:25:00+03:00|fulfilled|679.5|prod_seramik_vazo:1:679.5\nord_0810|2026-08-10T17:40:00+03:00|fulfilled|2499.8|prod_keten_gomlek:2:1249.9\nord_0812|2026-08-12T11:05:00+03:00|fulfilled|1490|prod_yun_kazak:1:1490\nord_0814|2026-08-14T15:50:00+03:00|return_requested|1199|prod_keten_nevresim:1:1199\nord_0818|2026-08-18T10:20:00+03:00|fulfilled|888.8|prod_pamuklu_tisort:2:249.9,prod_yun_atki:1:389\nord_0820|2026-08-20T19:00:00+03:00|fulfilled|549|prod_deri_cuzdan:1:549\nord_0823|2026-08-23T13:35:00+03:00|fulfilled|1138.5|prod_seramik_vazo:1:679.5,prod_cam_surahi:1:459\nord_0826|2026-08-26T16:10:00+03:00|fulfilled|1249.9|prod_keten_gomlek:1:1249.9\nord_0828|2026-08-28T09:45:00+03:00|fulfilled|2319|prod_keten_pantolon:1:1890,prod_ahsap_tepsi:1:429\nord_0830|2026-08-30T12:00:00+03:00|paid|1490|prod_yun_kazak:1:1490\nord_0901|2026-09-01T08:30:00+03:00|pending_payment|389|prod_yun_atki:1:389\nord_0902|2026-09-02T14:20:00+03:00|return_requested|679.5|prod_seramik_vazo:1:679.5\nord_0903|2026-09-03T10:05:00+03:00|fulfilled|499.8|prod_pamuklu_tisort:2:249.9\nord_0904|2026-09-04T09:15:00+03:00|pending_payment|549|prod_deri_cuzdan:1:549\nord_0905|2026-09-04T11:40:00+03:00|pending_payment|429|prod_ahsap_tepsi:1:429\nord_0906|2026-09-04T16:20:00+03:00|shipped|778|prod_yun_atki:2:389\nord_0907|2026-09-05T10:00:00+03:00|pending_payment|1249.9|prod_keten_gomlek:1:1249.9\nord_0908|2026-09-06T15:30:00+03:00|paid|1890|prod_keten_pantolon:1:1890\nord_0909|2026-09-07T11:00:00+03:00|shipped|679.5|prod_seramik_vazo:1:679.5";
 export const ORDERS: Order[] = OR.split("\n").map((l) => {
@@ -7,17 +8,6 @@ export const ORDERS: Order[] = OR.split("\n").map((l) => {
   return { id, created_at, status, total: +t, items: its.split(",").map((x) => { const [product_id, qty, price] = x.split(":"); return { product_id, qty: +qty, price: +price }; }) };
 });
 
-/** Demo buyer prefs on open seed rows so merchant chips are visible without a fresh checkout. */
-const SEED_BUYER_PREFS: Record<string, string> = {
-  ord_0830: "[kapici:3B Yılmaz] [sigorta:premium] [ambalaj:premium] [eko:geri] [hediye:Sevgilerle] [bahsis:40] [kupon:HOSGELDIN] [montaj:temel] [fatura:bireysel] [gizli:kapali] [imza:gerekli] [kirilgan:dolgu]",
-  ord_0901: "[kapici:Kat 4] [sigorta:temel] [garanti:yil1] [destek:oncelikli] [komsu:komsuya] [saat:ogle] [bahsis:20] [montaj:uzman] [fatura:bireysel] [ambalaj:standart] [eko:plastiksiz] [gizli:markasiz] [imza:kimlik] [kirilgan:etiket]",
-  ord_0904: "[kapici] [sigorta:tam] [kirilgan:cift] [montaj:tam] [paketmatik:mng] [imza:gerekli] [hediye:İyi ki doğdun] [fatura:kurumsal|Nivorius GmbH|DE123456] [ambalaj:premium] [eko:geri] [gizli:kapali]",
-  ord_0905: "[erisim:asansor] [sigorta:temel] [taksit:6] [odeme:kart] [firma:yurtici] [montaj:temel] [fatura:kurumsal|Demo AŞ|1234567890|Kadıköy] [ambalaj:minimal] [eko:plastiksiz] [imza:gerekmez]",
-  ord_0906: "[kapici:A blok] [sigorta:premium] [ambalaj:minimal] [eko:minimal] [zil:sessiz] [kupon:KARGO] [bahsis:60] [hediye] [fatura:bireysel] [gizli:markasiz] [imza:gerekli] [kirilgan:dolgu]",
-  ord_0907: "[gizli:fatura] [komsu:kapida] [saat:aksam] [taksit:3] [montaj:tam] [fatura:kurumsal|Qante Demo] [ambalaj:standart] [eko:geri] [imza:gerekmez]",
-  ord_0908: "[kapici:2C Demir] [sigorta:tam] [imza:kimlik] [erisim:yardim] [paketmatik:ptt] [kupon:QANTE10] [bahsis:40] [montaj:uzman] [fatura:bireysel] [ambalaj:premium] [eko:minimal] [gizli:fatura] [kirilgan:etiket]",
-  ord_0909: "[kapici:Giriş] [sigorta:premium] [ambalaj:premium] [eko:plastiksiz] [foto:kapida] [bildirim:whatsapp] [kupon:QANTE10] [hediye:Mutlu yıllar] [fatura:kurumsal|Atelier TR|9876543210|Beşiktaş] [gizli:kapali] [imza:kimlik] [kirilgan:cift]",
-};
 for (const o of ORDERS) {
   const n = SEED_BUYER_PREFS[o.id];
   if (n) o.buyer_note = n;
