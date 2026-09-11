@@ -3,7 +3,6 @@
 import { parseCouponFromNote } from "@/components/ui-coupon-parse";
 import { parseShipSlotFromNote } from "@/components/ui-ship-slot";
 import { parseTaksitFromNote } from "@/components/ui-taksit";
-import { parseTipFromNote } from "@/components/ui-tip";
 import { parseMontajFromNote } from "@/components/ui-montaj";
 import { parseGiftFromNote } from "@/components/ui-gift";
 import { parseAmbalajFromNote } from "@/components/ui-ambalaj";
@@ -32,7 +31,6 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const coupon = parseCouponFromNote(note);
   const slot = parseShipSlotFromNote(note);
   const taksit = parseTaksitFromNote(note);
-  const tip = parseTipFromNote(note);
   const montaj = parseMontajFromNote(note);
   const gift = parseGiftFromNote(note);
   const ambalaj = parseAmbalajFromNote(note);
@@ -55,7 +53,7 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const alici = parseRecipientFromNote(note);
   const firma = parseShipCarrierFromNote(note);
   const talimat = parseShipInstrFromNote(note);
-  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret && !alici && !firma && !talimat) return null;
+  if (!coupon && !slot && !taksit && !montaj && !gift && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret && !alici && !firma && !talimat) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
       {coupon ? (
@@ -71,11 +69,6 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
       {taksit ? (
         <div className="faint" data-cta="my-orders-taksit">
           Taksit · {taksit.label}
-        </div>
-      ) : null}
-      {tip ? (
-        <div className="faint" data-cta="my-orders-tip">
-          Bahşiş · {tip.label}
         </div>
       ) : null}
       {montaj ? (
