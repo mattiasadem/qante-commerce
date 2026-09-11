@@ -21,6 +21,7 @@ import { MyOrderOdemeLine } from "@/components/ui-my-orders-odeme";
 import { MyOrderSekilLine } from "@/components/ui-my-orders-sekil";
 import { MyOrderIletisimLine } from "@/components/ui-my-orders-iletisim";
 import { MyOrderFaturaLine } from "@/components/ui-my-orders-fatura";
+import { MyOrderBahsisLine } from "@/components/ui-my-orders-bahsis";
 
 export function MyOrderRow({
   o,
@@ -90,6 +91,7 @@ export function MyOrderRow({
         <MyOrderSekilLine note={o.note} />
         <MyOrderIletisimLine note={o.note} />
         <MyOrderFaturaLine note={o.note} />
+        <MyOrderBahsisLine note={o.note} />
         <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }} data-cta="my-orders-copy-row">
           <button className="chip" type="button" data-cta="my-orders-copy-id" onClick={() => void copyId()}>
             {copiedId ? "No kopyalandı" : "No kopyala"}
