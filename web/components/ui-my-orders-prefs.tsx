@@ -22,8 +22,9 @@ import { parseDestekFromNote } from "@/components/ui-destek";
 import { parseNotifyFromNote } from "@/components/ui-notify";
 import { parseQuietFromNote } from "@/components/ui-quiet";
 import { parsePhotoFromNote } from "@/components/ui-photo";
+import { parseCallFromNote } from "@/components/ui-call";
 
-/** Siparişlerim row: show checkout prefs including foto from buyer note. */
+/** Siparişlerim row: show checkout prefs including ara from buyer note. */
 export function MyOrderPrefLines({ note }: { note?: string }) {
   const coupon = parseCouponFromNote(note);
   const slot = parseShipSlotFromNote(note);
@@ -47,7 +48,8 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const notify = parseNotifyFromNote(note);
   const quiet = parseQuietFromNote(note);
   const photo = parsePhotoFromNote(note);
-  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo) return null;
+  const call = parseCallFromNote(note);
+  if (!coupon && !slot && !taksit && !tip && !montaj && !gift && !invoice && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
       {coupon ? (
@@ -158,6 +160,11 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
       {photo ? (
         <div className="faint" data-cta="my-orders-photo">
           Foto · {photo.label}
+        </div>
+      ) : null}
+      {call ? (
+        <div className="faint" data-cta="my-orders-call">
+          Ara · {call.label}
         </div>
       ) : null}
     </div>
