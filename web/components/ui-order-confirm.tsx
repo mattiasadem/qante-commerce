@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { STATUS_LABEL, canCancelOrder, canConfirmPayment, canConfirmReceived, canReorder, canRequestReturn, canWithdrawReturn, money, orderProgress } from "@/lib/core";
 import { parseDeliveryFromNote } from "@/components/ui-delivery";
 import { OrderConfirmGiftSummary } from "@/components/ui-order-confirm-gift";
-import { parsePaymentFromNote } from "@/components/ui-payment";
+import { OrderConfirmPaymentSummary } from "@/components/ui-order-confirm-payment";
 import { parseVariantsFromNote } from "@/components/ui-variant";
 import { ShipBar, ShopFooter, useCart } from "@/components/ui-shell";
 import { ShipTrackBanner } from "@/components/ui-ship-track";
@@ -231,15 +231,7 @@ export function OrderConfirm() {
             return line ? <p className="muted" data-cta="delivery-summary" style={{ marginTop: 6 }}>Teslimat · {line}</p> : null;
           })()}
           <OrderConfirmGiftSummary note={order.note} />
-          {(() => {
-            const p = parsePaymentFromNote(order.note);
-            if (!p) return null;
-            return (
-              <p className="muted" data-cta="payment-summary" style={{ marginTop: 6 }}>
-                Ödeme · {p.label}
-              </p>
-            );
-          })()}
+          <OrderConfirmPaymentSummary note={order.note} />
           <OrderConfirmPhotoSummary note={order.note} />
           <OrderConfirmQuietSummary note={order.note} />
           <OrderConfirmNotifySummary note={order.note} />
