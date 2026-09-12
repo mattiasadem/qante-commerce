@@ -1,6 +1,5 @@
 "use client";
 
-import { parseImzaFromNote } from "@/components/ui-imza";
 import { parseFragileFromNote } from "@/components/ui-fragile";
 import { parseDoormanFromNote } from "@/components/ui-doorman";
 import { parseInsuranceFromNote } from "@/components/ui-insurance";
@@ -15,9 +14,8 @@ import { parsePhotoFromNote } from "@/components/ui-photo";
 import { parseCallFromNote } from "@/components/ui-call";
 import { parseReturnFromNote } from "@/components/ui-return";
 
-/** Siparişlerim row: show checkout prefs (gizli extracted to MyOrderGizliLine). */
+/** Siparişlerim row: show checkout prefs (imza extracted to MyOrderImzaLine). */
 export function MyOrderPrefLines({ note }: { note?: string }) {
-  const imza = parseImzaFromNote(note);
   const fragile = parseFragileFromNote(note);
   const doorman = parseDoormanFromNote(note);
   const insurance = parseInsuranceFromNote(note);
@@ -31,14 +29,9 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const photo = parsePhotoFromNote(note);
   const call = parseCallFromNote(note);
   const ret = parseReturnFromNote(note);
-  if (!imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret) return null;
+  if (!fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
-      {imza ? (
-        <div className="faint" data-cta="my-orders-imza">
-          İmza · {imza.label}
-        </div>
-      ) : null}
       {fragile ? (
         <div className="faint" data-cta="my-orders-fragile">
           Kırılgan · {fragile.label}
