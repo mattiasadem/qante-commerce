@@ -1,6 +1,5 @@
 "use client";
 
-import { parseGiftFromNote } from "@/components/ui-gift";
 import { parseAmbalajFromNote } from "@/components/ui-ambalaj";
 import { parseEcoFromNote } from "@/components/ui-eco";
 import { parseGizliFromNote } from "@/components/ui-gizli";
@@ -19,9 +18,8 @@ import { parsePhotoFromNote } from "@/components/ui-photo";
 import { parseCallFromNote } from "@/components/ui-call";
 import { parseReturnFromNote } from "@/components/ui-return";
 
-/** Siparişlerim row: show checkout prefs (montaj extracted to MyOrderMontajLine). */
+/** Siparişlerim row: show checkout prefs (hediye extracted to MyOrderHediyeLine). */
 export function MyOrderPrefLines({ note }: { note?: string }) {
-  const gift = parseGiftFromNote(note);
   const ambalaj = parseAmbalajFromNote(note);
   const eco = parseEcoFromNote(note);
   const gizli = parseGizliFromNote(note);
@@ -39,14 +37,9 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const photo = parsePhotoFromNote(note);
   const call = parseCallFromNote(note);
   const ret = parseReturnFromNote(note);
-  if (!gift && !ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret) return null;
+  if (!ambalaj && !eco && !gizli && !imza && !fragile && !doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
-      {gift ? (
-        <div className="faint" data-cta="my-orders-gift">
-          {gift.note ? `Hediye paketi · ${gift.note}` : "Hediye paketi"}
-        </div>
-      ) : null}
       {ambalaj ? (
         <div className="faint" data-cta="my-orders-ambalaj">
           Ambalaj · {ambalaj.label}
