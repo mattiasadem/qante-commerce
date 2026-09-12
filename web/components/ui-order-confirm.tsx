@@ -1,1 +1,1 @@
-PLACEHOLDER_WILL_FAIL
+USE_FILE:/tmp/ui-order-confirm-push-content.txt
