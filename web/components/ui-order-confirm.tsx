@@ -11,6 +11,7 @@ import { ShipBar, ShopFooter, useCart } from "@/components/ui-shell";
 import { ShipTrackBanner } from "@/components/ui-ship-track";
 import { OrderConfirmEmpty } from "@/components/ui-order-confirm-empty";
 import { OrderConfirmPhotoSummary } from "@/components/ui-order-confirm-photo";
+import { OrderConfirmQuietSummary } from "@/components/ui-order-confirm-quiet";
 
 type DemoOrderView = {
   order_id: string;
@@ -247,6 +248,7 @@ export function OrderConfirm() {
             );
           })()}
           <OrderConfirmPhotoSummary note={order.note} />
+          <OrderConfirmQuietSummary note={order.note} />
           {(status === "shipped" || status === "fulfilled" || status === "return_requested") && order.ship_note ? (
             <ShipTrackBanner shipNote={order.ship_note} />
           ) : null}
