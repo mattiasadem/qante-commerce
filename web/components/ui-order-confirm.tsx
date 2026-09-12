@@ -1,1 +1,1 @@
-PLACEHOLDER_LOAD_FROM_DISK
+USE_FILE:/workspace/qante-studio-deploy/components/ui-order-confirm.tsx
