@@ -44,6 +44,7 @@ import { MyOrderGarantiLine } from "@/components/ui-my-orders-garanti";
 import { MyOrderDestekLine } from "@/components/ui-my-orders-destek";
 import { MyOrderIadeLine } from "@/components/ui-my-orders-iade";
 import { MyOrderCallLine } from "@/components/ui-my-orders-call";
+import { MyOrderNotifyLine } from "@/components/ui-my-orders-notify";
 
 export function MyOrderRow({
   o,
@@ -136,6 +137,7 @@ export function MyOrderRow({
         <MyOrderDestekLine note={o.note} />
         <MyOrderIadeLine note={o.note} />
         <MyOrderCallLine note={o.note} />
+        <MyOrderNotifyLine note={o.note} />
         <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }} data-cta="my-orders-copy-row">
           <button className="chip" type="button" data-cta="my-orders-copy-id" onClick={() => void copyId()}>
             {copiedId ? "No kopyalandı" : "No kopyala"}
