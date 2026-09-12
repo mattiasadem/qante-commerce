@@ -34,6 +34,7 @@ import { MyOrderAmbalajLine } from "@/components/ui-my-orders-ambalaj";
 import { MyOrderEcoLine } from "@/components/ui-my-orders-eko";
 import { MyOrderGizliLine } from "@/components/ui-my-orders-gizli";
 import { MyOrderImzaLine } from "@/components/ui-my-orders-imza";
+import { MyOrderKirilganLine } from "@/components/ui-my-orders-kirilgan";
 
 export function MyOrderRow({
   o,
@@ -116,6 +117,7 @@ export function MyOrderRow({
         <MyOrderEcoLine note={o.note} />
         <MyOrderGizliLine note={o.note} />
         <MyOrderImzaLine note={o.note} />
+        <MyOrderKirilganLine note={o.note} />
         <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }} data-cta="my-orders-copy-row">
           <button className="chip" type="button" data-cta="my-orders-copy-id" onClick={() => void copyId()}>
             {copiedId ? "No kopyalandı" : "No kopyala"}
