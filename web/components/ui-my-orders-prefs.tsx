@@ -1,6 +1,5 @@
 "use client";
 
-import { parseKomsuFromNote } from "@/components/ui-komsu";
 import { parsePaketmatikFromNote } from "@/components/ui-paketmatik";
 import { parseErisimFromNote } from "@/components/ui-erisim";
 import { parseWarrantyFromNote } from "@/components/ui-warranty";
@@ -11,9 +10,8 @@ import { parsePhotoFromNote } from "@/components/ui-photo";
 import { parseCallFromNote } from "@/components/ui-call";
 import { parseReturnFromNote } from "@/components/ui-return";
 
-/** Siparişlerim row: show checkout prefs (sigorta extracted to MyOrderSigortaLine). */
+/** Siparişlerim row: show checkout prefs (komsu extracted to MyOrderKomsuLine). */
 export function MyOrderPrefLines({ note }: { note?: string }) {
-  const komsu = parseKomsuFromNote(note);
   const paketmatik = parsePaketmatikFromNote(note);
   const erisim = parseErisimFromNote(note);
   const warranty = parseWarrantyFromNote(note);
@@ -23,14 +21,9 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const photo = parsePhotoFromNote(note);
   const call = parseCallFromNote(note);
   const ret = parseReturnFromNote(note);
-  if (!komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret) return null;
+  if (!paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
-      {komsu ? (
-        <div className="faint" data-cta="my-orders-komsu">
-          Komşu · {komsu.label}
-        </div>
-      ) : null}
       {paketmatik ? (
         <div className="faint" data-cta="my-orders-paketmatik">
           Paketmatik · {paketmatik.label}
