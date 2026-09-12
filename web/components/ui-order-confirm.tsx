@@ -7,6 +7,7 @@ import { parseDeliveryFromNote } from "@/components/ui-delivery";
 import { OrderConfirmGiftSummary } from "@/components/ui-order-confirm-gift";
 import { OrderConfirmPaymentSummary } from "@/components/ui-order-confirm-payment";
 import { OrderConfirmTipSummary } from "@/components/ui-order-confirm-tip";
+import { OrderConfirmCouponSummary } from "@/components/ui-order-confirm-coupon";
 import { parseVariantsFromNote } from "@/components/ui-variant";
 import { ShipBar, ShopFooter, useCart } from "@/components/ui-shell";
 import { ShipTrackBanner } from "@/components/ui-ship-track";
@@ -234,6 +235,7 @@ export function OrderConfirm() {
           <OrderConfirmGiftSummary note={order.note} />
           <OrderConfirmPaymentSummary note={order.note} />
           <OrderConfirmTipSummary note={order.note} />
+          <OrderConfirmCouponSummary note={order.note} />
           <OrderConfirmPhotoSummary note={order.note} />
           <OrderConfirmQuietSummary note={order.note} />
           <OrderConfirmNotifySummary note={order.note} />
