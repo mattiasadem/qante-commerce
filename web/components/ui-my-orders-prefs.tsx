@@ -1,6 +1,5 @@
 "use client";
 
-import { parseWarrantyFromNote } from "@/components/ui-warranty";
 import { parseDestekFromNote } from "@/components/ui-destek";
 import { parseNotifyFromNote } from "@/components/ui-notify";
 import { parseQuietFromNote } from "@/components/ui-quiet";
@@ -8,23 +7,17 @@ import { parsePhotoFromNote } from "@/components/ui-photo";
 import { parseCallFromNote } from "@/components/ui-call";
 import { parseReturnFromNote } from "@/components/ui-return";
 
-/** Siparişlerim row: show checkout prefs (erisim extracted to MyOrderErisimLine). */
+/** Siparişlerim row: show checkout prefs (garanti extracted to MyOrderGarantiLine). */
 export function MyOrderPrefLines({ note }: { note?: string }) {
-  const warranty = parseWarrantyFromNote(note);
   const destek = parseDestekFromNote(note);
   const notify = parseNotifyFromNote(note);
   const quiet = parseQuietFromNote(note);
   const photo = parsePhotoFromNote(note);
   const call = parseCallFromNote(note);
   const ret = parseReturnFromNote(note);
-  if (!warranty && !destek && !notify && !quiet && !photo && !call && !ret) return null;
+  if (!destek && !notify && !quiet && !photo && !call && !ret) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
-      {warranty ? (
-        <div className="faint" data-cta="my-orders-warranty">
-          Garanti · {warranty.label}
-        </div>
-      ) : null}
       {destek ? (
         <div className="faint" data-cta="my-orders-destek">
           Destek · {destek.label}
