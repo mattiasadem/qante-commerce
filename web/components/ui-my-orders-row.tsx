@@ -40,6 +40,7 @@ import { MyOrderSigortaLine } from "@/components/ui-my-orders-sigorta";
 import { MyOrderKomsuLine } from "@/components/ui-my-orders-komsu";
 import { MyOrderPaketmatikLine } from "@/components/ui-my-orders-paketmatik";
 import { MyOrderErisimLine } from "@/components/ui-my-orders-erisim";
+import { MyOrderGarantiLine } from "@/components/ui-my-orders-garanti";
 
 export function MyOrderRow({
   o,
@@ -128,6 +129,7 @@ export function MyOrderRow({
         <MyOrderKomsuLine note={o.note} />
         <MyOrderPaketmatikLine note={o.note} />
         <MyOrderErisimLine note={o.note} />
+        <MyOrderGarantiLine note={o.note} />
         <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }} data-cta="my-orders-copy-row">
           <button className="chip" type="button" data-cta="my-orders-copy-id" onClick={() => void copyId()}>
             {copiedId ? "No kopyalandı" : "No kopyala"}
