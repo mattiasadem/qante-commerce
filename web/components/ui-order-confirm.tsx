@@ -17,6 +17,7 @@ import { OrderConfirmQuietSummary } from "@/components/ui-order-confirm-quiet";
 import { OrderConfirmNotifySummary } from "@/components/ui-order-confirm-notify";
 import { OrderConfirmCallSummary } from "@/components/ui-order-confirm-call";
 import { OrderConfirmContactSummary } from "@/components/ui-order-confirm-contact";
+import { OrderConfirmInvoiceSummary } from "@/components/ui-order-confirm-invoice";
 
 type DemoOrderView = {
   order_id: string;
@@ -238,6 +239,7 @@ export function OrderConfirm() {
           <OrderConfirmNotifySummary note={order.note} />
           <OrderConfirmCallSummary note={order.note} />
           <OrderConfirmContactSummary note={order.note} />
+          <OrderConfirmInvoiceSummary note={order.note} />
           {(status === "shipped" || status === "fulfilled" || status === "return_requested") && order.ship_note ? (
             <ShipTrackBanner shipNote={order.ship_note} />
           ) : null}
