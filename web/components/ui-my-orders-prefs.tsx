@@ -1,6 +1,5 @@
 "use client";
 
-import { parsePaketmatikFromNote } from "@/components/ui-paketmatik";
 import { parseErisimFromNote } from "@/components/ui-erisim";
 import { parseWarrantyFromNote } from "@/components/ui-warranty";
 import { parseDestekFromNote } from "@/components/ui-destek";
@@ -10,9 +9,8 @@ import { parsePhotoFromNote } from "@/components/ui-photo";
 import { parseCallFromNote } from "@/components/ui-call";
 import { parseReturnFromNote } from "@/components/ui-return";
 
-/** Siparişlerim row: show checkout prefs (komsu extracted to MyOrderKomsuLine). */
+/** Siparişlerim row: show checkout prefs (paketmatik extracted to MyOrderPaketmatikLine). */
 export function MyOrderPrefLines({ note }: { note?: string }) {
-  const paketmatik = parsePaketmatikFromNote(note);
   const erisim = parseErisimFromNote(note);
   const warranty = parseWarrantyFromNote(note);
   const destek = parseDestekFromNote(note);
@@ -21,14 +19,9 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const photo = parsePhotoFromNote(note);
   const call = parseCallFromNote(note);
   const ret = parseReturnFromNote(note);
-  if (!paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret) return null;
+  if (!erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
-      {paketmatik ? (
-        <div className="faint" data-cta="my-orders-paketmatik">
-          Paketmatik · {paketmatik.label}
-        </div>
-      ) : null}
       {erisim ? (
         <div className="faint" data-cta="my-orders-erisim">
           Erişim · {erisim.label}
