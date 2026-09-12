@@ -1,6 +1,5 @@
 "use client";
 
-import { parseDoormanFromNote } from "@/components/ui-doorman";
 import { parseInsuranceFromNote } from "@/components/ui-insurance";
 import { parseKomsuFromNote } from "@/components/ui-komsu";
 import { parsePaketmatikFromNote } from "@/components/ui-paketmatik";
@@ -13,9 +12,8 @@ import { parsePhotoFromNote } from "@/components/ui-photo";
 import { parseCallFromNote } from "@/components/ui-call";
 import { parseReturnFromNote } from "@/components/ui-return";
 
-/** Siparişlerim row: show checkout prefs (kirilgan extracted to MyOrderKirilganLine). */
+/** Siparişlerim row: show checkout prefs (kapici extracted to MyOrderKapiciLine). */
 export function MyOrderPrefLines({ note }: { note?: string }) {
-  const doorman = parseDoormanFromNote(note);
   const insurance = parseInsuranceFromNote(note);
   const komsu = parseKomsuFromNote(note);
   const paketmatik = parsePaketmatikFromNote(note);
@@ -27,14 +25,9 @@ export function MyOrderPrefLines({ note }: { note?: string }) {
   const photo = parsePhotoFromNote(note);
   const call = parseCallFromNote(note);
   const ret = parseReturnFromNote(note);
-  if (!doorman && !insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret) return null;
+  if (!insurance && !komsu && !paketmatik && !erisim && !warranty && !destek && !notify && !quiet && !photo && !call && !ret) return null;
   return (
     <div data-cta="my-orders-prefs" style={{ marginTop: 6 }}>
-      {doorman ? (
-        <div className="faint" data-cta="my-orders-doorman">
-          Kapıcı · {doorman.note || "Kapıcıya bırak"}
-        </div>
-      ) : null}
       {insurance ? (
         <div className="faint" data-cta="my-orders-insurance">
           Sigorta · {insurance.label}
