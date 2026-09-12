@@ -14,7 +14,6 @@ import {
 } from "@/lib/core";
 import { shipNoteLabel } from "@/components/ui-ship-track";
 import { fmtWhen, statusTagClass, type LedgerAction, type Row } from "@/components/ui-my-orders-model";
-import { MyOrderPrefLines } from "@/components/ui-my-orders-prefs";
 import { MyOrderKuponLine } from "@/components/ui-my-orders-kupon";
 import { MyOrderSaatLine } from "@/components/ui-my-orders-saat";
 import { MyOrderGunLine } from "@/components/ui-my-orders-gun";
@@ -46,6 +45,7 @@ import { MyOrderIadeLine } from "@/components/ui-my-orders-iade";
 import { MyOrderCallLine } from "@/components/ui-my-orders-call";
 import { MyOrderNotifyLine } from "@/components/ui-my-orders-notify";
 import { MyOrderQuietLine } from "@/components/ui-my-orders-quiet";
+import { MyOrderPhotoLine } from "@/components/ui-my-orders-photo";
 
 export function MyOrderRow({
   o,
@@ -108,7 +108,6 @@ export function MyOrderRow({
             Kargo · {shipNoteLabel(o.ship_note) ?? o.ship_note}
           </div>
         ) : null}
-        <MyOrderPrefLines note={o.note} />
         <MyOrderKuponLine note={o.note} />
         <MyOrderSaatLine note={o.note} />
         <MyOrderGunLine note={o.note} />
@@ -140,6 +139,7 @@ export function MyOrderRow({
         <MyOrderCallLine note={o.note} />
         <MyOrderNotifyLine note={o.note} />
         <MyOrderQuietLine note={o.note} />
+        <MyOrderPhotoLine note={o.note} />
         <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }} data-cta="my-orders-copy-row">
           <button className="chip" type="button" data-cta="my-orders-copy-id" onClick={() => void copyId()}>
             {copiedId ? "No kopyalandı" : "No kopyala"}
