@@ -23,6 +23,18 @@ export function OrderConfirmEmpty() {
         <Link className="btn" href="/merchant/siparisler" data-cta="order-empty-to-merchant-orders">
           Operatör Siparişler
         </Link>
+        <Link className="btn" href="/siparis?id=ord_0830" data-cta="order-empty-to-seed-paid">
+          Demo · ödeme alındı
+        </Link>
+        <Link className="btn" href="/siparis?id=ord_0901" data-cta="order-empty-to-seed-pending">
+          Demo · ödeme bekliyor
+        </Link>
+        <Link className="btn" href="/siparis?id=ord_0906" data-cta="order-empty-to-seed-shipped">
+          Demo · kargoda
+        </Link>
+        <Link className="btn" href="/siparis?id=ord_0902" data-cta="order-empty-to-seed-return">
+          Demo · iade
+        </Link>
       </div>
     </div>
   );
