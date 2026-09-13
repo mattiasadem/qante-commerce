@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
-import { handlePostStore } from "./route-post-store";
-import { handlePostOps } from "./route-post-ops";
+import { handlePostChatCart } from "./route-post-chatcart";
+import { handlePostChanges } from "./route-post-changes";
+import { handlePostStage } from "./route-post-stage";
+import { handlePostOrders } from "./route-post-orders";
 
 export async function POST(req: Request, { params }: { params: Promise<{ slug: string[] }> }) {
   const slug = (await params).slug.join("/");
-  const store = await handlePostStore(req, slug);
-  if (store) return store;
-  const ops = await handlePostOps(req, slug);
-  if (ops) return ops;
+  const a = await handlePostChatCart(req, slug);
+  if (a) return a;
+  const b = await handlePostChanges(req, slug);
+  if (b) return b;
+  const c = await handlePostStage(req, slug);
+  if (c) return c;
+  const d = await handlePostOrders(req, slug);
+  if (d) return d;
   return NextResponse.json({ error: "not found" }, { status: 404 });
 }
