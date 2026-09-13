@@ -1,14 +1,19 @@
 "use client";
 
 import { parseKomsuFromNote } from "@/components/ui-komsu";
+import { OrderConfirmGizliSummary } from "@/components/ui-order-confirm-gizli";
 
-/** /siparis confirm: neighbor-delivery preference from checkout note. */
+/** /siparis confirm: neighbor-delivery preference from checkout note; also mounts gizli summary. */
 export function OrderConfirmKomsuSummary({ note }: { note?: string }) {
   const komsu = parseKomsuFromNote(note);
-  if (!komsu) return null;
   return (
-    <p className="muted" data-cta="komsu-summary" style={{ marginTop: 6 }}>
-      Komşu teslimatı · {komsu.label}
-    </p>
+    <>
+      {komsu ? (
+        <p className="muted" data-cta="komsu-summary" style={{ marginTop: 6 }}>
+          Komşu teslimatı · {komsu.label}
+        </p>
+      ) : null}
+      <OrderConfirmGizliSummary note={note} />
+    </>
   );
 }
