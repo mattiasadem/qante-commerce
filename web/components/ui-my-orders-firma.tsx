@@ -1,14 +1,36 @@
 "use client";
 
+import { useState } from "react";
 import { parseShipCarrierFromNote } from "@/components/ui-ship-carrier";
 
-/** Siparişlerim row: preferred carrier from checkout note. */
+/** Siparişlerim row: preferred carrier from checkout note with copy CTA. */
 export function MyOrderFirmaLine({ note }: { note?: string }) {
   const firma = parseShipCarrierFromNote(note);
+  const [copied, setCopied] = useState(false);
   if (!firma) return null;
+
+  async function copyFirma() {
+    try {
+      await navigator.clipboard.writeText(firma.label);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* ignore */
+    }
+  }
+
   return (
-    <div className="faint" data-cta="my-orders-firma">
+    <div className="faint" data-cta="my-orders-firma" style={{ marginTop: 6 }}>
       Firma · {firma.label}
+      <button
+        className="chip"
+        type="button"
+        data-cta="my-orders-firma-copy"
+        style={{ marginLeft: 10 }}
+        onClick={() => void copyFirma()}
+      >
+        {copied ? "kopyalandı" : "Firmayı kopyala"}
+      </button>
     </div>
   );
 }
